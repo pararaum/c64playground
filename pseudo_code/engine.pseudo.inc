@@ -10,7 +10,10 @@ P_add:	MACRO src, dst
 	.byte PSEUDO_CODE_add, src, dst
 	ENDM
 P_branchNZ:	MACRO reg, disp
- 	.byte PSEUDO_CODE_branchNZ, reg, disp-*
+	.byte PSEUDO_CODE_branchNZ, reg, disp-*
+	ENDM
+P_branchZ:	MACRO reg, disp
+	.byte PSEUDO_CODE_branchZ, reg, disp-*
 	ENDM
 P_exit:	MACRO
 	.byte PSEUDO_CODE_exit
@@ -37,9 +40,10 @@ PSEUDO_CODE_add = $04			;Add (reg0, reg1): reg1 ≔ reg1+reg0
 PSEUDO_CODE_branchZ = $05		;Branch on zero (reg0, displacement): jump if reg0 == 0
 PSEUDO_CODE_branchNZ = $06		;Branch on zero (reg0, displacement): jump if reg0 != 0
 PSEUDO_CODE_store = $07			;Store register, indirect (reg0, [reg1]): reg0 → [reg1]
+
 ;;; ↑↓ Keep these two in sync or you will get into serious trouble... ☠
 
-jtable:	.word TABexit, TABloadImmediate, TABtransfer, TABsubtract, TABadd, TABillegal, TABbranchNZ, TABstore
+jtable:	.word TABexit, TABloadImmediate, TABtransfer, TABsubtract, TABadd, TABbranchZ, TABbranchNZ, TABstore
 	.word TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal
 	.word TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal
 	.word TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal, TABillegal
@@ -137,6 +141,29 @@ TABbranchNZ:	lda (PSEUDOPC),y
 	rts 
 
 
+TABbranchZ:	lda (PSEUDOPC),y
+	tax			;Registernumber in X
+	lda $01,x
+	bne .nobranch
+	lda $00,x
+	bne .nobranch
+	iny		;displacement offset
+	ldx #0
+	lda (PSEUDOPC),y	;displacement
+	bpl .l1
+	dex			;for sign extension
+.l1	clc
+	adc PSEUDOPC
+	sta PSEUDOPC
+	txa
+	adc PSEUDOPC+1
+	sta PSEUDOPC+1
+	ldy #0
+	rts
+.nobranch:	ldy #3		;opcode, reg0, displacement
+	rts
+
+
 TABadd:	lda (PSEUDOPC),y
 	tax			; X is source.
 	iny
@@ -193,5 +220,8 @@ TABtransfer:	lda (PSEUDOPC),y
 TABillegal:	lda #$02
 	sta $d020
 	sta $d021
+	clv
 .l1:	inc $d020
-	jmp .l1
+	bvc .l1
+	ldy #1
+	rts
