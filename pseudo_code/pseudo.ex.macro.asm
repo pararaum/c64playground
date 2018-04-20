@@ -24,32 +24,72 @@ clearscreen:	lda #$41
 	sta SCREENPTR+$300,x
 	dex
 	bne .l1
+	P_loadi $60, $a000
+	P_loadi $62, $c000
+	P_loadi $64, $0000
+	P_loadi $5e, $0002
+.l2:	P_store $64, $60
+	P_add  $5e, $60
+	P_transfer $60, $fe
+	P_sub $62, $fe
+	P_branchNZ $fe, .l2
 	rts
 
-main:	nop
+lfsr:	P_transfer $fe, $fc
+	P_transfer $fe, $60
+	P_loadi $62, BITMAPPTR
+.l2:
+	ldx $fc
+	P_shiftr $fc
+	txa
+	and #$01
+	beq .l1
+	P_eor $60, $fc
+.l1:
+	P_transfer $fc, $fe
+	P_shiftr $fe
+	P_shiftr $fe
+	P_shiftr $fe
+	P_add $62, $fe
+	lda $fc
+	and #$07
+	tax
+	ldy #0
+	lda ($fe),y
+	ora .bitlist,x
+	sta ($fe),y
+	P_transfer $fc, $fe
+	P_sub $60, $fe
+	P_branchNZ $fe, .l2
+	lda #$ff		;Zero is never reached therefore hardcoded here.
+	sta BITMAPPTR
+	inc $d020
+	nop
+	rts
+.bitlist: .byte $01, $02, $04, $08, $10, $20, $40, $80
+
+main:	sei
+	lda #$35   ;Turn off the BASIC and KERNAL rom.
+        sta $01
 	lda #%00111011		;Hires and 25 lines.
 	sta $d011
 	jsr initialise_bitmap_and_screenptr
 	jsr clearscreen
 	nop
-	nop
-	P_loadi $b0, $a000
-	P_loadi $b2, $c000
-	P_loadi $b4, $5555
-	P_loadi $58, $d020
-	P_loadi $5a, $0001
-.l1:	P_store $b4, $b0
-	P_add  $5a, $b0
-	P_transfer $b2, $5c
-	P_sub $b0, $5c
-	P_branchNZ $5c, .l1
-	P_sub $b0, $b2
-	P_transfer  3, $fc ;Transfer R$3⇾R$fc
-	P_exit
-	nop
-	nop
 	stx $d020
 	sty $d021
 	sta $0400
 	nop
+	P_loadi $fe, $84BE	;see http://users.ece.cmu.edu/~koopman/lfsr/16.txt
+	jsr lfsr
+	jsr clearscreen
+	P_loadi $fe, $8657
+	jsr lfsr
+	jsr clearscreen
+	P_loadi $fe, $8029
+	jsr lfsr
+	nop
+	lda #$37		;Turn on ROMs.
+	sta $01
+	cli
 	rts

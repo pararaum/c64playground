@@ -1,11 +1,24 @@
 ;;; -*- mode: asm -*-
 
+P_eor:	MACRO src, dst
+	lda src
+	eor dst
+	sta dst
+	lda src+1
+	eor dst+1
+	sta dst+1
+	ENDM
 
 P_loadi:	MACRO reg, val
 	lda #<val
 	sta reg
 	lda #>val
 	sta reg+1
+	ENDM
+
+P_shiftr:	MACRO reg
+	lsr reg+1
+	ror reg
 	ENDM
 
 P_store:	MACRO src, dst
@@ -15,6 +28,12 @@ P_store:	MACRO src, dst
 	lda src+1
 	iny
 	sta (dst),y	
+	ENDM
+
+P_storeb:	MACRO src, dst
+	ldy #0
+	lda src
+	sta (dst),y
 	ENDM
 
 P_sub:	MACRO src, dst
