@@ -9,6 +9,15 @@ P_eor:	MACRO src, dst
 	sta dst+1
 	ENDM
 
+P_load:	MACRO src, dst
+	ldy #0
+	lda (src),y
+	sta dst
+	iny
+	lda (src),y	
+	sta dst+1
+	ENDM
+	
 P_loadi:	MACRO reg, val
 	lda #<val
 	sta reg
