@@ -127,6 +127,9 @@ lfsrE:	P_transfer $fe, $fc
 	lda ($fe),y
 	eor .bitlist,x
 	sta ($fe),y
+	lda #%00010000		;Multicolour bitmap mode.
+	eor $d016
+	sta $d016
 	P_transfer $fc, $fe
 	P_sub $60, $fe
 	P_branchNZ $fe, .l2
