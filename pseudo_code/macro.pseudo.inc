@@ -19,9 +19,9 @@ P_load:	MACRO src, dst
 	ENDM
 	
 P_loadi:	MACRO reg, val
-	lda #<val
+	lda #<(val)
 	sta reg
-	lda #>val
+	lda #>(val)
 	sta reg+1
 	ENDM
 

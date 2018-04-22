@@ -127,9 +127,9 @@ lfsrE:	P_transfer $fe, $fc
 	lda ($fe),y
 	eor .bitlist,x
 	sta ($fe),y
-	lda #%00010000		;Multicolour bitmap mode.
-	eor $d016
-	sta $d016
+;;;	lda #%00010000		;Multicolour bitmap mode.
+;;;	eor $d016
+;;;	sta $d016
 	P_transfer $fc, $fe
 	P_sub $60, $fe
 	P_branchNZ $fe, .l2
@@ -162,23 +162,17 @@ main:	sei
 	P_loadi $20, feedbt
 	P_loadi $22, feedbt_end
 	P_loadi $24, 2
-.l1:	nop
-	lda $d012
-	pha
-	P_load $20, $fe
+.l1:	P_load $20, $fe
 	jsr lfsrE
-;;; 	inc $d020
-	lda $d012
-	sta $fe
-	pla
-	sta $ff
-	;; 	jsr lfsrE
 	P_add $24, $20
-	P_transfer $20, $fe
-	P_sub $22, $fe
+	P_transfer $22, $fe
+	P_sub $20, $fe
 	P_branchNZ $fe, .l1
 	nop
 	lda #$37		;Turn on ROMs.
 	sta $01
+	lda #0
+	pha
+	jmp ($fffe)
 	cli
 	rts
