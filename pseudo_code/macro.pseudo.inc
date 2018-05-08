@@ -1,5 +1,14 @@
 ;;; -*- mode: asm -*-
 
+P_and:	MACRO src, dst
+	lda src
+	and dst
+	sta dst
+	lda src+1
+	and dst+1
+	sta dst+1
+	ENDM
+
 P_eor:	MACRO src, dst
 	lda src
 	eor dst
@@ -23,6 +32,25 @@ P_loadi:	MACRO reg, val
 	sta reg
 	lda #>(val)
 	sta reg+1
+	ENDM
+
+P_pull:	MACRO reg
+	pla
+	sta reg
+	pla
+	sta reg+1
+	ENDM
+
+P_push:	MACRO reg
+	lda reg+1
+	pha
+	lda reg
+	pha
+	ENDM
+
+P_shiftl:	MACRO reg
+	asl reg
+	rol reg+1
 	ENDM
 
 P_shiftr:	MACRO reg
