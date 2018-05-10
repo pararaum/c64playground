@@ -5,6 +5,12 @@ CONST02 = $02			;Here we store a constant '2'.
 RFEEDBACKTERM = $80		;Register for feedbackterm
 RFEEDBACKVAL = $82		;Current feedbackterm value
 RBITMAPPTR = $84		;Pointer to bitmap
+IDLE_DATA = $8000+$3FFF		;Pattern in the border.
+;;; 6502 Vectors [https://www.pagetable.com/?p=410, http://6502.org/tutorials/interrupts.html#2.2]:
+NMI_VECTOR = $FFFA
+RESET_VECTOR = $FFFC
+IRQ_VECTOR = $FFFE
+
 
 	.org $0801 - 2
 	.word $0801
@@ -48,68 +54,6 @@ clearscreen:	lda #$E2
 	P_branchNZ $fe, .l2
 	rts
 
-lfsrO:	P_transfer $fe, $fc
-	P_transfer $fe, $60
-	P_loadi $62, BITMAPPTR
-.l2:
-	ldx $fc
-	P_shiftr $fc
-	txa
-	and #$01
-	beq .l1
-	P_eor $60, $fc
-.l1:
-	P_transfer $fc, $fe
-	P_shiftr $fe
-	P_shiftr $fe
-	P_shiftr $fe
-	P_add $62, $fe
-	lda $fc
-	and #$07
-	tax
-	ldy #0
-	lda ($fe),y
-	ora .bitlist,x
-	sta ($fe),y
-	P_transfer $fc, $fe
-	P_sub $60, $fe
-	P_branchNZ $fe, .l2
-	lda #$ff		;Zero is never reached therefore hardcoded here.
-	sta BITMAPPTR
-	rts
-.bitlist: .byte $01, $02, $04, $08, $10, $20, $40, $80
-
-lfsrA:	P_transfer $fe, $fc
-	P_transfer $fe, $60
-	P_loadi $62, BITMAPPTR
-.l2:
-	ldx $fc
-	P_shiftr $fc
-	txa
-	and #$01
-	beq .l1
-	P_eor $60, $fc
-.l1:
-	P_transfer $fc, $fe
-	P_shiftr $fe
-	P_shiftr $fe
-	P_shiftr $fe
-	P_add $62, $fe
-	lda $fc
-	and #$07
-	tax
-	ldy #0
-	lda ($fe),y
-	and .bitlist,x
-	sta ($fe),y
-	P_transfer $fc, $fe
-	P_sub $60, $fe
-	P_branchNZ $fe, .l2
-	lda #$00		;Zero is never reached therefore hardcoded here.
-	sta BITMAPPTR
-	rts
-.bitlist: .byte ~$01, ~$02, ~$04, ~$08, ~$10, ~$20, ~$40, ~$80
-
 lfsrE:	P_transfer $fe, RFEEDBACKTERM
 	P_transfer $fe, RFEEDBACKVAL
 	P_loadi RBITMAPPTR, BITMAPPTR
@@ -133,6 +77,9 @@ lfsrE:	P_transfer $fe, RFEEDBACKTERM
 	lda ($fe),y
 	eor .bitlist,x
 	sta ($fe),y
+	;; Instead of checking all the time if we may overwrite the
+	;; idle pattern we just always write a zero.
+	sty IDLE_DATA
 	P_transfer RFEEDBACKTERM, $fe
 	P_sub RFEEDBACKVAL, $fe
 	P_branchNZ $fe, .l2
@@ -510,7 +457,7 @@ spriteinit:
 	ldy #$00
 .l1	lda .posx,y
 	sta $d000,y
-	lda #$60
+	lda #$0D		;Y-Position
 	sta $d001,y
 	iny
 	iny
@@ -534,7 +481,7 @@ spriteinit:
 	lda #13			;light green
 	sta $d026
 	rts
-.posx:	.byte 30, 60, 90, 120, 150, 180, 210, 240
+.posx:	.byte 70, 100, 130, 160, 190, 220, 250, 40
 
 display:			;rFE value
 	P_push $fe		;Push value
@@ -588,8 +535,9 @@ display:			;rFE value
 	bpl .l1
 	rts
 
-initgfx:lda #$04
+initgfx:lda #$04		;Border is purple
 	sta $d020
+	lda #$04		;Background purple (you need to take care of the idle pattern).
 	sta $d021
 	lda #%00111011		;Hires and 25 lines.
 	sta $d011
@@ -599,8 +547,49 @@ initgfx:lda #$04
 	jsr initialise_bitmap_and_screenptr
 	jsr clearscreen
 	jsr spriteinit
+	lda #$7f
+        sta $dc0d               ;disable CIA interrupts
+        sta $dd0d
+        lda $dc0d               ;clear pending interrupts
+        lda $dd0d
+        lda #%00000001		;Enable raster IRQ
+        sta $d01a
+        lda #$f9		;IRQ on line:
+	sta $d012
 	rts
-	
+
+
+irq0:	pha
+	lda #%00111011		;Hires and 24 lines.
+	sta $d011
+	lda #$FF		;Enable all sprites again
+	sta $d015
+	asl $d019		;Acknowledge interrupt
+	lda #<irqF8
+	sta $FFFE
+	lda #>irqF8
+	sta $FFFF
+        lda #$f9		;IRQ on line:
+	sta $d012
+	pla
+	rti
+
+
+irqF8:	pha
+	lda #%00110011		;Hires and 24 lines.
+	sta $d011
+	asl $d019		;Acknowledge interrupt
+	lda #<irq0
+	sta $FFFE
+	lda #>irq0
+	sta $FFFF
+        lda #$00		;IRQ on line:
+	sta $d012
+	sta $d015		;Disable all sprites
+	pla
+	rti
+
+
 main:	sei
 	lda #$35   ;Turn off the BASIC and KERNAL rom.
         sta $01
@@ -613,6 +602,11 @@ main:	sei
 	cpx #1
 	bne .l2
 	jsr initgfx
+	lda #<irqF8
+	sta $FFFE
+	lda #>irqF8
+	sta $FFFF
+	cli			;Reenable interrupts.
 	P_loadi RFEED, feedbt
 	P_loadi RFEEDEND, feedbt_end
 	P_loadi CONST02, 2
@@ -629,9 +623,6 @@ main:	sei
 	nop
 	lda #$37		;Turn on ROMs.
 	sta $01
-	lda #0
-	pha
-	brk
-	jmp ($fffe)
-	cli
-	rts
+	jmp (RESET_VECTOR)
+ZZZFINAL_END:
+
