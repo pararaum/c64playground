@@ -48,6 +48,14 @@ P_push:	MACRO reg
 	pha
 	ENDM
 
+;;; Push a 16-bit value immediate on the stack, can be used for jump tables
+P_pushi:	MACRO data
+	lda #>(data)
+	pha
+	lda #<(data)
+	pha
+	ENDM
+
 P_shiftl:	MACRO reg
 	asl reg
 	rol reg+1

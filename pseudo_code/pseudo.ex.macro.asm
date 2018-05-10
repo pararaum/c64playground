@@ -1,4 +1,10 @@
 ;;; asm6502 -l /dev/stderr -e -b 0x07ff pseudo.ex.macro.asm
+RFEED = $20			;Pointer to feedback terms.
+RFEEDEND = $22			;Pointer to end of feedback terms.
+CONST02 = $02			;Here we store a constant '2'.
+RFEEDBACKTERM = $80		;Register for feedbackterm
+RFEEDBACKVAL = $82		;Current feedbackterm value
+RBITMAPPTR = $84		;Pointer to bitmap
 
 	.org $0801 - 2
 	.word $0801
@@ -104,34 +110,31 @@ lfsrA:	P_transfer $fe, $fc
 	rts
 .bitlist: .byte ~$01, ~$02, ~$04, ~$08, ~$10, ~$20, ~$40, ~$80
 
-lfsrE:	P_transfer $fe, $fc
-	P_transfer $fe, $60
-	P_loadi $62, BITMAPPTR
+lfsrE:	P_transfer $fe, RFEEDBACKTERM
+	P_transfer $fe, RFEEDBACKVAL
+	P_loadi RBITMAPPTR, BITMAPPTR
 .l2:
-	ldx $fc
-	P_shiftr $fc
+	ldx RFEEDBACKTERM
+	P_shiftr RFEEDBACKTERM
 	txa
 	and #$01
 	beq .l1
-	P_eor $60, $fc
+	P_eor RFEEDBACKVAL, RFEEDBACKTERM
 .l1:
-	P_transfer $fc, $fe
+	P_transfer RFEEDBACKTERM, $fe
 	P_shiftr $fe
 	P_shiftr $fe
 	P_shiftr $fe
-	P_add $62, $fe
-	lda $fc
+	P_add RBITMAPPTR, $fe
+	lda RFEEDBACKTERM
 	and #$07
 	tax
 	ldy #0
 	lda ($fe),y
 	eor .bitlist,x
 	sta ($fe),y
-;;;	lda #%00010000		;Multicolour bitmap mode.
-;;;	eor $d016
-;;;	sta $d016
-	P_transfer $fc, $fe
-	P_sub $60, $fe
+	P_transfer RFEEDBACKTERM, $fe
+	P_sub RFEEDBACKVAL, $fe
 	P_branchNZ $fe, .l2
 	lda #$01		;Zero is never reached therefore hardcoded here.
 	eor BITMAPPTR
@@ -585,9 +588,9 @@ display:			;rFE value
 	bpl .l1
 	rts
 
-main:	sei
-	lda #$35   ;Turn off the BASIC and KERNAL rom.
-        sta $01
+initgfx:lda #$04
+	sta $d020
+	sta $d021
 	lda #%00111011		;Hires and 25 lines.
 	sta $d011
 	lda #%00010000		;Multicolour bitmap mode.
@@ -595,31 +598,40 @@ main:	sei
 	sta $d016
 	jsr initialise_bitmap_and_screenptr
 	jsr clearscreen
-	nop
 	jsr spriteinit
-	nop
-	lda #$04
-	sta $d020
-	sta $d021
-	nop
-	P_loadi $20, feedbt
-	P_loadi $22, feedbt_end
-	P_loadi $24, 2
-.l1:	P_load $20, $fe
+	rts
+	
+main:	sei
+	lda #$35   ;Turn off the BASIC and KERNAL rom.
+        sta $01
+	ldx #$ff		;Reset stack.
+	txs
+	txa
+.l2:	sta $00,x
+	sta $0100,x
+	dex
+	cpx #1
+	bne .l2
+	jsr initgfx
+	P_loadi RFEED, feedbt
+	P_loadi RFEEDEND, feedbt_end
+	P_loadi CONST02, 2
+.l1:	P_load RFEED, $fe
 	nop
 	jsr display
-	P_load $20, $fe
+	P_load RFEED, $fe
 	nop
 	jsr lfsrE
-	P_add $24, $20
-	P_transfer $22, $fe
-	P_sub $20, $fe
+	P_add CONST02, RFEED
+	P_transfer RFEEDEND, $fe
+	P_sub RFEED, $fe
 	P_branchNZ $fe, .l1
 	nop
 	lda #$37		;Turn on ROMs.
 	sta $01
 	lda #0
 	pha
+	brk
 	jmp ($fffe)
 	cli
 	rts
