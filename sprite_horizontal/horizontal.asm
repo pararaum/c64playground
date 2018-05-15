@@ -52,9 +52,17 @@ main:	cld
 	sta $d012
 	lda #$1b		;MSB of IRQ, normal Text
 	sta $d011
+	;; Text $0400, Charset $2000
+	lda #(1 << 4) | (charset/2048*2)
+	sta $d018
 	jsr init_sprite
 	nop			;Init scroller
 	jsr init_scroller
+	ldx #00
+.l1:	txa
+	sta $0400+3*40,x
+	dex
+	bne .l1
 	cli
 	inc $d020
 	dec $d020
@@ -214,10 +222,11 @@ scroll_text:
 	.byte "@@ WELCOME TO THE HORIZONTAL SCROLLER. THIS SIMPLE SPRITE SCROLLER WAS WRITTEN IN 2018. FONT WAS RIPPED FROM KOFLERS HOMEPAGE.   "
 	.byte 0
 
-	.org $4000
+	.org $2000-2
 charset_file:
 	incbin "scrap_writer_iii_06.64c"
-	incbin "scrap_writer_iii_22.64c"
-	incbin "intro_studio_b.64c"
-	incbin "devils_collection_16.64c"
+	;; 	incbin "scrap_writer_iii_22.64c"
+	;; 	incbin "intro_studio_b.64c"
+	;; 	incbin "devils_collection_16.64c"
 charset = charset_file+2
+EOF:	
