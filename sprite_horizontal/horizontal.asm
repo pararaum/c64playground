@@ -3,7 +3,7 @@
 SCROLLCOUNTER = $0400+39
 SCRCHRBUF = $0400+40		;8 Bytes
 SCRTEXTPTR = $03	
-
+SCRSPRDATA = $3e00		;Sprite scroller data
 	.org $0801 - 2
 	.word $0801
 
@@ -107,8 +107,8 @@ init_sprite:
 	sta $d010
 	lda #00			;Clear sprite data.
 	tax
-.l2	sta $3e00,x
-	sta $3f00,x
+.l2	sta SCRSPRDATA,x
+	sta SCRSPRDATA+$100,x
 	dex
 	bne .l2
 	rts
@@ -164,30 +164,30 @@ irq:	dec SCROLLCOUNTER
 	asl SCRCHRBUF,x
 	pla
 	tax
-	rol $3fc2,x		;7
-	rol $3fc1,x
-	rol $3fc0,x
-	rol $3f82,x		;6
-	rol $3f81,x
-	rol $3f80,x
-	rol $3f42,x		;5
-	rol $3f41,x
-	rol $3f40,x
-	rol $3f02,x		;4
-	rol $3f01,x
-	rol $3f00,x
-	rol $3ec2,x		;3
-	rol $3ec1,x
-	rol $3ec0,x
-	rol $3e82,x		;2
-	rol $3e81,x
-	rol $3e80,x
-	rol $3e42,x		;1
-	rol $3e41,x
-	rol $3e40,x
-	rol $3e02,x		;0
-	rol $3e01,x
-	rol $3e00,x
+	rol SCRSPRDATA+$1c2,x		;7
+	rol SCRSPRDATA+$1c1,x
+	rol SCRSPRDATA+$1c0,x
+	rol SCRSPRDATA+$182,x		;6
+	rol SCRSPRDATA+$181,x
+	rol SCRSPRDATA+$180,x
+	rol SCRSPRDATA+$142,x		;5
+	rol SCRSPRDATA+$141,x
+	rol SCRSPRDATA+$140,x
+	rol SCRSPRDATA+$102,x		;4
+	rol SCRSPRDATA+$101,x
+	rol SCRSPRDATA+$100,x
+	rol SCRSPRDATA+$0c2,x		;3
+	rol SCRSPRDATA+$0c1,x
+	rol SCRSPRDATA+$0c0,x
+	rol SCRSPRDATA+$082,x		;2
+	rol SCRSPRDATA+$081,x
+	rol SCRSPRDATA+$080,x
+	rol SCRSPRDATA+$042,x		;1
+	rol SCRSPRDATA+$041,x
+	rol SCRSPRDATA+$040,x
+	rol SCRSPRDATA+$0002,x		;0
+	rol SCRSPRDATA+$001,x
+	rol SCRSPRDATA+$000,x
 	txa
 	clc
 	adc #3

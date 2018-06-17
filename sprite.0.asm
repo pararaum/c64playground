@@ -27,6 +27,7 @@ l2	lda bitpattern
 	sta $d001
 	lda #$ff		;switch all sprites on
 	sta $d015
+l4	bmi l4
 	rts
 	
 modulo	SEC			;http://rosettacode.org/wiki/Arithmetic/Integer#6502_Assembly
