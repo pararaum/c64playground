@@ -69,8 +69,8 @@ incbyt:
 	lda (TMPDST),y
 	cmp (TMPSRC),y
 	beq .skip
-	clc
-	adc #1
+	sec
+	sbc #1
 	sta (TMPDST),y
 .skip:	rts
 
