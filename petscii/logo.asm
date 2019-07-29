@@ -28,6 +28,8 @@ main:
 	lda #0
 	sta OFFSET
 	sta OFFSET+1
+	lda #6
+	sta $d020
 .loop:
 	jsr incbyt
 	lda #17
