@@ -1,3 +1,16 @@
+{-|
+Module: RLECruncher
+Description: Run-Length Encoding
+
+This module implements several RLE compression techniques. Currently
+only a compression is done using run-length encoding, see
+e.g. https://en.wikipedia.org/wiki/Run-length_encoding.
+
+Currently only the variant is implement which will write a codeword to
+mark the beginning of a compressed run, e.g. codeword, length, byte
+value. Thus the maximum run length is 255 bytes. If the codeword
+itself is in the original data then a run of one byte is encoded.
+-}
 module RLECruncher ( groupdat
                    , rleCrunchCodeword
                    ) where
