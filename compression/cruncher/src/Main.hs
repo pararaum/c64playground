@@ -53,9 +53,9 @@ crunchFile cf fn = do
 
 run :: Cruncher -> IO ()
 run cpar
-  | length (files cpar) == 0 = putStrLn "Error! No files supplied!"
+  | null (files cpar) = putStrLn "Error! No files supplied!"
   | otherwise = let cf = rleCrunchCodeword (codeword cpar)
-                in do mapM_ (crunchFile cf) $ files cpar
+                in mapM_ (crunchFile cf) $ files cpar
 
 -- | Call the cruncher and compress files.
 main :: IO ()

@@ -18,6 +18,7 @@ module RLECruncher ( groupdat
 import qualified Data.ByteString.Lazy as BL
 import Data.List
 import Data.Word (Word8)
+import Control.Arrow ((&&&))
 
 
 data Drun = Drun { drunLength :: Word8
@@ -37,9 +38,12 @@ rleOut cw (x:xs) | drunLength x == 1 && value x /= cw = value x : rleOut' xs
   where rleOut' = rleOut cw
 rleOut _ [] = []
 
-groupdat :: BL.ByteString -> [(Int, Word8)]
-groupdat = map f . BL.group
-  where f x = (fromIntegral $ BL.length x, BL.head x)
+
+-- | From a ByteString get pair of (count, BYTE) is extracted. This
+-- can be used in later stages to do the actual compression.
+groupdat :: BL.ByteString -- ^ ByteString to count the occurences of the bytes.
+         -> [(Int, Word8)] -- ^ Return count and BYTE value pairs.
+groupdat = fmap (fromIntegral . BL.length &&& BL.head) . BL.group
 
 
 -- |Compress a ByteString and get the rle compressed bytestring where the code word version is used.
