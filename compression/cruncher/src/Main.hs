@@ -23,39 +23,42 @@ import RLECruncher
 
 data Cruncher = Cruncher {
   files :: [FilePath],
-  codeword :: Word8,
-  crap :: String
+  codeword :: Word8
   } deriving (Show, Data, Typeable)
 
 -- The generated command line is not compatible with getopt!!!
 -- "cruncher -c=9 ..." has to be used! Otherwise the default value is
 -- used and 9 is an additional argument.
 --
--- It is even worse...
+-- OK, apparently I misread the documentation... It could be clearer
+-- here... Have a look at
+-- https://spin.atomicobject.com/2012/12/13/using-haskells-cmdargs-package/. So,
+-- def is a "default" value for the specified type.
 -- 
--- No, this is complete crap. Who came up with the idea of having a
--- standard default value and being able to give an optional
--- argument. How is it possible to have a non-zero default value for
--- an argument and being able to provide a different value using the
--- command line? This use case does make much more sense the the
--- currently implemented one.
 cliparam = Cruncher{
   files = def &= args &= typ "FILES/DIRS",
-  codeword = def &= help "Codeword (BYTE) for the initiation of the rle sequence" &= opt (0xFA::Word8),
-  crap = auto &= opt "crap"
+  codeword = 0xFA &= help "Codeword (BYTE) for the initiation of the rle sequence" &= opt (0xFA::Word8)
   }
-  &= summary "cruncher with several algorithms"
+  &= summary "Cruncher with (in future) several algorithms."
 
 
-crunchFile :: FilePath -> IO ()
-crunchFile fn = do
+crunchFile :: (BL.ByteString -> BL.ByteString) -- ^ A function compressing a ByteString into another ByteString
+           -> FilePath -- ^ The filename to compress
+           -> IO ()
+crunchFile cf fn = do
   fcontens <- BL.readFile fn
   printf "Crunching `%50s`...\n" fn
-  BL.writeFile (fn ++ ".crunched") $ rleCrunchCodeword 0xfa fcontens
+  BL.writeFile (fn ++ ".crunched") $ cf fcontens
+
+
+run :: Cruncher -> IO ()
+run cpar
+  | length (files cpar) == 0 = putStrLn "Error! No files supplied!"
+  | otherwise = let cf = rleCrunchCodeword (codeword cpar)
+                in do mapM_ (crunchFile cf) $ files cpar
 
 -- | Call the cruncher and compress files.
 main :: IO ()
 main = do cpar <- cmdArgs cliparam
-          print $ codeword cpar
-          print $ crap cpar
-          mapM_ crunchFile $ files cpar
+          -- print cpar
+          run cpar
