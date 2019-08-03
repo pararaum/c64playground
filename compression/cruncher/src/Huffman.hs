@@ -45,6 +45,12 @@ huffmanTreeToString :: HuffmanTree -> String
 huffmanTreeToString (Leaf we wo) = "❲" ++ show we ++ "," ++ show wo ++ "❳"
 huffmanTreeToString (Branch _ a b) = "❨" ++ huffmanTreeToString a ++ " " ++ huffmanTreeToString b ++ "❩"
 
+huffmanTreeDepth :: HuffmanTree -> Int
+huffmanTreeDepth ht = f 0 ht
+  where f n (Leaf _ _) = n
+        f n (Branch _ x y) = let n' = n + 1
+                             in max (f n' x) (f n' y)
+
 -- | Function to calculate the frequency of symbols. 
 freq :: Ord a => [a] -- ^ A list of symbols.
     -> [(Int, a)] -- ^ Returns a sorted list of count, symbol pairs.
