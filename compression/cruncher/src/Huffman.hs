@@ -11,6 +11,7 @@ Links:
 
  * https://rosettacode.org\/wiki\/Huffman_coding#Haskell
  * https://hackage.haskell.org\/package\/huffman
+ * https://github.com\/bbbradsmith\/huffmunch
 -}
 module Huffman ( freq
                ) where
