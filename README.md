@@ -13,3 +13,6 @@ C64 programming playground. Examples, code fragments, etc.
  * http://forum.6502.org/viewtopic.php?f=2&t=4595 (another homebrew)
  * https://xxl.atari.pl/lz4-decompressor/
  * http://pferrie.host22.com/misc/appleii.htm
+ * http://madteam.atari8.info/index.php?prod=uzytki
+ * https://github.com\/bbbradsmith\/huffmunch
+
