@@ -30,6 +30,7 @@ main:	sei
 	lda	#$30		; Only RAM
 	sta	$1
 	jsr	copy_data_temparea
+	;; More information about the format is here https://github.com/lz4/lz4/blob/master/doc/lz4_Block_format.md.
 	;; Point LZ4_SRC_PTR to the beginning of the data.
 	lda	#<(TEMPDATAAREA+11)
 	sta	LZ4_SRC_PTR
