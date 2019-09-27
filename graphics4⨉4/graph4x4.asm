@@ -5,7 +5,7 @@ CHARSET=$2800+768
 
 ;4x4 pixel mode
 ;by malcontent in 2012
-;ACME assembler format
+;XA assembler format
 ;
 ;This is a rather simple and fast way of 
 ;painting blocky pixels. To use it you 
@@ -42,7 +42,7 @@ zx  = $fd
 zy  = $fe
 pnt = $fa
 
-;Circle varibles are signed 16-bit values
+;Circle variables are signed 16-bit values
 
 r   = $e0	;Radius
 xc  = $e2	;X circle center
