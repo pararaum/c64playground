@@ -18,4 +18,4 @@ C64 programming playground. Examples, code fragments, etc.
  * http://pferrie.host22.com/misc/appleii.htm
  * http://madteam.atari8.info/index.php?prod=uzytki
  * https://github.com\/bbbradsmith\/huffmunch
-
+ * https://wiki.nesdev.com/w/index.php/Text_compression
