@@ -8,6 +8,7 @@ C64 programming playground. Examples, code fragments, etc.
  * Petscii editor
    - http://petscii.krissz.hu/
    - https://www.lvllvl.com/
+ * Random Numbers by XorShift: https://codebase64.org/doku.php?id=base:16bit_xorshift_random_generator
 
 ## Compression ##
 
