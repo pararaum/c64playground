@@ -13,7 +13,6 @@ loop1:
 	P_loadb REGSRC,REGACC
 	P_storeb REGACC,REGDST
 	P_inc	REGSRC
-	nop
 	P_inc	REGDST
 	P_transfer	REGSRC,REGACC
 	P_sub		REGEND,REGACC
