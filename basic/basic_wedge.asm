@@ -67,7 +67,7 @@ _found:
 	beq	_command
 	cmp	#$99		; PRINT
 	beq	_printcmd
-	ldx	#17		; Undefined statement error.
+	ldx	#17		; Undefined statement error. See https://sta.c64.org/cbm64baserr.html.
 	jmp	(IERROR)
 _command:
 	lda	#$93
