@@ -1,0 +1,3 @@
+[submodule "external/c64loader"]
+	path = external/c64loader
+	url = https://github.com/cadaver/c64loader.git
