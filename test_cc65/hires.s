@@ -21,6 +21,7 @@ _main:
 	sei
 	lda	$1
 	pha
+	;; https://www.codebase64.org/doku.php?id=base:memory_management
 	lda	#$30		; All ram configuration.
 	sta	$1
 	lda	#$56
@@ -45,6 +46,8 @@ l1:	P_storeb $2,$2
 	sta	$1
 	cli
 	inc	$d020
+	tsx
+	txa
 	rts
 
 
