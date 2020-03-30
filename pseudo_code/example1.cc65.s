@@ -6,7 +6,7 @@
 	REGACC	= $a3
 
 	.code
-	P_loadi	REGSRC,$a000
+_main:	P_loadi	REGSRC,$a000
 	P_loadi REGEND,$a000+1000
 	P_loadi	REGDST,$0400
 loop1:
@@ -21,8 +21,13 @@ loop1:
 
 	.segment "STARTUP"
 	NOP
+	jsr	_main
 	NOP
-	NOP
+	.ifdef __SIM6502__
+	jmp	$FFF9
+	.else
+	rts
+	.endif
 
 	.segment "INIT"
 

@@ -1,5 +1,8 @@
 #! /usr/bin/make -f
+
 OBJS = hello.o hellotext.o
+BINS = a.out hello linked_list
+
 all:
 	@echo make byhand
 	@echo make cl65
@@ -24,4 +27,5 @@ cl65:
 	cl65 -O -t c64 hello.c hellotext.s
 
 clean:
-	rm -f a.out hello *.o
+	rm -f *.o
+	rm -f $(BINS)
