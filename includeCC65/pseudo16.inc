@@ -142,3 +142,11 @@
 	inc	dst+1
 skip:
 .endmacro
+
+.macro	P_dec	dst
+	.local	skip
+	lda	dst
+	bne	skip
+	dec	dst+1
+skip:	dec	dst
+.endmacro
