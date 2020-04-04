@@ -46,7 +46,7 @@ groupdat :: BL.ByteString -- ^ ByteString to count the occurences of the bytes.
 groupdat = fmap (fromIntegral . BL.length &&& BL.head) . BL.group
 
 
--- |Compress a ByteString and get the rle compressed bytestring where the code word version is used.
+-- | Compress a ByteString and get the rle compressed bytestring where the code word version is used.
 rleCrunchCodeword :: Word8               -- ^ The code word to use
                  -> BL.ByteString       -- ^ The ByteString to compress
                  -> BL.ByteString       -- ^ Compressed ByteString
