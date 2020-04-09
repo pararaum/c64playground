@@ -91,11 +91,11 @@
 
 .MACRO	P_sub	src, dst
 	sec
-	lda src
-	sbc dst
+	lda dst
+	sbc src
 	sta dst
-	lda src+1
-	sbc dst+1
+	lda dst+1
+	sbc src+1
 	sta dst+1
 .endmacro
 
@@ -136,11 +136,11 @@
 .endmacro
 
 .macro	P_inc	dst
-	.local	skip
+	.local	@skip
 	inc	dst
-	bne	skip
+	bne	@skip
 	inc	dst+1
-skip:
+@skip:
 .endmacro
 
 .macro	P_dec	dst
