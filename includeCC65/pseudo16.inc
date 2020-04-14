@@ -144,9 +144,9 @@
 .endmacro
 
 .macro	P_dec	dst
-	.local	skip
+	.local	@skip
 	lda	dst
-	bne	skip
+	bne	@skip
 	dec	dst+1
-skip:	dec	dst
+@skip:	dec	dst
 .endmacro
