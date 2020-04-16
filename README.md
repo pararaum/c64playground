@@ -9,6 +9,11 @@ C64 programming playground. Examples, code fragments, etc.
    - http://petscii.krissz.hu/
    - https://www.lvllvl.com/
  * Random Numbers by XorShift: https://codebase64.org/doku.php?id=base:16bit_xorshift_random_generator
+ * Programming Tricks:
+   - http://www.ffd2.com/fridge/tips.html
+   - https://wiki.nesdev.com/w/index.php/Programming_with_unofficial_opcodes
+   - https://wiki.nesdev.com/w/index.php/6502_assembly_optimisations
+   - http://forum.6502.org/viewtopic.php?f=2&t=1764
 
 ## Compression ##
 
