@@ -279,6 +279,9 @@ l184	sta $d027,x		;Sprite colour is dark green
 	sta $d026		;Sprite multicolour for 11
 	lda #$ff
 	sta $d015		;turn all sprites on
+	;; Double sprites in X. TODO: make configurable.
+	lda #$ff
+	sta	$d01d
 	rts
 
 	;; Set sprite pointers according to table
