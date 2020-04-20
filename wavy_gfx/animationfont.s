@@ -1,7 +1,21 @@
 
 	.export	animationfont
 	.export animationfont_end
+	.export	wavymation_copy_font
+	.import wavymation_chargenptr
 
+	.code
+wavymation_copy_font:
+	lda	animationfont
+	ldx	#0
+@l:	lda	animationfont,x
+	sta	wavymation_chargenptr,x
+	inx
+	cpx	#<(animationfont_end-animationfont)
+	bne	@l
+	rts
+
+	.data
 animationfont:
 	.res	8,0
 	;;
