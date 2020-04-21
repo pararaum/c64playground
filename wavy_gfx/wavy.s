@@ -4,6 +4,7 @@
 	.export wavymation_chargenptr
 	.import fillcolram
 	.import	wavymation_copy_font
+	.import wavymation_animate_font
 
 	SCREENPTR = $c000
 	CHARGENPTR = $c800
@@ -22,6 +23,20 @@ _main:
 	jsr	initialise_screenptr_n_chargen
 	jsr	wavymation_copy_font
 	jsr	fill
+	sei
+@l:
+	jsr	waitframe
+	jsr	waitframe
+	jsr	waitframe
+	jsr	wavymation_animate_font
+	jmp	@l
+	rts
+
+waitframe:
+@l1:	bit	$d011
+	bmi	@l1
+@l2:	bit	$d011
+	bpl	@l2
 	rts
 
 fill:
@@ -34,8 +49,11 @@ fill:
 	sbc	#12
 	bcs	@ml		; Modulus loop.
 	adc	#12
+	clc
+	adc	#1
 	sta	SCREENPTR,x
 	@fillptr = *-2
+	sbc	#0		; C is always cleared by the above operations.
 	pla
 	clc
 	adc	#1

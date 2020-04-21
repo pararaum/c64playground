@@ -2,6 +2,7 @@
 	.export	animationfont
 	.export animationfont_end
 	.export	wavymation_copy_font
+	.export wavymation_animate_font
 	.import wavymation_chargenptr
 
 	.code
@@ -13,6 +14,26 @@ wavymation_copy_font:
 	inx
 	cpx	#<(animationfont_end-animationfont)
 	bne	@l
+	rts
+
+wavymation_animate_font:
+	ldx	#0
+@l1:	lda	wavymation_chargenptr+8,x ; Save first character.
+	pha
+	inx
+	cpx	#8
+	bne	@l1
+	ldx	#0
+@l2:	lda	wavymation_chargenptr+16,x
+	sta	wavymation_chargenptr+8,x
+	inx
+	cpx	#8*(12-1)
+	bne	@l2
+	ldx	#8-1
+@l3:	pla
+	sta	wavymation_chargenptr+8+11*8,x
+	dex
+	bpl	@l3
 	rts
 
 	.data
