@@ -1,5 +1,5 @@
 ;;; LZ4 data decompressor for C64, based on the code of Peter Ferrie
-;	[http: //pferrie.host22.com/misc/appleii.htm], parts were also
+;	[http://pferrie.host22.com/misc/appleii.htm], parts were also
 ;	taken from the xBIOS page
 ;	[https://xxl.atari.pl/lz4-decompressor/.
 
