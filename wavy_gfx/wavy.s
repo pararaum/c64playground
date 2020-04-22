@@ -2,17 +2,24 @@
 	.export	_main
 	.export SCREENPTR
 	.export wavymation_chargenptr
+	.export wavymation_screenptr
 	.import fillcolram
 	.import	wavymation_copy_font
 	.import wavymation_animate_font
+	.import wavymation_generate_image
 
 	SCREENPTR = $c000
 	CHARGENPTR = $c800
 	wavymation_chargenptr = CHARGENPTR
+	wavymation_screenptr = SCREENPTR
 
 	.code
 	.include "screen_n_char.inc"
-	
+
+	.rodata
+logo:
+	.incbin	"logo.t7d.40x25.pbm",9
+
 	.code
 _main:
 	lda	#5
@@ -23,6 +30,9 @@ _main:
 	jsr	initialise_screenptr_n_chargen
 	jsr	wavymation_copy_font
 	jsr	fill
+	lda	#<logo
+	ldx	#>logo
+	jsr	wavymation_generate_image
 	sei
 @l:
 	jsr	waitframe
@@ -31,6 +41,7 @@ _main:
 	jsr	wavymation_animate_font
 	jmp	@l
 	rts
+
 
 waitframe:
 @l1:	bit	$d011
