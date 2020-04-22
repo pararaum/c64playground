@@ -8,6 +8,8 @@
 	.import wavymation_animate_font
 	.import wavymation_generate_image
 
+	RASTERIRQROW = 250
+	SKIPFRAMESANIM = 4
 	SCREENPTR = $c000
 	CHARGENPTR = $c800
 	wavymation_chargenptr = CHARGENPTR
@@ -17,6 +19,7 @@
 	.include "screen_n_char.inc"
 
 	.rodata
+muzak:	.incbin	"Waitress_on_Roller_Skates.sid",$7c+2
 logo:
 	.incbin	"logo.t7d.40x25.pbm",9
 sieve:
@@ -26,22 +29,66 @@ sieve:
 framecounter:	.byte	0
 
 	.macro	wavycall	img
-	.scope
-	lda	#509/3
-	sta	framecounter
 	lda	#<img
 	ldx	#>img
 	jsr	wavymation_generate_image
-loop:
 	jsr	waitframe
 	jsr	waitframe
 	jsr	waitframe
-	jsr	wavymation_animate_font
-	dec	framecounter
-	bne	loop
-	.endscope
 	.endmacro
-	
+
+	.data
+old_irq_isr:	.word	0
+	.code
+interrupt_service_routine:
+	dec	framecounter
+	dec	@anmctr
+	bpl	@noanim
+	jsr	wavymation_animate_font
+	lda	#SKIPFRAMESANIM-1
+	sta	@anmctr
+@noanim:
+	jsr	muzak+3
+	asl	$d019		; Acknowledge interrupt...
+	jmp	(old_irq_isr)
+@anmctr: .byte 0
+	.code
+waitframe:
+	lda	#509/3
+	sta	framecounter
+@l:	lda	framecounter
+	bne	@l
+	rts
+
+
+setup_irq:
+	lda	$314
+	sta	old_irq_isr
+	lda	$315
+	sta	old_irq_isr+1
+	lda	#<interrupt_service_routine
+	sta	$314
+	lda	#>interrupt_service_routine
+	sta	$315
+	;; Disable CIA timer interrupts.
+        lda     #$7f
+        sta     $dc0d
+        sta     $dd0d
+	;; Clear pending interrupts.
+        lda     $dc0d
+        lda     $dd0d
+        lda     #$7f
+        and     $d011           ; Set MSB of raster to zero
+        sta     $d011
+        lda     #RASTERIRQROW
+        sta     $d012
+        ;; http://unusedino.de/ec64/technical/project64/mapping_c64.html
+        ; 53274         $D01A          IRQMASK, enable raster interrupt.
+        lda     #%00000001
+        sta     $d01a
+        rts
+
+
 	.code
 _main:
 	lda	#5
@@ -51,55 +98,14 @@ _main:
 	jsr	fillcolram
 	jsr	initialise_screenptr_n_chargen
 	jsr	wavymation_copy_font
-	jsr	fill
-	lda	#<logo
-	ldx	#>logo
-	jsr	wavymation_generate_image
+	lda	#0
+	jsr	muzak
 	sei
+	jsr	setup_irq
+	cli
+mainloop:
 	wavycall	logo
 	wavycall	sieve
+	jmp	mainloop
 	brk
 
-
-waitframe:
-@l1:	bit	$d011
-	bmi	@l1
-@l2:	bit	$d011
-	bpl	@l2
-	rts
-
-fill:
-	ldy	#25-1
-	lda	#0
-@l2:	ldx	#0
-@l1:
-	pha			; Store current value
-@ml:	sec
-	sbc	#12
-	bcs	@ml		; Modulus loop.
-	adc	#12
-	clc
-	adc	#1
-	sta	SCREENPTR,x
-	@fillptr = *-2
-	sbc	#0		; C is always cleared by the above operations.
-	pla
-	clc
-	adc	#1
-	inx
-	cpx	#40
-	bne	@l1
-	sec
-	sbc	#39
-	pha
-	lda	@fillptr
-	clc
-	adc	#40
-	bcc	@s
-	inc	@fillptr+1
-@s:
-	sta	@fillptr
-	pla
-	dey
-	bne	@l2
-	rts
