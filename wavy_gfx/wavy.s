@@ -19,7 +19,29 @@
 	.rodata
 logo:
 	.incbin	"logo.t7d.40x25.pbm",9
+sieve:
+	.incbin	"image.40x25.sieve.pbm",9
 
+	.data
+framecounter:	.byte	0
+
+	.macro	wavycall	img
+	.scope
+	lda	#509/3
+	sta	framecounter
+	lda	#<img
+	ldx	#>img
+	jsr	wavymation_generate_image
+loop:
+	jsr	waitframe
+	jsr	waitframe
+	jsr	waitframe
+	jsr	wavymation_animate_font
+	dec	framecounter
+	bne	loop
+	.endscope
+	.endmacro
+	
 	.code
 _main:
 	lda	#5
@@ -34,13 +56,9 @@ _main:
 	ldx	#>logo
 	jsr	wavymation_generate_image
 	sei
-@l:
-	jsr	waitframe
-	jsr	waitframe
-	jsr	waitframe
-	jsr	wavymation_animate_font
-	jmp	@l
-	rts
+	wavycall	logo
+	wavycall	sieve
+	brk
 
 
 waitframe:
