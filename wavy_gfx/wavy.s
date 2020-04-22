@@ -24,6 +24,10 @@ logo:
 	.incbin	"logo.t7d.40x25.pbm",9
 sieve:
 	.incbin	"image.40x25.sieve.pbm",9
+pacman:
+	.incbin	"image.40x25.pac-man.pbm",9
+ghost:
+	.incbin	"image.40x25.ghost.pbm",9
 
 	.data
 framecounter:	.byte	0
@@ -106,6 +110,8 @@ _main:
 mainloop:
 	wavycall	logo
 	wavycall	sieve
+	wavycall	pacman
+	wavycall	ghost
 	jmp	mainloop
 	brk
 
