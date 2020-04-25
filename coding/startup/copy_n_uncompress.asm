@@ -7,7 +7,7 @@
 
 	VARTAB = $2D
 	VARTABHI = VARTAB+1
-DECRUNCHTGT		=	$0350	; So there is something happening on the screen while decrunching.
+DECRUNCHTGT		=	$0360	; So there is something happening on the screen while decrunching.
 DEFAULTDECRUNCHAT	=	$0801-2 ;Load address is in front.
 ;;; End of source data (byte after the end)
 LZ4_SRCEND_PTR		=	$57
@@ -32,14 +32,15 @@ end_of_basic:
 	lda	VARTABHI
 	sta	src+1
 lzql1:
-	dec	src
-	bne	s1
+	;; https://wiki.nesdev.com/w/index.php/Synthetic_instructions for decremt 16 bit. Do not forget!
+	lda	src
+	bne	nodec1
 	dec	src+1
-s1:
-	dec	dst
-	bne	s2
+nodec1:	dec	src
+	lda	dst
+	bne	nodec2
 	dec	dst+1
-s2:
+nodec2:	dec	dst
 	lda	$FFFF
 	src=*-2
 	sta	$ff80
@@ -143,11 +144,11 @@ done:	pla
 	lda	LZ4_DST_PTR+1
 	sta	VARTABHI
 	sta	$af
+	lda	#0
+	sta	$0800		; Make sure this is a zero byte otherwise you will always get a SYNTAX ERROR.
 	jsr	$a659		; CLR ［https://www.pagetable.com/c64disasm/#A659］.
 	jsr	$a533		; Rechain lines ［https://www.pagetable.com/c64disasm/#A533］.
 	cli
-	lda	#0
-	sta	$0800		; Make sure this is a zero byte otherwise you will always get a SYNTAX ERROR.
 	jmp	$a7ae		; Warm start
 
 docopy:
