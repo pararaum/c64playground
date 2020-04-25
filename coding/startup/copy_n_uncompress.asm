@@ -1,4 +1,4 @@
-;;; xa -M -I ../include/ -l /dev/stdout 'copy_n_uncompress.asm'
+;;; xa -o copy_n_uncompress.stub -M -I ../include/ -l /dev/stdout 'copy_n_uncompress.asm'
 ;;; Create with "lz4 -9 -BD --no-content-size --no-frame-crc".
 ;;; Further reading:
 ;;;  • https://xxl.atari.pl/lz4-decompressor/
