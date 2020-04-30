@@ -12,11 +12,11 @@ module Pairs ( getPairs,
                RePair (..)
              ) where
 
-
+import Data.Word (Word8)
 import Data.List
 import Huffman (freq)
 
-data RePair = RPLiteral Char
+data RePair = RPLiteral Word8
             | RPPair Int RePair RePair deriving (Show)
 
 type RePairList = [RePair]
@@ -37,6 +37,10 @@ instance Ord RePair where
   (RPPair a _ _) `compare` (RPLiteral b) = a `compare` fromEnum b
   (RPPair a _ _) `compare` (RPPair b _ _) = a `compare` b
 
+rePairValue :: RePair -> Int
+rePairValue (RPLiteral x) = fromEnum x
+rePairValue (RPPair x _ _) = x
+
 
 -- | Compress the stream using the pair-compression algorithm
 compressPairs :: RPState -- ^ Original state with an empty pairList and the original dataStream to be compressed.
@@ -48,7 +52,10 @@ compressPairs o@(RPState s l) = let freqs = getPairFreq s
                                     np = insertPair tf l
                                     -- ^ Create a new pair using the old list of pairs.
                                     s' = replacePair np s
-                                    -- ^ The stream with the pair of tokens with the top-most frequency replaced by the newly generated pair.
+                                    -- ^ The stream with the pair of
+                                    -- tokens with the top-most
+                                    -- frequency replaced by the newly
+                                    -- generated pair.
                                     l' = l ++ [np]
                                     -- ^ New list of tokens with the new token added.
                                 in if not (null freqs) && (tc > 1) then compressPairs (RPState s' l') else o
