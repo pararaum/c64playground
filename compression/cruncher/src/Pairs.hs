@@ -60,6 +60,24 @@ compressPairs o@(RPState s l) = let freqs = getPairFreq s
                                     -- ^ New list of tokens with the new token added.
                                 in if not (null freqs) && (tc > 1) then compressPairs (RPState s' l') else o
 
+-- | Compress the stream using the pair-compression algorithm. This version has a maximum depth.
+compressPairsWMaxDepth :: Int -- ^ Maximum depth, reduced until zero.
+                       -> RPState -- ^ Original state with an empty pairList and the original dataStream to be compressed.
+                       -> RPState -- ^ Output of compressed stream and list of generated pairs.
+compressPairsWMaxDepth md o@(RPState s l) = let freqs = getPairFreq s
+                                                -- ^ Get the frequencies of the pairs
+                                                (tc, tf) = head freqs
+                                                -- ^ Get the highest frequency.
+                                                np = insertPair tf l
+                                                -- ^ Create a new pair using the old list of pairs.
+                                                s' = replacePair np s
+                                                -- ^ The stream with the pair of
+                                                -- tokens with the top-most
+                                                -- frequency replaced by the newly
+                                                -- generated pair.
+                                                l' = l ++ [np]
+                                                -- ^ New list of tokens with the new token added.
+                                            in if md > 0 && not (null freqs) && (tc > 1) then compressPairsWMaxDepth (md - 1) (RPState s' l') else o
 getPairs :: Ord a => [a] -> [(a,a)]
 getPairs [] = []
 getPairs [x] = []
@@ -71,18 +89,6 @@ getPairFreq = sortBy (flip compare) . freq . getPairs
 
 insertPair :: (RePair, RePair) -> RePairList -> RePair
 insertPair (x, y) ls = RPPair (256 + length ls) x y
-
--- replacePair__ :: RePair -> RePair -> [RePair] -> [RePair]
--- replacePair__ a b (x:y:zs) | a == x && b == y = RPPair rs a b : replacePair a b zs
---                            | otherwise = x : replacePair a b (y:zs)
---   where rs = -1
--- replacePair__ _ _ (x:[]) = [x]
--- replacePair :: RePair -> RePair -> RPState -> RPState
--- replacePair a b (RPState s l) = let np = insertPair (a, b) l
---                                     f (x:y:zs) | a == x && b == y = np : zs
---                                                | otherwise = x:y:zs
---                                     s' = s ++ [np]
---                                 in replacePair a b (RPState s' (tail $ f l))
 
 replacePair :: RePair -> [RePair] -> [RePair]
 replacePair n@(RPPair _ a b) (x:y:zs) | a == x && b == y = n : replacePair n zs
