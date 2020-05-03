@@ -44,8 +44,8 @@ vlcRleComp b = run $ zip bgs ls'
         run :: [(BL.ByteString, Gamma Word16 Word16)] -> BL.ByteString
         run xs = runPutL $ runEncode $ mapM_ (uncurry f) xs >> flush
         f :: BL.ByteString -> Gamma Word16 Word16 -> Coding PutM ()
-        -- TODO: Currently does not work as the stream is flushed after each count information!
         f x l = do encode l
+                   -- The function putWord8 cannot be used as the streams appears to be flushed.
                    mapM_ (putBit . testBit (BL.head x)) [7,6..0]
                    -- Howto use? putBits 0 16 (0x5555::Word16)
 
