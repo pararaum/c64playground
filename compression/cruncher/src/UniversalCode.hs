@@ -46,15 +46,6 @@ vlcRleComp b = run $ zip bgs ls'
         f :: BL.ByteString -> Gamma Word16 Word16 -> Coding PutM ()
         -- TODO: Currently does not work as the stream is flushed after each count information!
         f x l = do encode l
-                   putBit (testBit (BL.head x) 7)
-                   putBit (testBit (BL.head x) 6)
-                   putBit (testBit (BL.head x) 5)
-                   putBit (testBit (BL.head x) 4)
-                   putBit (testBit (BL.head x) 3)
-                   putBit (testBit (BL.head x) 2)
-                   putBit (testBit (BL.head x) 1)
-                   putBit (testBit (BL.head x) 0)
+                   mapM_ (putBit . testBit (BL.head x)) [7,6..0]
                    -- Howto use? putBits 0 16 (0x5555::Word16)
-                   --putBits 0 7 $ BL.head x
-                   --putWord8 $ BL.head x
 
