@@ -9,7 +9,9 @@ Links:
 https://en.wikipedia.org/wiki/Byte_pair_encoding
 -}
 module Pairs ( getPairs,
-               RePair (..)
+               compressPairsWMaxDepth,
+               RePair (..),
+               RPState (..)
              ) where
 
 import Data.Word (Word8)

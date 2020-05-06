@@ -12,6 +12,7 @@ https://en.wikipedia.org/wiki/Elias_gamma_coding.
 -}
 
 module UniversalCode ( w16ToStream
+                     , vlcRleComp
                      ) where
 
 import Data.Bits (testBit)
