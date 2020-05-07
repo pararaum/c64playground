@@ -49,4 +49,3 @@ vlcRleComp b = run $ zip bgs ls'
                    -- The function putWord8 cannot be used as the streams appears to be flushed.
                    mapM_ (putBit . testBit (BL.head x)) [7,6..0]
                    -- Howto use? putBits 0 16 (0x5555::Word16)
-

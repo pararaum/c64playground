@@ -10,6 +10,7 @@ https://en.wikipedia.org/wiki/Byte_pair_encoding
 -}
 module Pairs ( getPairs,
                compressPairsWMaxDepth,
+               rePairValue,
                RePair (..),
                RPState (..)
              ) where
@@ -80,6 +81,7 @@ compressPairsWMaxDepth md o@(RPState s l) = let freqs = getPairFreq s
                                                 l' = l ++ [np]
                                                 -- ^ New list of tokens with the new token added.
                                             in if md > 0 && not (null freqs) && (tc > 1) then compressPairsWMaxDepth (md - 1) (RPState s' l') else o
+
 getPairs :: Ord a => [a] -> [(a,a)]
 getPairs [] = []
 getPairs [x] = []
