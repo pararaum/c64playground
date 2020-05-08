@@ -17,6 +17,7 @@ import Data.Bits.Coding (Coding, putBit, putBits)
 import Data.Bytes.Put (runPutL, flush)
 import Data.Binary.Get
 import Data.Word
+import Math.NumberTheory.Logarithms (intLog2)
 import qualified Data.ByteString.Lazy as BL
 import System.Console.CmdArgs
 import Text.Printf
@@ -49,16 +50,15 @@ compPair m c = compressPairsWMaxDepth m is
         is = RPState (map RPLiteral $ BL.unpack c') [] -- initial state
 
 testBits :: [Int] -> BL.ByteString
-testBits xs = runPutL $ runEncode $ do putBit True
-                                       putBit True
-                                       putBit True
-                                       putBit True
-                                       putBit True
-                                       putBit True
-                                       putBit True
-                                       putBit True
-                                       mapM_ (putBits 11 0) xs
+testBits xs = runPutL $ runEncode $ do mapM_ (putBits 11 0) xs
                                        flush
+
+encodePairs :: Int -> RPState -> BL.ByteString
+encodePairs mlpl s = runPutL $ runEncode $ do mapM_ pB pl' >> flush
+  where pl = pairList s
+        pl' = map rePairPair pl
+        pB (x, y) = putBits b 0 x >> putBits b 0 y -- put the bits
+        b = intLog2 $ mlpl + 256
 
 -- | Call the cruncher and compress files.
 main :: IO ()
@@ -71,5 +71,7 @@ main = do cpar <- cmdArgs cliparam
           print $ pairList compressed
           putStrLn $ printf "$%04X -> $%04X" (BL.length contents) (length $ dataStream compressed)
           putStrLn $ printf "%5d -> %5d" (BL.length contents) (length $ dataStream compressed)
+          putStrLn "@PAIRS@"
+          BL.putStr $ encodePairs (maxLenPairList cpar) compressed
           putStrLn "Cruncher 7777" 
           BL.putStr $ testBits $ map rePairValue $ dataStream compressed

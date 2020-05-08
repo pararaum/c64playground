@@ -11,6 +11,7 @@ https://en.wikipedia.org/wiki/Byte_pair_encoding
 module Pairs ( getPairs,
                compressPairsWMaxDepth,
                rePairValue,
+               rePairPair,
                RePair (..),
                RPState (..)
              ) where
@@ -44,6 +45,11 @@ rePairValue :: RePair -> Int
 rePairValue (RPLiteral x) = fromEnum x
 rePairValue (RPPair x _ _) = x
 
+-- | Get the pair of a RePair. This, of course, only works if the item
+-- is a RPPair otherwise an exception is thrown.
+rePairPair :: RePair -> (Int, Int)
+rePairPair (RPPair _ x y) = (rePairValue x, rePairValue y)
+rePairPair _ = error "can not make a pair out of something that is not a RPPair"
 
 -- | Compress the stream using the pair-compression algorithm
 compressPairs :: RPState -- ^ Original state with an empty pairList and the original dataStream to be compressed.
