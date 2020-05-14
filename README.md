@@ -14,6 +14,9 @@ C64 programming playground. Examples, code fragments, etc.
    - https://wiki.nesdev.com/w/index.php/Programming_with_unofficial_opcodes
    - https://wiki.nesdev.com/w/index.php/6502_assembly_optimisations
    - http://forum.6502.org/viewtopic.php?f=2&t=1764
+ * Screen Timing/Bad Lines
+   - https://nurpax.github.io/posts/2018-06-19-bintris-on-c64-part-5.html
+   - https://dustlayer.com/vic-ii/2013/4/25/vic-ii-for-beginners-beyond-the-screen-rasters-cycle
 
 ## Compression ##
 
