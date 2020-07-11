@@ -19,6 +19,11 @@ C64 programming playground. Examples, code fragments, etc.
    - https://nurpax.github.io/posts/2018-06-19-bintris-on-c64-part-5.html
    - https://dustlayer.com/vic-ii/2013/4/25/vic-ii-for-beginners-beyond-the-screen-rasters-cycle
 
+## BASIC ##
+
+ * http://retro.lonningdal.net/home.php?page=Adventure&part=100 Basic optimisation
+ * https://www.atarimagazines.com/compute/issue38/087_1_COMMODORE_REM_REVEALED.php REM and SHIFT+L, etc.
+
 ## Compression ##
 
  * http://www.retrosoftware.co.uk/forum/viewtopic.php?f=73&t=999 (lz4, lzsa, and other)
@@ -29,3 +34,6 @@ C64 programming playground. Examples, code fragments, etc.
  * http://madteam.atari8.info/index.php?prod=uzytki
  * https://github.com/bbbradsmith/huffmunch
  * https://wiki.nesdev.com/w/index.php/Text_compression
+ * General Compression Links
+   - https://modexp.wordpress.com/2020/05/27/komposite-shellcode/
+
