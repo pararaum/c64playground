@@ -4,7 +4,7 @@
 AFLAGS = -DNDEBUG
 AINC = -I includeCC65
 PROJECT = text_displayer
-OBJS = vicmoiety.o irqmoiety.o
+OBJS = vicmoiety.o irqmoiety.o text_output.o
 LINKCONF = muzak.cfg
 
 all:	$(PROJECT)

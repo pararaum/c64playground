@@ -1,14 +1,19 @@
 ;;; cl65 -m /dev/stderr  -C muzak.cfg text_displayer.s
 stubpos	= $32e
 charsetaddr = $0800
+tedi_screen_ram = $0400
 
 	.import	muzak_init
 	.import	set_irq
 	.import vic_init
+	.import	tedi_chrout
+	.import	tedi_init
+	.import	tedi_output_text
+
 	.export main
 	.export charsetdata
 	.export charsetaddr
-
+	.export tedi_screen_ram
 
 	.segment "LOADADDR"
 	.word	$0801
@@ -59,28 +64,52 @@ charsetdata:
 	
 	.data
 	.byte "the 7th division"
-
-
-	.bss
-counter:	.res	1
+txt_1:
+	.incbin	"doc1.seq"
+	.byte	0
+txt_2:
+	.incbin	"doc2.seq"
+	.byte	0
+txt_3:
+	.incbin	"doc3.seq"
+	.byte	0
 
 
 	.code
-main:
-	nop
+wfk:
 @l1:
 	jsr	$ffe4		; GETIN
 	beq	@l1
 	cmp	#3		; RUN/STOP
 	beq	@out
-	jsr	$ffd2
-	jmp	main
-@out:
+	;; 	jsr	$ffd2
+	cmp	#$20
+	beq	@ret
+	cmp	#$d
+	beq	@ret
+	jmp	@l1
+@out:	jmp final_code
+@ret:	rts
+
+main:
+	jsr	tedi_init
+	lda	#<txt_1
+	ldx	#>txt_1
+	jsr	tedi_output_text
+	jsr	wfk
+	lda	#<txt_2
+	ldx	#>txt_2
+	jsr	tedi_output_text
+	jsr	wfk
+	lda	#<txt_3
+	ldx	#>txt_3
+	jsr	tedi_output_text
+	jsr	wfk
+final_code:
 	lda	#0
 	ldx	#0
 @l2:	sta	$0800,x
 	dex
 	bne	@l2
 	brk
-	
-	
+

@@ -11,6 +11,12 @@ irq:
 	inc	$d020
 	jsr	muzak_play
 	dec	$d020
+;	;;
+;	ldy	#3
+;@l:	lda	$dc08,y
+;	sta	$0400,y
+;	dey
+;	bpl	@l
 	asl	$d019		; Acknowledge IRQ
 	jmp	(oldirq)
 
