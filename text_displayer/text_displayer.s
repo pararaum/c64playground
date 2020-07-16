@@ -92,6 +92,14 @@ wfk:
 @ret:	rts
 
 main:
+	lda	$300
+	sta	basic_warmstart_ptr
+	lda	$300+1
+	sta	basic_warmstart_ptr+1
+	lda	#<basic_warmstart
+	sta	$0300
+	lda	#>basic_warmstart
+	sta	$0301
 	jsr	tedi_init
 	lda	#<txt_1
 	ldx	#>txt_1
@@ -112,4 +120,19 @@ final_code:
 	dex
 	bne	@l2
 	brk
-
+basic_warmstart:
+	ldx	#0
+@l1:	lda	@text,x
+	beq	@out
+	jsr	$ffd2
+	inx
+	bne	@l1
+	;; For colour codes, see https://www.c64-wiki.com/wiki/PETSCII_Codes_in_Listings.
+@text:	.byte	$9F,"CODE: PARARAUM/T7D",$D,"MUSIC: HANS JUERGEN EHRENTRAUT",$D,$9A,0
+@out:	ldx	#$80
+	lda	basic_warmstart_ptr
+	sta	$0300
+	lda	basic_warmstart_ptr+1
+	sta	$0300+1
+	jmp	$FFFF
+	basic_warmstart_ptr = *-2
