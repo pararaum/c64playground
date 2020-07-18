@@ -1,4 +1,5 @@
 	.export vic_init
+	.export tedi_switch_charset
 	.import main
 	.import charsetdata
 	.import charsetaddr
@@ -6,6 +7,20 @@
 CIAA = $dc00
 Control_Timer_A = 14
 
+	.code
+tedi_switch_charset:
+	pha
+	bcc	@build_in
+	;; Screen at $400, charset at $800
+	lda	#(($0400/$0400)<<4)|<(charsetaddr/$0400)
+	sta	$d018
+	bne	@out
+@build_in:
+	lda	#(($0400/$0400)<<4)|<($1000/$0400)
+	sta	$d018
+@out:	pla
+	rts
+	
 vic_init:
 	jsr	init_cia_tod
 	lda	#7		; Yellow

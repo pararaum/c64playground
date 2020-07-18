@@ -9,6 +9,7 @@ tedi_screen_ram = $0400
 	.import	tedi_chrout
 	.import	tedi_init
 	.import	tedi_output_text
+	.import tedi_switch_charset
 
 	.export main
 	.export charsetdata
@@ -63,15 +64,16 @@ charsetdata:
 
 	
 	.data
-	.byte "the 7th division"
 txt_1:
-	.incbin	"doc1.seq"
+	.incbin	"hill.seq"
 	.byte	0
 txt_2:
-	.incbin	"doc2.seq"
+	.incbin	"klammeraffe.seq"
 	.byte	0
 txt_3:
-	.incbin	"doc3.seq"
+	;; https://csdb.dk/release/?id=167761
+	;; imported via https://www.lvllvl.com/
+	.incbin	"PETbench.seq"
 	.byte	0
 
 
@@ -92,23 +94,20 @@ wfk:
 @ret:	rts
 
 main:
-	lda	$300
-	sta	basic_warmstart_ptr
-	lda	$300+1
-	sta	basic_warmstart_ptr+1
-	lda	#<basic_warmstart
-	sta	$0300
-	lda	#>basic_warmstart
-	sta	$0301
+	jsr	prepare_basic_warmstart
 	jsr	tedi_init
 	lda	#<txt_1
 	ldx	#>txt_1
 	jsr	tedi_output_text
 	jsr	wfk
+	sec
+	jsr	tedi_switch_charset
 	lda	#<txt_2
 	ldx	#>txt_2
 	jsr	tedi_output_text
 	jsr	wfk
+	clc
+	jsr	tedi_switch_charset
 	lda	#<txt_3
 	ldx	#>txt_3
 	jsr	tedi_output_text
@@ -120,6 +119,18 @@ final_code:
 	dex
 	bne	@l2
 	brk
+
+prepare_basic_warmstart:
+	lda	$300
+	sta	basic_warmstart_ptr
+	lda	$300+1
+	sta	basic_warmstart_ptr+1
+	lda	#<basic_warmstart
+	sta	$0300
+	lda	#>basic_warmstart
+	sta	$0301
+	rts
+	
 basic_warmstart:
 	ldx	#0
 @l1:	lda	@text,x
