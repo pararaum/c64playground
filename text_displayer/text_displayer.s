@@ -75,7 +75,10 @@ txt_3:
 	;; imported via https://www.lvllvl.com/
 	.incbin	"PETbench.seq"
 	.byte	0
-
+txt_4:
+	;; https://csdb.dk/release/?id=136635
+	.incbin	"retro-z.seq"
+	.byte	0
 
 	.code
 wfk:
@@ -112,6 +115,10 @@ main:
 	ldx	#>txt_3
 	jsr	tedi_output_text
 	jsr	wfk
+	lda	#<txt_4
+	ldx	#>txt_4
+	jsr	tedi_output_text
+	jsr	wfk
 final_code:
 	lda	#0
 	ldx	#0
@@ -139,7 +146,9 @@ basic_warmstart:
 	inx
 	bne	@l1
 	;; For colour codes, see https://www.c64-wiki.com/wiki/PETSCII_Codes_in_Listings.
-@text:	.byte	$9F,"CODE: PARARAUM/T7D",$D,"MUSIC: HANS JUERGEN EHRENTRAUT",$D,$9A,0
+@text:	.byte	$9F,"CODE: PARARAUM/T7D",$D,"MUSIC: HANS JUERGEN EHRENTRAUT",$D
+	.byte	"GFX: PARARAUM, DR TERRORZ, ZIILI"
+	.byte	$9A,0
 @out:	ldx	#$80
 	lda	basic_warmstart_ptr
 	sta	$0300

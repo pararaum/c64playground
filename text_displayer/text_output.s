@@ -13,6 +13,9 @@ tedi_scrptr:	.res	2
 	.zeropage
 otxtptr:	.res	2	; Pointer to the next character for text output.
 
+	.bss
+reverse_mode_bit:	.res	1
+
 	.data
 tab_petscii2screencode:
 										;PETSCII RANGE
@@ -39,6 +42,8 @@ tedi_init:
 	sta	tedi_scrptr
 	lda	#>tedi_screen_ram
 	sta	tedi_scrptr+1
+	lda	#0
+	sta	reverse_mode_bit
 	rts
 
 	.code
@@ -56,6 +61,7 @@ tedi_chrout:
 @nocontrol:
 	tax
 	lda	tab_petscii2screencode,x
+	ora	reverse_mode_bit
 	ldy	#0
 	sta	(tedi_scrptr),y
 	lda	tedi_scrptr	; Low byte of current pointer
@@ -176,7 +182,15 @@ tedi_handle_control:
 	bne	@nc15
 	lda	#15
 	sta	CURRENT_COLOR
-@nc15:
+@nc15:	cmp	#$12		; reverse on
+	bne	@nrevon
+	lda	#$80
+	sta	reverse_mode_bit
+@nrevon: cmp	#$92		; reverse off
+	bne	@nrevoff
+	lda	#$00
+	sta	reverse_mode_bit
+@nrevoff:
 @out:
 	;; $9d=cursor left
 	;; $1d=cursor right
