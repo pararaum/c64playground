@@ -15,6 +15,7 @@ LZ4_SRCEND_PTR		=	$57
 LZ4_REPEAT_COUNTER16	=	$5b
 ;;; Storage for the delta offset for match copying
 LZ4_DELTA_COPYOP16	=	$5d
+LZ4_END_OF_FORWARD_COPY =	$FFF1
 
 	.word	$0801
 	*=$0801
@@ -43,7 +44,7 @@ nodec1:	dec	src
 nodec2:	dec	dst
 	lda	$FFFF
 	src=*-2
-	sta	$ff80
+	sta	LZ4_END_OF_FORWARD_COPY
 	dst=*-2
 	lda	src
 	cmp	#<(ENDdecrunch-DECRUNCHTGT+decrunchcode)
@@ -52,7 +53,6 @@ nodec2:	dec	dst
 	cmp	#>(ENDdecrunch-DECRUNCHTGT+decrunchcode)
 	bne	lzql1
 	;; Now copy the decrunch code the save area. X has to be zero.
-	ldx	#0
 	jsr	lzql2
 	;; Destination is pointing to the beginning of the data. We have to skip the normal LZ4 header (of 11 bytes). See also https://github.com/pararaum/lz4-68k/blob/master/lz4_frame.asm.
 	lda	dst
@@ -62,16 +62,17 @@ nodec2:	dec	dst
 	lda	dst+1
 	adc	#0		; Add the carry
 	sta	LZ4_SRC_PTR+1
-	;; $ff80 is the end address as we started the copy there. The EndMark are four zeros, see https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md.
-	lda	#<($ff80-4-1)
+	;; LZ4_END_OF_FORWARD_COPY is the end address as we started the copy there. The EndMark are four zeros, see https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md.
+	lda	#<(LZ4_END_OF_FORWARD_COPY-4-1)
 	sta	LZ4_SRCEND_PTR
-	lda	#>($ff80-4-1)
+	lda	#>(LZ4_END_OF_FORWARD_COPY-4-1)
 	sta	LZ4_SRCEND_PTR+1
 	jmp	DECRUNCHTGT
-lzql2:	lda	decrunchcode,x
-	sta	DECRUNCHTGT,x
+lzql2:	ldx	#ENDdecrunch-lz4_unpack_data
+lzql2l:	lda	decrunchcode-1,x
+	sta	DECRUNCHTGT-1,x
 	dex
-	bne	lzql2
+	bne	lzql2l
 	rts
 decrunchcode:
 	* = DECRUNCHTGT
