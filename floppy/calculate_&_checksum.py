@@ -9,7 +9,7 @@ def main(fname):
         summ += char
         if summ >= 256:
             summ = (summ & 0xFF) + 1
-    with open('&' + fname, "wb") as out:
+    with open('&' + fname + ",usr", "wb") as out:
         out.write(data)
         out.write(chr(summ).encode("iso-8859-1"))
     
