@@ -80,6 +80,20 @@ txt_4:
 	.incbin	"retro-z.seq"
 	.byte	0
 
+
+	.macro	call_tedi_out	txtaddr,stdchar
+	 .if stdchar = 0
+	  sec
+	 .else
+	  clc
+	 .endif
+	 jsr	tedi_switch_charset
+	 lda	#<txtaddr
+	 ldx	#>txtaddr
+	 jsr	tedi_output_text
+	 jsr	wfk
+	.endmacro
+	
 	.code
 wfk:
 @l1:
@@ -99,26 +113,10 @@ wfk:
 main:
 	jsr	prepare_basic_warmstart
 	jsr	tedi_init
-	lda	#<txt_1
-	ldx	#>txt_1
-	jsr	tedi_output_text
-	jsr	wfk
-	sec
-	jsr	tedi_switch_charset
-	lda	#<txt_2
-	ldx	#>txt_2
-	jsr	tedi_output_text
-	jsr	wfk
-	clc
-	jsr	tedi_switch_charset
-	lda	#<txt_3
-	ldx	#>txt_3
-	jsr	tedi_output_text
-	jsr	wfk
-	lda	#<txt_4
-	ldx	#>txt_4
-	jsr	tedi_output_text
-	jsr	wfk
+	call_tedi_out	txt_1, 0
+	call_tedi_out	txt_3, 1
+	call_tedi_out	txt_2, 0
+	call_tedi_out	txt_4, 1
 final_code:
 	lda	#0
 	ldx	#0
