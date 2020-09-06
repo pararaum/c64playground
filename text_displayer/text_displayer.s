@@ -6,19 +6,18 @@ tedi_screen_ram = $0400
 	.import	muzak_init
 	.import	set_irq
 	.import vic_init
-	.import	tedi_chrout
-	.import	tedi_init
-	.import	tedi_output_text
-	.import tedi_switch_charset
+
+	.include	"text_output.i"
 
 	.export main
 	.export charsetdata
 	.export charsetaddr
 	.export tedi_screen_ram
 
+
 	.segment "LOADADDR"
 	.word	$0801
-	
+
 
 	.segment "EXEHDR"
 	.word	end_of_basic
@@ -62,38 +61,7 @@ orgstubend:
 charsetdata:
 	.incbin "charset"
 
-	
-	.data
-txt_1:
-	.incbin	"hill.seq"
-	.byte	0
-txt_2:
-	.incbin	"klammeraffe.seq"
-	.byte	0
-txt_3:
-	;; https://csdb.dk/release/?id=167761
-	;; imported via https://www.lvllvl.com/
-	.incbin	"PETbench.seq"
-	.byte	0
-txt_4:
-	;; https://csdb.dk/release/?id=136635
-	.incbin	"retro-z.seq"
-	.byte	0
 
-
-	.macro	call_tedi_out	txtaddr,stdchar
-	 .if stdchar = 0
-	  sec
-	 .else
-	  clc
-	 .endif
-	 jsr	tedi_switch_charset
-	 lda	#<txtaddr
-	 ldx	#>txtaddr
-	 jsr	tedi_output_text
-	 jsr	wfk
-	.endmacro
-	
 	.code
 wfk:
 @l1:
@@ -113,13 +81,16 @@ wfk:
 main:
 	jsr	prepare_basic_warmstart
 	jsr	tedi_init
-	call_tedi_out	txt_1, 0
-	call_tedi_out	txt_3, 1
-	call_tedi_out	txt_2, 0
-	call_tedi_out	txt_4, 1
+	tedi_inc_n_call	"hill.seq",0
+	tedi_inc_n_call	"klammeraffe.seq",0
+	;; https://csdb.dk/release/?id=167761
+	;; imported via https://www.lvllvl.com/
+	tedi_inc_n_call	"PETbench.seq",1
+	;; https://csdb.dk/release/?id=136635
+	tedi_inc_n_call	"retro-z.seq",1
 final_code:
 	lda	#0
-	ldx	#0
+	tax
 @l2:	sta	$0800,x
 	dex
 	bne	@l2
