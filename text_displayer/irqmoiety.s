@@ -8,9 +8,13 @@ oldirq:	.res	2
 
 	.code
 irq:
+	.ifdef DEBUG
 	inc	$d020
+	.endif
 	jsr	muzak_play
+	.ifdef DEBUG
 	dec	$d020
+	.endif
 ;	;;
 ;	ldy	#3
 ;@l:	lda	$dc08,y
