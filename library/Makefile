@@ -17,4 +17,7 @@ clean:
 	rm -f *.o
 	rm -f $(PROJECT).*
 
-.PHONY:	all clean
+distclean:	clean
+	rm -f *~
+
+.PHONY:	all clean distclean

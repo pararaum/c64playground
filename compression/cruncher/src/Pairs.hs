@@ -12,6 +12,7 @@ module Pairs ( getPairs,
                compressPairsWMaxDepth,
                rePairValue,
                rePairPair,
+               groupPairs,
                RePair (..),
                RPState (..)
              ) where
@@ -40,6 +41,15 @@ instance Ord RePair where
   (RPLiteral a) `compare` (RPPair b _ _) = fromEnum a `compare` b
   (RPPair a _ _) `compare` (RPLiteral b) = a `compare` fromEnum b
   (RPPair a _ _) `compare` (RPPair b _ _) = a `compare` b
+
+
+-- | Group the list of RePair so that in each group are either
+-- literals or pairs, only.
+groupPairs :: [RePair] -> [[RePair]]
+groupPairs = groupBy f
+  where f (RPLiteral _) (RPLiteral _) = True
+        f (RPPair _ _ _) (RPPair _ _ _) = True
+        f _ _ = False
 
 rePairValue :: RePair -> Int
 rePairValue (RPLiteral x) = fromEnum x

@@ -13,7 +13,7 @@ is loaded and crunched.
 module Main where
 
 import Data.Binary.Put (PutM)
-import Data.Bits.Coded (runEncode)
+import Data.Bits.Coded (runEncode, encode, Elias (..), Gamma (..))
 import Data.Bits.Coding (Coding, putBit, putBits)
 import Data.Bytes.Put (runPutL, flush)
 import Data.Binary.Get
@@ -69,10 +69,18 @@ encodePairsM mlpl s = mapM_ pB pl'
         pB (x, y) = putBits b 0 x >> putBits b 0 y -- put the bits
         b = intLog2 $ mlpl + 256
 
+writeRePair :: RPState -> Coding PutM ()
+writeRePair s = mapM_ f ds'
+  where ds = dataStream s
+        ds' = groupPairs ds
+        f :: [RePair] -> Coding PutM ()
+        f x = do encode ((Elias $ fromIntegral $ length x)::Gamma Word16 Word16)
+                 mapM_ (putBits 7 0 . rePairValue) x
 
 writeCrunch :: RPState -> String -> IO ()
 writeCrunch s fn = do BL.writeFile fn d
-  where d = runPutL $ runEncode $ encodePairsM 255 s
+  where d = runPutL $ runEncode $ do encodePairsM 255 s
+                                     writeRePair s
 
 -- | Call the cruncher and compress files.
 main :: IO ()
