@@ -1,4 +1,4 @@
-#! /usr/bin/make
+#! /usr/bin/make -f
 ##echo $(shell pgrep -f "x64.*-remotemonitor" || x64 -remotemonitor )&
 
 AFLAGS = -DNDEBUG

@@ -1,0 +1,2 @@
+
+	.import	setup_irq
