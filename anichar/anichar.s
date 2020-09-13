@@ -19,5 +19,9 @@ setup_vic:
 	lda	#0
 	sta	$d020
 	sta	$d021
+	lda	#$9e		; Yellow
+	jsr	CHROUT
+	lda	#$93		; Clear
+	jsr	CHROUT
 	rts
 
