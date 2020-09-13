@@ -1,4 +1,5 @@
 	.include	"libt7d.i"
+	.import	muzak_play
 
 	RASTERLINE = 48
 
@@ -11,6 +12,7 @@ oldirq:	.res	2
 
 irqroutine:
 	inc	$d020
+	jsr	muzak_play
 	dec	$d020
 	asl	$d019
 	jmp	(oldirq)

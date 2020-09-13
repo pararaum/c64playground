@@ -6,7 +6,7 @@ AS = ca65
 LD = cl65
 AFLAGS = -DNDEBUG
 AINC = -I ../includeCC65 -I ../library
-OBJS = $(TARGET).o startup.o irqmoiety.o
+OBJS = $(TARGET).o startup.o irqmoiety.o muzakmoiety.o
 LIBPATH = --lib-path ../library
 LIB = libT7D.lib
 
