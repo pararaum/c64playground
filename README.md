@@ -21,6 +21,12 @@ C64 programming playground. Examples, code fragments, etc.
  * Cartridge
    - https://github.com/jviskari/cc65cart
 
+## Drive ##
+
+ * Fastloader
+   - https://cadaver.github.io/rants/irqload.html
+   - https://www.pagetable.com/?p=568
+
 ## BASIC ##
 
  * http://retro.lonningdal.net/home.php?page=Adventure&part=100 Basic optimisation

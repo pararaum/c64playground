@@ -1,6 +1,7 @@
 ; -*- mode: asm -*-
 ;;; See https://sta.c64.org/cbm64basconv.html
 ;;; See http://unusedino.de/ec64/technical/project64/mapping_c64.html
+;;; A list can be found in Brückmann et al, 64 Intern, Data Becker, 1988, p 45. Or [https://www.c64-wiki.com/wiki/BASIC-ROM].
 
 	;; Basic vectors
 	;; ═════════════
@@ -18,3 +19,4 @@
 	NEWSTT = $a7ae		; Set Up Next Statement for Execution.
 	GONE = $A7E4		; Read and Execute the Next Statement.
 	STROUT = $AB1E		; Output a string pointed to by A/Y, see L. Englisch, The Advanced Machine Language Book for the Commodore-C64, Abacus Software, 1984, p. 21.
+	;; See also https://www.pagetable.com/c64ref/c64disasm/.
