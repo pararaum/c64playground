@@ -17,3 +17,4 @@
 	;;
 	NEWSTT = $a7ae		; Set Up Next Statement for Execution.
 	GONE = $A7E4		; Read and Execute the Next Statement.
+	STROUT = $AB1E		; Output a string pointed to by A/Y, see L. Englisch, The Advanced Machine Language Book for the Commodore-C64, Abacus Software, 1984, p. 21.

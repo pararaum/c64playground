@@ -28,7 +28,7 @@ $(TARGET):	$(OBJS)
 clean:
 	rm -f *.o $(TARGET) $(TARGET).map $(TARGET).label $(TARGET),prg
 
-run:
+run:	$(TARGET)
 	x64 -autostartprgmode 1 -keybuf "$(RUNCMD)" $(TARGET)
 
 .PHONY:	all clean run
