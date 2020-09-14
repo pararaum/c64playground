@@ -2,7 +2,25 @@
 
 	.include	"kernal.i"
 	.include	"irqmoiety.i"
+	.include	"vicmacros.i"
 	.import	muzak_init
+
+ANIMATE_CHAR_SCREEN = $0400
+
+;;; Macro to clear 1000 Bytes, e.g. a textscreen.
+;;; Modifies: A/X
+	.macro	Clear_1000_bytes	begin,fillval
+	.local	mloop
+	lda	#fillval
+	ldx	#0
+mloop:	sta	begin,x
+	sta	begin+$100,x
+	sta	begin+$200,x
+	sta	begin+$300-24,x
+	dex
+	bne	mloop
+	.endmacro
+
 
 	.export	_main
 
@@ -23,9 +41,13 @@ setup_vic:
 	lda	#0
 	sta	$d020
 	sta	$d021
-	lda	#$9e		; Yellow
+	SetChargenAddress	$800
+	lda	#$9e		; Yellow TODO: colour + 7???
 	jsr	CHROUT
 	lda	#$93		; Clear
 	jsr	CHROUT
+	Clear_1000_bytes	ANIMATE_CHAR_SCREEN,$ff
+	lda	#%00011000	; Multicolour mode, 40 Columns, X-Scroll=0
+	sta	$d016
 	rts
 

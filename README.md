@@ -21,6 +21,10 @@ C64 programming playground. Examples, code fragments, etc.
  * Cartridge
    - https://github.com/jviskari/cc65cart
 
+## SID specific ##
+
+ * In-depth information (and SID dissections): https://digilander.libero.it/ice00/tsid/sidin/
+
 ## Drive ##
 
  * Fastloader
