@@ -1,6 +1,7 @@
 #! /usr/bin/make -f
 
 TARGET = anichar
+RUNCMD = "sys2030\\n"
 
 AS = ca65
 LD = cl65
@@ -24,4 +25,7 @@ $(TARGET):	$(OBJS)
 clean:
 	rm -f *.o $(TARGET) $(TARGET).map $(TARGET).label $(TARGET),prg
 
-.PHONY:	all clean
+run:
+	x64 -autostartprgmode 1 -keybuf "$(RUNCMD)" $(TARGET)
+
+.PHONY:	all clean run
