@@ -1,7 +1,8 @@
 #! /usr/bin/make -f
 
 TARGET = anichar
-RUNCMD = "sys2030\\n"
+EXECADDR = 2030
+RUNCMD = "sys$(EXECADDR)\\n"
 
 AS = ca65
 LD = cl65
@@ -17,7 +18,9 @@ all:	$(TARGET),prg
 	$(AS) $(AINC) $(AFLAGS) $+
 
 $(TARGET),prg:	$(TARGET)
-	(cat ../coding/startup/copy_n_uncompress.stub; lz4 -BD -9 < $+) > $@
+	#(cat ../coding/startup/copy_n_uncompress.stub; lz4 -BD -9 < $+) > $@
+	./pucrunch -x $(EXECADDR) $+ $@
+	#./exomizer sfx $(EXECADDR) -n -o $@ $+
 
 $(TARGET):	$(OBJS)
 	$(LD) $(CFLAGS) $(LIBPATH) -v -m $(TARGET).map -Ln $(TARGET).label -C $(TARGET).cfg $+ $(LIB)

@@ -6,7 +6,11 @@
 
 	.export	_main
 
-_main:	jsr	setup_vic
+_main:
+	;; Fooling around with the stack...
+	;; 	ldx	#$40
+	;; 	txs
+	jsr	setup_vic
 	jsr	setup_irq
 	lda	#0
 	jsr	muzak_init
