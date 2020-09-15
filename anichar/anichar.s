@@ -26,9 +26,12 @@ mloop:	sta	begin,x
 	bne	mloop
 	.endmacro
 
-
 	.export	_main
 
+	.segment	"FONT"
+	.incbin	"pacanifont.64c"
+
+	.code
 _main:
 	;; Fooling around with the stack...
 	;; 	ldx	#$40

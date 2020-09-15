@@ -20,6 +20,7 @@ animate_char_fontupdate:
 	sta	animate_char_chargenaddr+$ff*8+5
 	sta	animate_char_chargenaddr+$ff*8+6
 	sta	animate_char_chargenaddr+$ff*8+7
+	;; ROL without Carry, see https://wiki.nesdev.com/w/index.php/User:Zzo38/6502_programming_tricks.
 	asl
 	adc	#0
 	asl
