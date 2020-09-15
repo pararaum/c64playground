@@ -1,4 +1,5 @@
 	.include	"libt7d.i"
+	.include	"animate_char.i"
 	.import	muzak_play
 
 	RASTERLINE = 48
@@ -13,7 +14,10 @@ oldirq:	.res	2
 irqroutine:
 	inc	$d020
 	jsr	muzak_play
-	dec	$d020
+	inc	$d020
+	jsr	animate_char_fontupdate
+	lda	#0
+	sta	$d020
 	asl	$d019
 	jmp	(oldirq)
 

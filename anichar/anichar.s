@@ -6,6 +6,11 @@
 	.import	muzak_init
 
 ANIMATE_CHAR_SCREEN = $0400
+ANIMATE_CHAR_CHARGEN = $0800
+
+	.export	animate_char_chargenaddr
+
+	animate_char_chargenaddr := ANIMATE_CHAR_CHARGEN
 
 ;;; Macro to clear 1000 Bytes, e.g. a textscreen.
 ;;; Modifies: A/X
@@ -41,7 +46,7 @@ setup_vic:
 	lda	#0
 	sta	$d020
 	sta	$d021
-	SetChargenAddress	$800
+	SetChargenAddress	ANIMATE_CHAR_CHARGEN
 	lda	#$9b		; Yellow colour + multicolour mode (11).
 	jsr	CHROUT
 	lda	#$93		; Clear
