@@ -42,10 +42,14 @@ setup_vic:
 	sta	$d020
 	sta	$d021
 	SetChargenAddress	$800
-	lda	#$9e		; Yellow TODO: colour + 7???
+	lda	#$9b		; Yellow colour + multicolour mode (11).
 	jsr	CHROUT
 	lda	#$93		; Clear
 	jsr	CHROUT
+	lda	#6		; Blue
+	sta	$d023		; 10
+	lda	#13		; Light Green (unused)
+	sta	$d022		; 01
 	Clear_1000_bytes	ANIMATE_CHAR_SCREEN,$ff
 	lda	#%00011000	; Multicolour mode, 40 Columns, X-Scroll=0
 	sta	$d016
