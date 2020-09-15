@@ -3,6 +3,19 @@
 	.export	animate_char_fontupdate
 	.import	animate_char_chargenaddr
 
+	;; Does not work as expected.
+	.DEFINE	charaddr(code)	(animate_char_chargenaddr+8*code)
+
+	.macro	Copy8Bytes	src,dst
+	.local	loop
+	ldx	#7
+loop:	lda	src,x
+	ora	lazerlight_value
+	sta	dst,x
+	dex
+	bpl	loop
+	.endmacro
+
 	.data
 ;;; The laserlight is the vertical line scrolling on the whole screen from left to right. It will be put into the character $ff
 lazerlight_value:
@@ -26,4 +39,9 @@ animate_char_fontupdate:
 	asl
 	adc	#0
 	sta	lazerlight_value
+	;;
+	Copy8Bytes	animate_char_chargenaddr+8*(16*14+0),animate_char_chargenaddr
+	Copy8Bytes	animate_char_chargenaddr+8*(16*14+1),animate_char_chargenaddr+8*1
+	Copy8Bytes	animate_char_chargenaddr+8*(16*15+0),animate_char_chargenaddr+8*4
+	Copy8Bytes	animate_char_chargenaddr+8*(16*15+1),animate_char_chargenaddr+8*5
 	rts

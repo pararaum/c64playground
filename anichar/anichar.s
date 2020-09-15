@@ -4,6 +4,7 @@
 	.include	"irqmoiety.i"
 	.include	"vicmacros.i"
 	.import	muzak_init
+	.macpack	generic
 
 ANIMATE_CHAR_SCREEN = $0400
 ANIMATE_CHAR_CHARGEN = $0800
@@ -32,6 +33,22 @@ mloop:	sta	begin,x
 	.incbin	"pacanifont.64c"
 
 	.code
+
+debug_copy:
+	ldx	#3
+@l1:	txa
+	sta	$0400,x
+	dex
+	bpl	@l1
+	lda	#4
+	sta	$0400+40
+	add	#1
+	sta	$0400+40+1
+	add	#1
+	sta	$0400+40+2
+	add	#1
+	sta	$0400+40+3
+	rts
 _main:
 	;; Fooling around with the stack...
 	;; 	ldx	#$40
@@ -41,6 +58,7 @@ _main:
 	lda	#0
 	jsr	muzak_init
 	cli
+	jsr	debug_copy
 @wait:	jsr	GETIN
 	beq	@wait
 	jmp	RESTOR
