@@ -53,6 +53,14 @@ acsrc:	.res	2
 	;; Destination pointer
 acdst:	.res	2
 
+	.rodata
+;;; Pointers to the animation character. Four animations of 2×2 characters.
+animation_pointers:
+	.word	animate_char_chargenaddr+8*(16*14+0)
+	.word	animate_char_chargenaddr+8*(16*14+2)
+	.word	animate_char_chargenaddr+8*(16*14+4)
+	.word	animate_char_chargenaddr+8*(16*14+6)
+
 	.data
 ;;; The lazerlight is the vertical line scrolling on the whole screen from left to right. It will be put into the character EMPTY_CHAR_CELL
 lazerlight_value:
@@ -149,15 +157,6 @@ update_animation_line:
 ;;; Input: acsrc, acdst
 ;;; Modifies: AXY, acsrc, acdst
 update_animation_chars:
-	;; Setup pointers
-	lda	#<(animate_char_chargenaddr+8*(16*14+0))
-	sta	acsrc
-	lda	#>(animate_char_chargenaddr+8*(16*14+0))
-	sta	acsrc+1
-	lda	#<(animate_char_chargenaddr)
-	sta	acdst
-	lda	#>(animate_char_chargenaddr)
-	sta	acdst+1
 	ldy	#0
 	.repeat	8
 	jsr	update_animation_line
@@ -179,14 +178,31 @@ update_animation_chars:
 	.endrepeat
 	rts
 	
+	.data
+animation_sequence_index:
+	.byte	0
 
+	.code
 animate_char_fontupdate:
 	jsr	update_empty_value
+	;; Get animation index number
+	lda	animation_sequence_index
+	lsr			; Divide by four to slow down.
+	lsr
+	and	#3		; Four animations
+	asl			; *2, as these are pointers.
+	tay
+	;; Setup pointers for source
+	lda	animation_pointers,y
+	sta	acsrc
+	iny
+	lda	animation_pointers,y
+	sta	acsrc+1
+	inc	animation_sequence_index ; Next animation in next frame.
+	lda	#<(animate_char_chargenaddr)
+	sta	acdst
+	lda	#>(animate_char_chargenaddr)
+	sta	acdst+1
 	jsr	update_animation_chars
-	;;
-; 	Copy8Bytes	animate_char_chargenaddr+8*(16*14+0),animate_char_chargenaddr
-; 	Copy8Bytes	animate_char_chargenaddr+8*(16*14+1),animate_char_chargenaddr+8*1
-; 	Copy8Bytes	animate_char_chargenaddr+8*(16*15+0),animate_char_chargenaddr+8*4
-; 	Copy8Bytes	animate_char_chargenaddr+8*(16*15+1),animate_char_chargenaddr+8*5
 	rts
 
