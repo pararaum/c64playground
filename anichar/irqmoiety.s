@@ -2,7 +2,7 @@
 	.include	"animate_char.i"
 	.import	muzak_play
 
-	RASTERLINE = 48
+	RASTERLINE = 2
 
 	.export	setup_irq
 

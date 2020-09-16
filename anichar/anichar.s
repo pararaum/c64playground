@@ -38,16 +38,21 @@ debug_copy:
 	ldx	#3
 @l1:	txa
 	sta	$0400,x
+	sta	$0400+23*40,x
 	dex
 	bpl	@l1
 	lda	#4
 	sta	$0400+40
+	sta	$0400+40+23*40+0
 	add	#1
 	sta	$0400+40+1
+	sta	$0400+40+23*40+1
 	add	#1
 	sta	$0400+40+2
+	sta	$0400+40+23*40+2
 	add	#1
 	sta	$0400+40+3
+	sta	$0400+40+23*40+3
 	rts
 _main:
 	;; Fooling around with the stack...

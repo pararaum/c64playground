@@ -116,6 +116,18 @@
 	sta dst+1
 .endmacro
 
+;;; Add 8-bit immediate to a 16-bit destination. Warning! Value is *not* sign extended!
+.MACRO	P_addimm	val,dst
+	.local	@skip
+	clc
+	lda	dst
+	adc	#val
+	sta	dst
+	bcc	@skip
+	inc	dst+1
+	@skip:
+.ENDMACRO
+
 .MACRO	P_branchNZ	reg, disp
 	lda reg+1
 	bne disp
