@@ -241,6 +241,12 @@ animate_char_fontupdate:
 ;;; Input: X=x-pos [0..37], Y=y-pos (both character positions)
 ;;; Modifies: AXY, acdst
 animate_char_putat:
+	.ifndef	NDEBUG
+	cpx	#37
+	bcc	@nokill
+	.byte	$22	 ; KILL
+	@nokill:
+	.endif
 	lda	spfllo,y	; Set up the pointer to the character position.
 	sta	acdst
 	lda	spflhi,y
