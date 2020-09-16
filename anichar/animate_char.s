@@ -26,7 +26,9 @@
 	.include	"pseudo16.inc"
 	.export	animate_char_fontupdate
 	.import	animate_char_chargenaddr
+	.export animate_char_putat
 	.macpack generic
+	.macpack longbranch
 
 	EMPTY_CHAR_CELL = $FF
 
@@ -60,6 +62,11 @@ animation_pointers:
 	.word	animate_char_chargenaddr+8*(16*14+2)
 	.word	animate_char_chargenaddr+8*(16*14+4)
 	.word	animate_char_chargenaddr+8*(16*14+6)
+
+
+	.define screenposfromline $0400,$0400+40*0,$0400+40*1,$0400+40*2,$0400+40*3,$0400+40*4,$0400+40*5,$0400+40*6,$0400+40*7,$0400+40*8,$0400+40*9,$0400+40*10,$0400+40*11,$0400+40*12,$0400+40*13,$0400+40*14,$0400+40*15,$0400+40*16,$0400+40*17,$0400+40*18,$0400+40*19,$0400+40*20,$0400+40*21,$0400+40*22,$0400+40*23,$0400+40*24
+spfllo:	.lobytes screenposfromline
+spflhi:	.hibytes screenposfromline
 
 	.data
 ;;; The lazerlight is the vertical line scrolling on the whole screen from left to right. It will be put into the character EMPTY_CHAR_CELL
@@ -231,3 +238,86 @@ animate_char_fontupdate:
 	jsr	update_animation_chars
 	rts
 
+;;; Input: X=x-pos [0..37], Y=y-pos (both character positions)
+;;; Modifies: AXY, acdst
+animate_char_putat:
+	lda	spfllo,y	; Set up the pointer to the character position.
+	sta	acdst
+	lda	spflhi,y
+	sta	acdst+1
+	txa			; Put x-coordinate into the Accumulator.
+	jeq	@single_char
+	cmp	#1
+	beq	@two_chars
+	cmp	#2
+	beq	@three_chars
+	;; Three characters at positions one, so "␠@AB" and "␠DEF" must be put there. The ␠ is the empty character.
+	sub	#3		; Three characters to the left.
+	tay			; Move to the index register Y.
+	lda	#EMPTY_CHAR_CELL
+	sta	(acdst),y
+	lda	#0
+	iny
+	sta	(acdst),y
+	lda	#1
+	iny
+	sta	(acdst),y
+	lda	#2
+	iny
+	sta	(acdst),y
+	P_addimm	40,acdst
+	lda	#6
+	sta	(acdst),y
+	dey
+	lda	#5
+	sta	(acdst),y
+	dey
+	lda	#4
+	sta	(acdst),y
+	dey
+	lda	#EMPTY_CHAR_CELL
+	sta	(acdst),y
+	rts
+@three_chars:
+	sub	#2		; Two characters to the left.
+	tay			; Move to the index register Y.
+	lda	#0
+	sta	(acdst),y
+	lda	#1
+	iny
+	sta	(acdst),y
+	lda	#2
+	iny
+	sta	(acdst),y
+	P_addimm	40,acdst
+	lda	#6
+	sta	(acdst),y
+	lda	#5
+	dey
+	sta	(acdst),y
+	lda	#4
+	dey
+	sta	(acdst),y
+	rts
+@two_chars:
+	ldy	#0
+	lda	#1
+	sta	(acdst),y
+	lda	#2
+	iny
+	sta	(acdst),y
+	P_addimm	40,acdst
+	lda	#6
+	sta	(acdst),y
+	lda	#5
+	dey
+	sta	(acdst),y
+	rts
+@single_char:
+	ldy	#0
+	lda	#2
+	sta	(acdst),y
+	P_addimm	40,acdst
+	lda	#6
+	sta	(acdst),y
+	rts

@@ -3,6 +3,7 @@
 	.include	"kernal.i"
 	.include	"irqmoiety.i"
 	.include	"vicmacros.i"
+	.include	"animate_char.i"
 	.import	muzak_init
 	.macpack	generic
 
@@ -35,6 +36,24 @@ mloop:	sta	begin,x
 	.code
 
 debug_copy:
+	ldx	#0
+	ldy	#6
+	jsr	animate_char_putat
+	ldx	#1
+	ldy	#8
+	jsr	animate_char_putat
+	ldx	#2
+	ldy	#11
+	jsr	animate_char_putat
+	ldx	#3
+	ldy	#14
+	jsr	animate_char_putat
+	ldx	#4
+	ldy	#17
+	jsr	animate_char_putat
+	ldx	#5
+	ldy	#20
+	jsr	animate_char_putat
 	ldx	#3
 @l1:	txa
 	sta	$0400,x
