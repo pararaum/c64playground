@@ -142,13 +142,26 @@ copy_3buffer_to_destination_charset:
 	@Ystore=*-1
 	rts
 
+rock_and_ror_3buffer:
+	asl
+	tax
+	beq	@out
+@l:	lsr	b3buffer
+	ror	b3buffer+1
+	ror	b3buffer+2
+	dex
+	bne	@l
+@out:	rts
+
 ;;; Copy and rock'n'ror a 3buffer.
-;;; Input:
+;;; Input: A=shift how many multicolour pixels to the right? (≤3)
 ;;; Output: Y=Y+8
 ;;; Modifies: AXY
 update_animation_line:
+	pha
 	jsr	copy_to_3buffer
-	;; rock_and_ror_3buffer
+	pla
+	jsr	rock_and_ror_3buffer
 	jsr	lazerlight_3buffer
 	jsr	copy_3buffer_to_destination_charset
 	rts
@@ -159,6 +172,11 @@ update_animation_line:
 update_animation_chars:
 	ldy	#0
 	.repeat	8
+	lda	@wavl
+	lsr
+	lsr
+	lsr
+	and	#3
 	jsr	update_animation_line
 	tya
 	sub	#7
@@ -170,13 +188,20 @@ update_animation_chars:
 	tay
 	P_addimm	4*8-8,acdst
 	.repeat	8
+	lda	@wavl
+	lsr
+	lsr
+	lsr
+	and	#3
 	jsr	update_animation_line
 	tya
 	sub	#7
 	tay
 	P_inc	acdst
 	.endrepeat
+	inc	@wavl
 	rts
+@wavl: .byte 0
 	
 	.data
 animation_sequence_index:

@@ -12,12 +12,18 @@ oldirq:	.res	2
 	.code
 
 irqroutine:
+	.ifndef	NDEBUG
 	inc	$d020
+	.endif
 	jsr	muzak_play
+	.ifndef	NDEBUG
 	inc	$d020
+	.endif
 	jsr	animate_char_fontupdate
+	.ifndef	NDEBUG
 	lda	#0
 	sta	$d020
+	.endif
 	asl	$d019
 	jmp	(oldirq)
 
