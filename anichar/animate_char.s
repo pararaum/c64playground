@@ -24,27 +24,19 @@
 ; @ABC
 ; DEFG
 	.include	"pseudo16.inc"
-	.export	animate_char_fontupdate
 	.import	animate_char_chargenaddr
+	.export	animate_char_fontupdate
 	.export animate_char_putat
+	.export animate_char_initialise
 	.macpack generic
 	.macpack longbranch
 
 	EMPTY_CHAR_CELL = $FF
+	MAX_CHARSPRITES = 10
 
-	;; Does not work as expected.
-	.DEFINE	charaddr(code)	(animate_char_chargenaddr+8*code)
-
-	.macro	Copy8Bytes	src,dst
-	.local	loop
-	ldx	#7
-loop:	lda	src,x
-	ora	lazerlight_value
-	sta	dst,x
-	dex
-	bpl	loop
-	.endmacro
-
+	.bss
+charsprite_x:	.res	MAX_CHARSPRITES
+charsprite_y:	.res	MAX_CHARSPRITES
 
 	.zeropage
 ;;; This is a three byte buffer in the zeropage where a single line of the animation. It is in the zeropage for speed (ROR).
@@ -63,7 +55,6 @@ animation_pointers:
 	.word	animate_char_chargenaddr+8*(16*14+4)
 	.word	animate_char_chargenaddr+8*(16*14+6)
 
-
 	.define screenposfromline $0400,$0400+40*0,$0400+40*1,$0400+40*2,$0400+40*3,$0400+40*4,$0400+40*5,$0400+40*6,$0400+40*7,$0400+40*8,$0400+40*9,$0400+40*10,$0400+40*11,$0400+40*12,$0400+40*13,$0400+40*14,$0400+40*15,$0400+40*16,$0400+40*17,$0400+40*18,$0400+40*19,$0400+40*20,$0400+40*21,$0400+40*22,$0400+40*23,$0400+40*24
 spfllo:	.lobytes screenposfromline
 spflhi:	.hibytes screenposfromline
@@ -74,6 +65,15 @@ lazerlight_value:
 	.byte	%10000000
 
 	.code
+
+animate_char_initialise:
+	lda	#$FF		; Negative value means: no character sprite active.
+	ldx	#MAX_CHARSPRITES
+@loop:	sta	charsprite_x,x
+	sta	charsprite_y,x
+	dex
+	bpl	@loop
+	rts
 
 ;;; Update the "empty" value, this is used to fill the screen where no animation is. It will also update the lazerlight value.
 ;;; Input: lazerlight_value

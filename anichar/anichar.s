@@ -81,6 +81,7 @@ _main:
 	jsr	setup_irq
 	lda	#0
 	jsr	muzak_init
+	jsr	animate_char_initialise
 	cli
 	jsr	debug_copy
 @wait:	jsr	GETIN
