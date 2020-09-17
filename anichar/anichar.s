@@ -89,7 +89,7 @@ _main:
 	sta	$dd08		; Set the 1/10s of the TOD and turn clock on.
 @wait:
 	lda	$dd08		; Get current 1/10s value
-	cmp	#6		; Trigger value reached?
+	cmp	#7		; Trigger value reached?
 	bne	@skip
 	lda	#0
 	sta	$dd08		; Set to zero again.
