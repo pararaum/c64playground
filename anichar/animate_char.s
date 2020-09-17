@@ -49,6 +49,7 @@ b3buffer:	.res	3
 acsrc:	.res	2
 	;; Destination pointer
 acdst:	.res	2
+acdst2:	.res	2
 
 	.rodata
 ;;; Pointers to the animation character. Four animations of 2×2 characters.
@@ -256,8 +257,11 @@ animate_char_putat:
 	.endif
 	lda	spfllo,y	; Set up the pointer to the character position.
 	sta	acdst
+	sta	acdst2
 	lda	spflhi,y
 	sta	acdst+1
+	sta	acdst2+1
+	P_addimm	40,acdst2
 	txa			; Put x-coordinate into the Accumulator.
 	jeq	@single_char
 	cmp	#1
@@ -269,27 +273,22 @@ animate_char_putat:
 	tay			; Move to the index register Y.
 	lda	#EMPTY_CHAR_CELL
 	sta	(acdst),y
+	sta	(acdst2),y
+	iny
 	lda	#0
-	iny
 	sta	(acdst),y
-	lda	#1
-	iny
-	sta	(acdst),y
-	lda	#2
-	iny
-	sta	(acdst),y
-	P_addimm	40,acdst
-	lda	#6
-	sta	(acdst),y
-	dey
-	lda	#5
-	sta	(acdst),y
-	dey
 	lda	#4
+	sta	(acdst2),y
+	iny
+	lda	#1
 	sta	(acdst),y
-	dey
-	lda	#EMPTY_CHAR_CELL
+	lda	#5
+	sta	(acdst2),y
+	iny
+	lda	#2
 	sta	(acdst),y
+	lda	#6
+	sta	(acdst2),y
 	rts
 @three_chars:
 	sub	#2		; Two characters to the left.
