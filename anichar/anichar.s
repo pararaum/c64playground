@@ -38,44 +38,6 @@ next_ac_y_val:
 	.byte	0
 
 	.code
-debug_copy:
-	ldx	#0
-	ldy	#6
-	jsr	animate_char_putat
-	ldx	#1
-	ldy	#8
-	jsr	animate_char_putat
-	ldx	#2
-	ldy	#11
-	jsr	animate_char_putat
-	ldx	#3
-	ldy	#14
-	jsr	animate_char_putat
-	ldx	#4
-	ldy	#17
-	jsr	animate_char_putat
-	ldx	#5
-	ldy	#20
-	jsr	animate_char_putat
-	ldx	#3
-@l1:	txa
-	sta	$0400,x
-	sta	$0400+23*40,x
-	dex
-	bpl	@l1
-	lda	#4
-	sta	$0400+40
-	sta	$0400+40+23*40+0
-	add	#1
-	sta	$0400+40+1
-	sta	$0400+40+23*40+1
-	add	#1
-	sta	$0400+40+2
-	sta	$0400+40+23*40+2
-	add	#1
-	sta	$0400+40+3
-	sta	$0400+40+23*40+3
-	rts
 _main:
 	;; Fooling around with the stack...
 	;; 	ldx	#$40
@@ -86,7 +48,6 @@ _main:
 	jsr	muzak_init
 	jsr	animate_char_initialise
 	cli
-	jsr	debug_copy
 	lda	#0
 	sta	$dd08		; Set the 1/10s of the TOD and turn clock on.
 @wait:

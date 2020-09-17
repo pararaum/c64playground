@@ -184,8 +184,7 @@ update_animation_line:
 	pla
 	jsr	rock_and_ror_3buffer
 	jsr	lazerlight_3buffer
-	jsr	copy_3buffer_to_destination_charset
-	rts
+	jmp	copy_3buffer_to_destination_charset
 
 ;;; Do an animation update.
 ;;; Input: acsrc, acdst
@@ -344,7 +343,7 @@ animate_char_putat:
 ;;; Modifies: AXY
 animate_char_draw_update:
 	lda	animation_sequence_index
-	cmp	#0
+	cmp	#1
 	bne	@out
 	lda	#0
 	sta	@acidx		; Set the current index.
@@ -366,19 +365,15 @@ animate_char_draw_update:
 @inactive:
 	inc	@acidx		; Next, please.
 	bne	@loop		; Actually the loop ends earlier, see above.
-	@out:
+@out:
 	rts
 @acidx:	.byte	0
 
 animate_char_frame_update:
 	lda	animation_sequence_index ; Get current index.
 	add	#1			 ; Add one.
-	cmp	#16			 ; Four animations times 1/4 speed.
-	bne	@notmax
-	lda	#0
-@notmax:
+	and	#16-1			 ; Four animations times 1/4 speed.
 	sta	animation_sequence_index
-
 	jsr	animate_char_fontupdate
 	.ifndef	NDEBUG
 	inc	$d020
