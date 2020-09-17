@@ -250,7 +250,7 @@ animate_char_fontupdate:
 ;;; Modifies: AXY, acdst
 animate_char_putat:
 	.ifndef	NDEBUG
-	cpx	#42
+	cpx	#43
 	bcc	@nokill
 	.byte	$22	 ; KILL
 	@nokill:
@@ -275,20 +275,27 @@ animate_char_putat:
 	sta	(acdst),y
 	sta	(acdst2),y
 	iny
+	cpy	#40
+	beq	@maxcol
 	lda	#0
 	sta	(acdst),y
 	lda	#4
 	sta	(acdst2),y
 	iny
+	cpy	#40
+	beq	@maxcol
 	lda	#1
 	sta	(acdst),y
 	lda	#5
 	sta	(acdst2),y
 	iny
+	cpy	#40
+	beq	@maxcol
 	lda	#2
 	sta	(acdst),y
 	lda	#6
 	sta	(acdst2),y
+@maxcol:
 	rts
 @three_chars:
 	sub	#2		; Two characters to the left.
@@ -353,7 +360,7 @@ animate_char_draw_update:
 	bmi	@inactive	; This sprite is inactive.
 	tax			; Store X-coordinate in X.
 	add	#1		; Go to next position.
-	cmp	#40		; Maximal right column?
+	cmp	#43		; Maximal right column?
 	bne	@still_active
 	lda	#$ff		; -1, therefore inactive
 @still_active:
