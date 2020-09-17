@@ -185,7 +185,6 @@ update_animation_chars:
 	lda	@wavl
 	lsr
 	lsr
-	lsr
 	and	#3
 	jsr	update_animation_line
 	tya
@@ -199,7 +198,6 @@ update_animation_chars:
 	P_addimm	4*8-8,acdst
 	.repeat	8
 	lda	@wavl
-	lsr
 	lsr
 	lsr
 	and	#3
@@ -345,7 +343,7 @@ animate_char_putat:
 ;;; Modifies: AXY
 animate_char_draw_update:
 	lda	animation_sequence_index
-	cmp	#14
+	cmp	#0
 	bne	@out
 	lda	#0
 	sta	@acidx		; Set the current index.
