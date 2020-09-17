@@ -35,7 +35,7 @@
 	.macpack longbranch
 
 	EMPTY_CHAR_CELL = $FF
-	MAX_CHARSPRITES = 10
+	MAX_CHARSPRITES = 17
 
 	.bss
 charsprite_x:	.res	MAX_CHARSPRITES
