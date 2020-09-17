@@ -30,6 +30,7 @@
 	.export animate_char_initialise
 	.export animate_char_draw_update
 	.export animate_char_create
+	.export animate_char_frame_update
 	.macpack generic
 	.macpack longbranch
 
@@ -372,7 +373,11 @@ animate_char_draw_update:
 
 animate_char_frame_update:
 	jsr	animate_char_fontupdate
-
+	.ifndef	NDEBUG
+	inc	$d020
+	.endif
+	jsr	animate_char_draw_update
+	rts
 
 ;;; Create a new sprite.
 ;;; Input: A=new Y position.

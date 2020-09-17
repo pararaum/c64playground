@@ -19,11 +19,7 @@ irqroutine:
 	.ifndef	NDEBUG
 	inc	$d020
 	.endif
-	jsr	animate_char_fontupdate
-	.ifndef	NDEBUG
-	inc	$d020
-	.endif
-	jsr	animate_char_draw_update
+	jsr	animate_char_frame_update
 	.ifndef	NDEBUG
 	lda	#0
 	sta	$d020
