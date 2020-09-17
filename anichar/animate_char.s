@@ -393,9 +393,9 @@ animate_char_frame_update:
 ;;; Modifies: AXY
 animate_char_create:
 	.ifndef	NDEBUG
-	cmp	#24
+	cmp	#25
 	bcc	@out
-	.byte 2
+	.byte 2,"animate_char_create"
 	@out:
 	.endif
 	tay			; Store new position.

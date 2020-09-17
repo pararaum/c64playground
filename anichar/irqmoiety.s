@@ -13,6 +13,10 @@ oldirq:	.res	2
 irqroutine:
 	.ifndef	NDEBUG
 	inc	$d020
+; 	bit	$d019
+; 	bmi	@okvicirq	; Bit7=some VIC irq
+; 	.byte	$f2
+; 	@okvicirq:
 	.endif
 	jsr	muzak_play
 	.ifndef	NDEBUG

@@ -65,11 +65,14 @@ lfsr:	lda	lfsr_value
 	eor	#$96
 	@skip:
 	sta	lfsr_value
-@l:	cmp	#24
+@l:	cmp	#25
 	bcs	@reduce
 	rts
 @reduce:	sub	#24
 	bne	@l
+	.ifndef NDEBUG
+	.byte	$12
+	.endif
 	
 	.code
 _main:
