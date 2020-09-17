@@ -21,6 +21,10 @@ irqroutine:
 	.endif
 	jsr	animate_char_fontupdate
 	.ifndef	NDEBUG
+	inc	$d020
+	.endif
+	jsr	animate_char_draw_update
+	.ifndef	NDEBUG
 	lda	#0
 	sta	$d020
 	.endif

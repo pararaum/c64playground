@@ -28,6 +28,8 @@
 	.export	animate_char_fontupdate
 	.export animate_char_putat
 	.export animate_char_initialise
+	.export animate_char_draw_update
+	.export animate_char_create
 	.macpack generic
 	.macpack longbranch
 
@@ -218,7 +220,13 @@ animation_sequence_index:
 animate_char_fontupdate:
 	jsr	update_empty_value
 	;; Get animation index number
-	lda	animation_sequence_index
+	lda	animation_sequence_index ; Get current index.
+	add	#1			 ; Add one.
+	cmp	#16			 ; Four animations times 1/4 speed.
+	bne	@notmax
+	lda	#0
+@notmax:
+	sta	animation_sequence_index
 	lsr			; Divide by four to slow down.
 	lsr
 	and	#3		; Four animations
@@ -230,13 +238,13 @@ animate_char_fontupdate:
 	iny
 	lda	animation_pointers,y
 	sta	acsrc+1
-	inc	animation_sequence_index ; Next animation in next frame.
 	lda	#<(animate_char_chargenaddr)
 	sta	acdst
 	lda	#>(animate_char_chargenaddr)
 	sta	acdst+1
 	jsr	update_animation_chars
 	rts
+
 
 ;;; Input: X=x-pos [0..37], Y=y-pos (both character positions)
 ;;; Modifies: AXY, acdst
@@ -326,4 +334,63 @@ animate_char_putat:
 	P_addimm	40,acdst
 	lda	#6
 	sta	(acdst),y
+	rts
+
+
+;;; Draw all the characters sprites at their current positions and then update (move right). Sprites going off the right edge are removed.
+;;; This function will only work if the animation_sequence_index is zero otherwise no update is done.
+;;; Input: animation_sequence_index
+;;; Output: -
+;;; Modifies: AXY
+animate_char_draw_update:
+	lda	animation_sequence_index
+	cmp	#14
+	bne	@out
+	lda	#0
+	sta	@acidx		; Set the current index.
+@loop:	ldy	@acidx		; Get current index into Y.
+	cpy	#MAX_CHARSPRITES ; Maximum reached?
+	beq	@out
+	lda	charsprite_x,y	; X-coordinate
+	bmi	@inactive	; This sprite is inactive.
+	tax			; Store X-coordinate in X.
+	add	#1		; Go to next position.
+	cmp	#37		; Maximal right column?
+	bne	@still_active
+	lda	#$ff		; -1, therefore inactive
+@still_active:
+	sta	charsprite_x,y	; Store new position.
+	lda	charsprite_y,y	; y-coordinate
+	tay			; Into Y register.
+	jsr	animate_char_putat
+@inactive:
+	inc	@acidx		; Next, please.
+	bne	@loop		; Actually the loop ends earlier, see above.
+	@out:
+	rts
+@acidx:	.byte	0
+
+animate_char_frame_update:
+	jsr	animate_char_fontupdate
+
+
+;;; Create a new sprite.
+;;; Input: A=new Y position.
+;;; Output: -
+;;; Modifies: AXY
+animate_char_create:
+	tay			; Store new position.
+	ldx	#0
+@loop:	lda	charsprite_x,x	; Is the sprite active?
+	bpl	@active
+	tya			; Get stored y position.
+	sta	charsprite_y,x	; Store the new Y position.
+	lda	#0
+	sta	charsprite_x,x	; Clear the sprite X position.
+	rts			; END
+@active:
+	inx
+	cpx	#MAX_CHARSPRITES
+	bne	@loop
+	;; No free slot found.
 	rts

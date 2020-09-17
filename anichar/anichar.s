@@ -33,8 +33,11 @@ mloop:	sta	begin,x
 	.segment	"FONT"
 	.incbin	"pacanifont.64c"
 
-	.code
+	.data
+next_ac_y_val:
+	.byte	0
 
+	.code
 debug_copy:
 	ldx	#0
 	ldy	#6
@@ -84,9 +87,27 @@ _main:
 	jsr	animate_char_initialise
 	cli
 	jsr	debug_copy
-@wait:	jsr	GETIN
+	lda	#0
+	sta	$dd08		; Set the 1/10s of the TOD and turn clock on.
+@wait:
+	lda	$dd08		; Get current 1/10s value
+	cmp	#4		; Trigger value reached?
+	bne	@skip
+	lda	#0
+	sta	$dd08		; Set to zero again.
+	lda	next_ac_y_val
+	adc	#7
+@modloop:
+	cmp	#25
+	bcc	@s2
+	sub	#25
+	jmp	@modloop
+@s2:	sta	next_ac_y_val
+	jsr	animate_char_create
+@skip:
+	jsr	GETIN
 	beq	@wait
-	jmp	RESTOR
+	jmp	RESTOR		; Restore the original kernal vectors.
 
 setup_vic:
 	lda	#0
