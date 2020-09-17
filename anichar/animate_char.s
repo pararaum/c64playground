@@ -245,11 +245,11 @@ animate_char_fontupdate:
 	rts
 
 
-;;; Input: X=x-pos [0..40], Y=y-pos (both character positions)
+;;; Input: X=x-pos [0..42], Y=y-pos (both character positions)
 ;;; Modifies: AXY, acdst
 animate_char_putat:
 	.ifndef	NDEBUG
-	cpx	#40
+	cpx	#42
 	bcc	@nokill
 	.byte	$22	 ; KILL
 	@nokill:
@@ -386,6 +386,12 @@ animate_char_frame_update:
 ;;; Output: -
 ;;; Modifies: AXY
 animate_char_create:
+	.ifndef	NDEBUG
+	cmp	#24
+	bcc	@out
+	.byte 2
+	@out:
+	.endif
 	tay			; Store new position.
 	ldx	#0
 @loop:	lda	charsprite_x,x	; Is the sprite active?

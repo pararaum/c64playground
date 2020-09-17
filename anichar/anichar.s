@@ -38,6 +38,40 @@ next_ac_y_val:
 	.byte	0
 
 	.code
+setup_vic:
+	lda	#0
+	sta	$d020
+	sta	$d021
+	SetChargenAddress	ANIMATE_CHAR_CHARGEN
+	lda	#$9b		; Yellow colour + multicolour mode (11).
+	jsr	CHROUT
+	lda	#$93		; Clear
+	jsr	CHROUT
+	lda	#6		; Blue
+	sta	$d023		; 10
+	lda	#13		; Light Green (unused)
+	sta	$d022		; 01
+	Clear_1000_bytes	ANIMATE_CHAR_SCREEN,$ff
+	lda	#%00011000	; Multicolour mode, 40 Columns, X-Scroll=0
+	sta	$d016
+	rts
+
+	.data
+lfsr_value:	.byte	$ff
+	.code
+lfsr:	lda	lfsr_value
+	lsr
+	bcc	@skip
+	eor	#$96
+	@skip:
+	sta	lfsr_value
+@l:	cmp	#24
+	bcs	@reduce
+	rts
+@reduce:	sub	#24
+	bne	@l
+	
+	.code
 _main:
 	;; Fooling around with the stack...
 	;; 	ldx	#$40
@@ -56,35 +90,12 @@ _main:
 	bne	@skip
 	lda	#0
 	sta	$dd08		; Set to zero again.
-	lda	next_ac_y_val
-	adc	#7
-@modloop:
-	cmp	#25
-	bcc	@s2
-	sub	#25
-	jmp	@modloop
-@s2:	sta	next_ac_y_val
+	jsr	lfsr
+	;; 	sei		; Not needed, code is safe.
 	jsr	animate_char_create
+	;; 	cli
 @skip:
 	jsr	GETIN
 	beq	@wait
 	jmp	RESTOR		; Restore the original kernal vectors.
-
-setup_vic:
-	lda	#0
-	sta	$d020
-	sta	$d021
-	SetChargenAddress	ANIMATE_CHAR_CHARGEN
-	lda	#$9b		; Yellow colour + multicolour mode (11).
-	jsr	CHROUT
-	lda	#$93		; Clear
-	jsr	CHROUT
-	lda	#6		; Blue
-	sta	$d023		; 10
-	lda	#13		; Light Green (unused)
-	sta	$d022		; 01
-	Clear_1000_bytes	ANIMATE_CHAR_SCREEN,$ff
-	lda	#%00011000	; Multicolour mode, 40 Columns, X-Scroll=0
-	sta	$d016
-	rts
 

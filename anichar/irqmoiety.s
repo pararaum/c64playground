@@ -10,7 +10,6 @@
 oldirq:	.res	2
 
 	.code
-
 irqroutine:
 	.ifndef	NDEBUG
 	inc	$d020
