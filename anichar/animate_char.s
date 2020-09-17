@@ -31,6 +31,7 @@
 	.export animate_char_draw_update
 	.export animate_char_create
 	.export animate_char_frame_update
+	.export	charsprite_x
 	.macpack generic
 	.macpack longbranch
 

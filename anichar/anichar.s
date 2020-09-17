@@ -43,14 +43,13 @@ setup_vic:
 	sta	$d020
 	sta	$d021
 	SetChargenAddress	ANIMATE_CHAR_CHARGEN
-	lda	#$9b		; Yellow colour + multicolour mode (11).
-	jsr	CHROUT
-	lda	#$93		; Clear
-	jsr	CHROUT
+	;; CHROUT apparently enables interrupts and causes havoc, so doing it the old-fashioned way.
 	lda	#6		; Blue
 	sta	$d023		; 10
 	lda	#13		; Light Green (unused)
 	sta	$d022		; 01
+	;; Yellow colour for colour code 11.
+	Clear_1000_bytes	$d800,$0f
 	Clear_1000_bytes	ANIMATE_CHAR_SCREEN,$ff
 	lda	#%00011000	; Multicolour mode, 40 Columns, X-Scroll=0
 	sta	$d016
