@@ -67,6 +67,11 @@ spflhi:	.hibytes screenposfromline
 lazerlight_value:
 	.byte	%10000000
 
+	.data
+animation_sequence_index:
+	.byte	0
+
+
 	.code
 
 animate_char_initialise:
@@ -168,6 +173,12 @@ rock_and_ror_3buffer:
 ;;; Output: Y=Y+8
 ;;; Modifies: AXY
 update_animation_line:
+	.ifndef	NDEBUG
+	cmp	#4
+	bcc	@debug
+	.byte	2
+	@debug:
+	.endif
 	pha
 	jsr	copy_to_3buffer
 	pla
@@ -211,10 +222,6 @@ update_animation_chars:
 	rts
 @wavl: .byte 0
 	
-	.data
-animation_sequence_index:
-	.byte	0
-
 	.code
 animate_char_fontupdate:
 	jsr	update_empty_value
@@ -245,11 +252,11 @@ animate_char_fontupdate:
 	rts
 
 
-;;; Input: X=x-pos [0..37], Y=y-pos (both character positions)
+;;; Input: X=x-pos [0..40], Y=y-pos (both character positions)
 ;;; Modifies: AXY, acdst
 animate_char_putat:
 	.ifndef	NDEBUG
-	cpx	#37
+	cpx	#40
 	bcc	@nokill
 	.byte	$22	 ; KILL
 	@nokill:
@@ -354,7 +361,7 @@ animate_char_draw_update:
 	bmi	@inactive	; This sprite is inactive.
 	tax			; Store X-coordinate in X.
 	add	#1		; Go to next position.
-	cmp	#37		; Maximal right column?
+	cmp	#40		; Maximal right column?
 	bne	@still_active
 	lda	#$ff		; -1, therefore inactive
 @still_active:
