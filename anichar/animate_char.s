@@ -226,13 +226,7 @@ update_animation_chars:
 animate_char_fontupdate:
 	jsr	update_empty_value
 	;; Get animation index number
-	lda	animation_sequence_index ; Get current index.
-	add	#1			 ; Add one.
-	cmp	#16			 ; Four animations times 1/4 speed.
-	bne	@notmax
-	lda	#0
-@notmax:
-	sta	animation_sequence_index
+	lda	animation_sequence_index
 	lsr			; Divide by four to slow down.
 	lsr
 	and	#3		; Four animations
@@ -377,6 +371,14 @@ animate_char_draw_update:
 @acidx:	.byte	0
 
 animate_char_frame_update:
+	lda	animation_sequence_index ; Get current index.
+	add	#1			 ; Add one.
+	cmp	#16			 ; Four animations times 1/4 speed.
+	bne	@notmax
+	lda	#0
+@notmax:
+	sta	animation_sequence_index
+
 	jsr	animate_char_fontupdate
 	.ifndef	NDEBUG
 	inc	$d020
