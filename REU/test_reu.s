@@ -2,6 +2,9 @@
 ;;; https://codebase64.org/doku.php?id=base:reu_programming
 ;;; https://www.c64-wiki.com/wiki/REU
 ;;; x64 -autostart test_reu
+;;;
+;;; truncate -s 4M /tmp/reu.bin
+;;; x64 -cartreu /tmp/reu.bin -reuimagerw -reu -autostart test_reu
 
 	REUSTATUS   = $DF00
 	REUCOMMAND  = $DF01
