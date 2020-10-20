@@ -8,7 +8,7 @@ AS = ca65
 LD = cl65
 AFLAGS = -DNDEBUG
 AINC = -I ../includeCC65 -I ../library
-OBJS = $(TARGET).o startup.o
+OBJS = $(TARGET).o startup.o interpreter_moiety.o
 LIBPATH = --lib-path ../library
 LIB = libT7D.lib
 
@@ -29,6 +29,6 @@ clean:
 	rm -f *.o $(TARGET) $(TARGET).map $(TARGET).label $(TARGET),prg
 
 run:	$(TARGET)
-	x64 -autostartprgmode 1 -keybuf "$(RUNCMD)" $(TARGET)
+	x64 -controlport1device 3 -autostartprgmode 1 -keybuf "$(RUNCMD)" $(TARGET)
 
 .PHONY:	all clean run
