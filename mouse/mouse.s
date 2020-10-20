@@ -41,6 +41,22 @@ butterfly:			; Butterfly sprite from Sally, Sprite Graphics for the Commodore C6
 	.byte 30,24,120
 	.byte 12,24,48
 
+butterfly_notched:		; Sally, p. 17.
+	;; REM NOTCHED WING BUTTERFLY
+	.byte 3,0
+	.byte 192,57,129,156,124
+	.byte 195,62,254,102,127
+	.byte 255,36,255,255,153
+	.byte 255,127,219,254,63
+	.byte 219,252,31,219,248
+	.byte 15,219,240,15,219
+	.byte 240,31,219,248,63
+	.byte 219,252,127,219,254
+	.byte 255,219,255,255,219
+	.byte 255,255,219,255,127
+	.byte 219,254,63,153,252
+	.byte 31,24,248,14,24
+	.byte 112
 
 	.code
 setup_irq:
@@ -67,7 +83,7 @@ setup_sprite:
 	sta	2040		; Sprite pointer.
 	;; Copy sprite data.
 	ldx	#63
-@l1:	lda	butterfly,x
+@l1:	lda	butterfly_notched,x
 	sta	SPRITEDATA,x
 	dex
 	bpl	@l1
