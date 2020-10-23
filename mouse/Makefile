@@ -12,7 +12,7 @@ OBJS = $(TARGET).o startup.o interpreter_moiety.o
 LIBPATH = --lib-path ../library
 LIB = libT7D.lib
 
-all:	$(TARGET),prg
+all:	$(TARGET) $(TARGET),prg butterflyfly
 
 %.o:	%.s
 	$(AS) $(AINC) $(AFLAGS) $+
@@ -25,10 +25,18 @@ $(TARGET),prg:	$(TARGET)
 $(TARGET):	$(OBJS)
 	$(LD) $(CFLAGS) $(LIBPATH) -v -m $(TARGET).map -Ln $(TARGET).label -C $(TARGET).cfg $+ $(LIB)
 
+butterflyfly:	butterflyfly.o
+	$(LD) $(CFLAGS) $(LIBPATH) -v -m butterflyfly.map -Ln butterflyfly.label -C butterflyfly.cfg $+ $(LIB)
+
 clean:
-	rm -f *.o $(TARGET) $(TARGET).map $(TARGET).label $(TARGET),prg
+	rm -f *.o
+	rm -f $(TARGET) $(TARGET).map $(TARGET).label $(TARGET),prg
+	rm -f butterflyfly butterflyfly.map butterflyfly.label butterflyfly,prg
 
 run:	$(TARGET)
 	x64 -controlport1device 3 -autostartprgmode 1 -keybuf "$(RUNCMD)" $(TARGET)
 
-.PHONY:	all clean run
+runbutterflyfly:	butterflyfly
+	x64 -controlport1device 3 -autostartprgmode 1 -keybuf "sys32777\\n" $+
+
+.PHONY:	all clean run runbutterflyfly
