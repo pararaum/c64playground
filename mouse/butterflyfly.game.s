@@ -3,10 +3,10 @@
 	.export	game
 
 	.data
-scrollpos:	.byte	0
+scrollpos:	.byte	7
 
 	.bss
-flipflag:	.res	1	; Will be set to nonzero after irq
+flipflag:	.res	1	; Will be set to $FF after irq
 
 	.code
 irq:
@@ -51,6 +51,18 @@ init_irq:
 	sta	$d01a
 	rts
 
+scroll_up:
+	ldx	#39
+@l1:
+	.repeat	20, I
+	lda	$0400+40*(I+1),x
+	sta	$0400+40*(I),x
+	.endrepeat
+	dex
+	bpl	@l1
+	inc	$0400+20*40
+	rts
+
 game:
 	jsr	init_vic
 	jsr	init_irq
@@ -63,12 +75,21 @@ game:
 	sta	$0700-24,x
 	dex
 	bne	@l
-	;; 
+	;;
+@gameloop:
+	dec	scrollpos
 @l1:	bit	flipflag
 	bpl	@l1
-	dec	scrollpos
+	lda	scrollpos
+	bpl	@no_scr_copy
+	dec	$d020
+	jsr	scroll_up
+	dec	$d020
+	lda	#7
+	sta	scrollpos
+@no_scr_copy:
 	lda	#0
 	sta	flipflag	; Clear flipflag.
-	jmp	@l1
+	jmp	@gameloop
 	rts
 
