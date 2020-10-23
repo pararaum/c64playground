@@ -25,7 +25,7 @@ $(TARGET),prg:	$(TARGET)
 $(TARGET):	$(OBJS)
 	$(LD) $(CFLAGS) $(LIBPATH) -v -m $(TARGET).map -Ln $(TARGET).label -C $(TARGET).cfg $+ $(LIB)
 
-butterflyfly:	butterflyfly.o
+butterflyfly:	butterflyfly.o butterflyfly.game.o
 	$(LD) $(CFLAGS) $(LIBPATH) -v -m butterflyfly.map -Ln butterflyfly.label -C butterflyfly.cfg $+ $(LIB)
 
 clean:

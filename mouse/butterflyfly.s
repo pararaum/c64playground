@@ -1,8 +1,12 @@
 
+	.include	"kernal.i"
+	.import	game
+
 	.segment	"STARTUP"
 	.word	_main
 	.word	_nmi
 	.byte	$c3,$c2,$cd,"80"
+	sei
 	jsr	_main
 	brk
 	.byte	$56		; Cross marks the spot.
@@ -21,13 +25,17 @@ _brk:	tsx
 	lda	$fe
 	bne	@skip
 	dec	$ff
-@skip:	dec $fe
+@skip:	dec	$fe
 	ldy	#0
 	lda	($fe),y
 	sta	$0400
 	jmp	$ea81
 
-init:	lda	#<_brk
+init:
+	jsr	RESTOR
+	jsr	IOINIT
+	jsr	SCINIT
+	lda	#<_brk
 	sta	$316
 	lda	#>_brk
 	sta	$317
@@ -39,11 +47,9 @@ title_screen:
 options_screen:
 	rts
 
-game:
-	rts
-
 consistency_check:
 	rts
+
 
 
 	.code
