@@ -1,4 +1,5 @@
 	.include	"libt7d.i"
+	.import __MUZAK_RUN__
 
 	.export	game
 
@@ -15,7 +16,7 @@ irq:
 	;; Stop the scroll.
 	lda	#%01111000
 	sta	$d011
-	
+	jsr	__MUZAK_RUN__+3	; Play music
 	;; Wait for the bottom.
 @w:	bit	$d011
 	bpl	@w
