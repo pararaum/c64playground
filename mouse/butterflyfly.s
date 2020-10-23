@@ -5,13 +5,27 @@
 	.byte	$c3,$c2,$cd,"80"
 	jsr	_main
 	brk
-	brk
+	.byte	$56		; Cross marks the spot.
 	rts
 
 	.code
 _nmi:	rti
 
-_brk:	jmp	$ea81
+;;; BRK handler
+;;; http://nesdev.com/the%20'B'%20flag%20&%20BRK%20instruction.txt
+_brk:	tsx
+	lda	$0105,x
+	sta	$fe
+	lda	$0106,x
+	sta	$ff
+	lda	$fe
+	bne	@skip
+	dec	$ff
+@skip:	dec $fe
+	ldy	#0
+	lda	($fe),y
+	sta	$0400
+	jmp	$ea81
 
 init:	lda	#<_brk
 	sta	$316
