@@ -6,6 +6,7 @@
 
 	.import	game
 	.import __MUZAK_RUN__
+	.import __BSS_SIZE__, __BSS_RUN__
 
 	.segment	"MUZAK"
 	.incbin	"../anichar/Back_to_Basics.sid",$7c+2
@@ -15,6 +16,29 @@
 	.word	_nmi
 	.byte	$c3,$c2,$cd,"80"
 	sei
+	;; Clear BSS, https://github.com/cc65/cc65/blob/master/libsrc/common/zerobss.s
+	lda	#<__BSS_RUN__
+	sta	ptr1
+	lda	#>__BSS_RUN__
+	sta	ptr1+1
+	lda	#0
+	ldy	#0
+	ldx	#>__BSS_SIZE__
+	beq	@nohigh
+@l1:
+	sta	(ptr1),y
+	dey
+	bne	@l1
+	inc	ptr1+1
+	dex
+	bne	@l1
+@nohigh:
+	cpy	#<__BSS_SIZE__
+	beq	@gomain
+	sta	(ptr1),y
+	iny
+	bne	@nohigh
+@gomain:
 	jsr	_main
 	brk
 	.byte	$56		; Cross marks the spot.
