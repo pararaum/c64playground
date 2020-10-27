@@ -8,8 +8,28 @@
 	.import __MUZAK_RUN__
 	.import __BSS_SIZE__, __BSS_RUN__
 
+	.export	screen0, screen1
+	.export	spriteptr0, spriteptr1
+
 	.segment	"MUZAK"
 	.incbin	"../anichar/Back_to_Basics.sid",$7c+2
+
+	.segment	"GFX"
+screen0:
+	.res	1000
+	.res	16		; Empty
+spriteptr0:
+	.res	8
+screen1:
+	.res	1000
+	.res	16		; Empty
+spriteptr1:
+	.res	8
+font:
+	.res	$800
+spritedata:
+	.res	$3000
+
 
 	.segment	"STARTUP"
 	.word	_main
