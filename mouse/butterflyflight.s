@@ -10,6 +10,7 @@
 
 	.export	screen0, screen1
 	.export	spriteptr0, spriteptr1
+	.export	font
 
 	.segment	"MUZAK"
 	.incbin	"../anichar/Back_to_Basics.sid",$7c+2
@@ -26,7 +27,8 @@ screen1:
 spriteptr1:
 	.res	8
 font:
-	.res	$800
+	.incbin	"scrap_writer_iii_06.64c",2
+	.res	$800-(*-font),$22 ; Fill up...
 spritedata:
 	.res	$3000
 

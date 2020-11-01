@@ -113,7 +113,7 @@
     ;;
 	lda	$d018
 	and	#%00001111
-	ora	#(address/$0400)<<4
+	ora	#(<((address&$3fff)/$0400))<<4
 	sta	$d018
 .endmacro
 
@@ -121,10 +121,10 @@
 ;;; Modifies: A
 ;;; https://codebase64.org/doku.php?id=base:quick_vicii_screen_setup
 ;;; https://sta.c64.org/cbm64mem.html
-	.macro	SetChargenAddress	address
+.macro	SetChargenAddress	address
 	lda	$d018
 	and	#%11110000	; Bits 1 to 3 contain the Chargen address
-	ora	#(address/$0800)<<1
+	ora	#(<(address/$0800)&%00000111)<<1
 	;;    %000, 0: $0000-$07FF, 0-2047.
 	;;    %001, 1: $0800-$0FFF, 2048-4095.
 	;;    %010, 2: $1000-$17FF, 4096-6143.
@@ -134,4 +134,4 @@
 	;;    %110, 6: $3000-$37FF, 12288-14335.
 	;;    %111, 7: $3800-$3FFF, 14336-16383.
 	sta	$d018
-	.endmacro
+.endmacro

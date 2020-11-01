@@ -1,5 +1,8 @@
 	.include	"libt7d.i"
+	.include	"vicmacros.i"
 	.import __MUZAK_RUN__
+	.import	font
+	.import	screen0,screen1
 
 	.export	game
 
@@ -38,6 +41,9 @@ init_vic:
 	sta	$d011
 	lda	#5
 	jsr	_fill_colour_ram
+	SwitchVICBank	1	; $4000 to $7fff
+	SetScreenMemory	screen0
+	SetChargenAddress	font
 	rts
 
 init_irq:
@@ -56,12 +62,12 @@ scroll_up:
 	ldx	#39
 @l1:
 	.repeat	20, I
-	lda	$0400+40*(I+1),x
-	sta	$0400+40*(I),x
+	lda	screen0+40*(I+1),x
+	sta	screen0+40*(I),x
 	.endrepeat
 	dex
 	bpl	@l1
-	inc	$0400+20*40
+	inc	screen0+20*40
 	rts
 
 game:
