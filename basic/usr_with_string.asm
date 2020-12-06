@@ -65,7 +65,7 @@ _l1:	lda	$ffff,x
 	lda	#0
 	sta	VALTYP		; VAL is now numeric.
 	pla			; A=length of string.
-	;; L. English, "The Advanced MAchine Language Book", p 22.
+	;; L. English, "The Advanced Machine Language Book", p 22.
 	jsr	$BC3C		; Convert A into signed float.
 	rts
 	.)
