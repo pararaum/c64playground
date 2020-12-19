@@ -2,7 +2,7 @@
 
 AFLAGS = -DNDEBUG
 AINC = -I ../includeCC65
-OBJS = disable_cia_irq.o fill_colour_ram.o
+OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o
 PROJECT = libT7D
 
 all:	$(PROJECT).lib
