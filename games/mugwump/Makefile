@@ -6,7 +6,8 @@ CC65FLAGS=-O
 TARGET=mugwump
 OBJS=$(TARGET).o xorshiftprng.o
 
-.PHONY:	all c64 sim bin clean
+.PHONY:	all c64 cc65intern sim bin clean distclean check doc
+
 all:	bin c64 sim
 
 sim:
@@ -40,3 +41,6 @@ distclean:
 check:	xorshiftprng.o tests.o
 	gcc -o 🖬 $+ -l cunit
 	./🖬
+
+doc:
+	doxygen

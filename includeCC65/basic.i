@@ -20,3 +20,6 @@
 	GONE = $A7E4		; Read and Execute the Next Statement.
 	STROUT = $AB1E		; Output a string pointed to by A/Y, see L. Englisch, The Advanced Machine Language Book for the Commodore-C64, Abacus Software, 1984, p. 21.
 	;; See also https://www.pagetable.com/c64ref/c64disasm/.
+
+	;; D. Heeb, Compute!'s VIC-20 and Commodore 64 Tool Kit: BASIC, Compute!'s Publication, 1984, p 89.
+	INIT_BASIC_VECTORS = $E453 ; Init basic vectors $0300-$030b (RVECT?)
