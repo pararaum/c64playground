@@ -23,3 +23,9 @@
 
 	;; D. Heeb, Compute!'s VIC-20 and Commodore 64 Tool Kit: BASIC, Compute!'s Publication, 1984, p 89.
 	INIT_BASIC_VECTORS = $E453 ; Init basic vectors $0300-$030b (RVECT?)
+	;; Move memory. [D. Heeb, Compute!'s VIC-20 and Commodore 64 Tool Kit: BASIC, Compute!'s Publication, 1984, p 123.
+	;; $5f = pointer to src start
+	;; $5A = pointer to src end+1
+	;; $58 = pointer to destination end+1
+	;; OUT: $58 = pointer to destination start-$100(!!!), the book seems to be wrong here!
+	MEMORY_MOVE = $A3BF
