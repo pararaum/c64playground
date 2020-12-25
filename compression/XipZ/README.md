@@ -133,4 +133,4 @@ and combined locations like $204c or whatever.
 # Links #
 
  * https://csdb.dk/release/?id=6646
- * https://github.com/pararaum/c64playground
+ * https://github.com/pararaum/c64playground/tree/xipz/compression/XipZ
