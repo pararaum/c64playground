@@ -65,7 +65,7 @@ skip:
 	dey			; Decrement the bit counter.
 	bmi	first		; Was this the first bit? It will decide if literal or compressed.
 	bne	getbit		; All bits moved into A?
-found:	bcs	lit		; bit 9 of .A
+found:	bcs	lit		; bit 9 of .A (is set if literal as we came with carry set)
 	tay			; Moved index in compression table.
 	lda	transtab,y	; Get the value.
 lit:	sta	DEFAULTDESTINATIONADDR ; Now save the byte.
