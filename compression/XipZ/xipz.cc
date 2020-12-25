@@ -6,7 +6,15 @@
 #include <stdexcept>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 #include <boost/format.hpp>
+
+/*! \file xipz.cc
+ *
+ * Source file containing the main function.
+ */
+
+#define VERSION "0.0.0"
 
 /*
 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
@@ -38,6 +46,11 @@ Destination address: $71
 //! \brief Array to hold the histogram.
 typedef std::array<unsigned long, 256> HistoArray;
 
+/* \brief Simple structure to store bits.
+ *
+ * This structure is used to store the bits for the compressor, it is
+ * used in the \ref CompressionBits array.
+ */
 struct Bits {
   unsigned data;
   unsigned bits;
@@ -75,7 +88,7 @@ public:
 
   Data(const std::vector<uint8_t> &inp) {
     if(inp.size() < 3) {
-      throw std::underflow_error("not enough bytes");
+      throw std::underflow_error("not enough bytes for Data");
     }
     loadaddr = (static_cast<uint16_t>(inp.at(1)) << 8) | inp.at(0);
     data.resize(inp.size() - 2);
@@ -90,6 +103,11 @@ Data read_data(const char *fname) {
   std::ifstream inp(fname, std::ios::binary);
   uint8_t tmp;
 
+  if(!inp) {
+    std::ostringstream out;
+    out << "can not open file '" << fname << '\'';
+    throw std::runtime_error(out.str());
+  };
   //So such iterator? std::copy(std::istreambuf_iterator<uint8_t>(inp), std::istreambuf_iterator<uint8_t>(), std::back_inserter(data));
   do {
     tmp = inp.get();
@@ -310,20 +328,32 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
   return n;
 }
 
+/*!\brief main function
+ *
+ * Main function which takes a single file name as an argument.
+ */
 int main(int argc, char **argv) {
   // Parse CLI
   if(argc < 2) {
     std::cerr << "xipz <filename>\n";
   } else {
-    Data data(read_data(argv[1]));
-    std::cout << "Bytes read (without load address): " << data.data.size() << std::endl;
-    std::cout << "Load address: " << data.get_loadaddr() << std::endl;
-    HistoArray histo(calc_histo(data.data));
-    std::vector<HistEntry> shisto(sort_histo(histo));
-    output_64_common(shisto);
-    int n = choose_optimal_n(data, shisto);
-    std::cout << "Optimal number of bits: N=" << n << std::endl;
-    CompressionBits compbits(create_compression_bits(shisto, n));
-    compress(argv[1], data, compbits, n, shisto);
+    try {
+      std::cout << "XiZ Version " << VERSION << std::endl;
+      Data data(read_data(argv[1]));
+      std::cout << "Bytes read (without load address): " << data.data.size() << std::endl;
+      std::cout << "Load address: " << data.get_loadaddr() << std::endl;
+      HistoArray histo(calc_histo(data.data));
+      std::vector<HistEntry> shisto(sort_histo(histo));
+      output_64_common(shisto);
+      int n = choose_optimal_n(data, shisto);
+      std::cout << "Optimal number of bits: N=" << n << std::endl;
+      CompressionBits compbits(create_compression_bits(shisto, n));
+      compress(argv[1], data, compbits, n, shisto);
+    }
+    catch(const std::exception &e) {
+      std::cerr << "Exception: " << e.what() << std::endl;
+      return -1;
+    }
   }
+  return 0;
 }

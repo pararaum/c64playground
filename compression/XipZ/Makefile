@@ -5,8 +5,11 @@ CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 #
 OBJS = xipz.o
 
-.PHONY:	all clean
-all:	decrunchxipzstub.inc xipz
+.PHONY:	all clean doc
+all:	decrunchxipzstub.inc xipz doc
+
+doc:
+	doxygen
 
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
@@ -19,6 +22,7 @@ clean:
 	rm -f *.lst *.map *.label *.o
 	rm -f decrunchxipzstub decrunchxipzstub.inc
 	rm -f xipz
+	rm -rf html
 
 xipz:	decrunchxipzstub.inc $(OBJS)
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS)
