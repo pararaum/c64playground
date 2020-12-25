@@ -28,4 +28,5 @@
 	;; $5A = pointer to src end+1
 	;; $58 = pointer to destination end+1
 	;; OUT: $58 = pointer to destination start-$100(!!!), the book seems to be wrong here!
+	;;	X=0, Y=0
 	MEMORY_MOVE = $A3BF
