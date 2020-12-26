@@ -31,10 +31,10 @@ install:	bin doc
 
 pkg:	bin doc
 	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
-	echo $(PKGTMP)
-	$(INSTALL) -p -s xipz $(PKGTMP)
-	cp -r html $(PKGTMP)
-	tar -C $(PKGTMP) -cjf xipz.tbz html xipz
+	mkdir $(PKGTMP)/xipz-$(VERSION)
+	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
+	cp -r html $(PKGTMP)/xipz-$(VERSION)
+	tar -C $(PKGTMP) -cjf xipz.tbz xipz-$(VERSION)
 
 doc:
 	doxygen
