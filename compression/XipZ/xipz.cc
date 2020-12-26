@@ -14,37 +14,44 @@
  * Source file containing the main function.
  */
 
+//! Version information.
 #define VERSION "0.0.0"
 
 /*
 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
-00000010  bd 37 08 95 58 ca 10 f8  20 bf a3 78 b9 40 08 99  |.7..X... ..x.@..|
-00000020  f7 00 c8 d0 f7 a5 58 18  69 ff 8d 18 01 a5 59 69  |......X.i.....Yi|
-End address to shift to: $38
-Pointer to End of Data: $3a. Set to $…+table_size+length_of_compressed_data.
-Pointer to Begin of Data: $3f. Set to $…+table_size
-00000030  00 8d 19 01 8a 4c ff 00  00 10 7f 08 54 37 44 7f  |.....L......T7D.|
-N: $48
-00000040  08 a8 f0 03 a0 08 2c a0  05 46 2b d0 14 66 2b e8  |......,..F+..f+.|
-High byte to stop reading at: $5a
-Jump: $5e
-00000050  d0 0f ee 19 01 48 ad 19  01 c9 10 d0 03 4c e2 fc  |.....H.......L..|
-00000060  68 1e 00 00 2a 88 30 d9  d0 df b0 04 a8 b9 36 01  |h...*.0.......6.|
-Destination address: $71
-00000070  8d 3c 03 a0 00 98 ee 27  01 d0 ce ee 28 01 d0 c9  |.<.....'....(...|
-
+00000010  bd 35 08 95 58 ca 10 f8  20 bf a3 78 b9 3e 08 99  |.5..X... ..x.>..|
+00000020  f7 00 c8 d0 f7 a5 58 18  69 ff aa a5 59 69 00 8d  |......X.i...Yi..|
+End address to shift to: $36
+Pointer to End of Data: $38. Set to $…+table_size+length_of_compressed_data.
+Pointer to Begin of Data: $3d. Set to $…+table_size
+00000030  19 01 98 4c ff 00 00 10  7d 08 54 37 44 7d 08 a8  |...L....}.T7D}..|
+N: $46
+00000040  f0 03 a0 08 2c a0 05 46  2b d0 14 66 2b e8 d0 0f  |....,..F+..f+...|
+High byte to stop reading at: $58
+Jump: $5c
+00000050  ee 19 01 48 ad 19 01 c9  10 d0 03 4c e2 fc 68 1e  |...H.......L..h.|
+Destination address: $6f
+00000060  00 00 2a 88 30 d9 d0 df  b0 04 a8 b9 36 01 8d 3c  |..*.0.......6..<|
+00000070  03 a0 00 98 ee 27 01 d0  ce ee 28 01 d0 c9        |.....'....(...|
 */
 #include "decrunchxipzstub.inc"
-#define POS_OF_END_OF_CDATA 0x3a
-#define POS_OF_BEGIN_OF_CDATA 0x3f
-#define POS_OF_N 0x48
-#define POS_OF_DEST 0x71
-#define POS_OF_JMP 0x5e
-#define POS_OF_STOPREADING 0x5a
+//! Position in the stub where the end of the compressed data is stored.
+#define POS_OF_END_OF_CDATA 0x38
+//! Position in the stub where the beginning of the compressed data is stored.
+#define POS_OF_BEGIN_OF_CDATA 0x3d
+//! Position in the stub where the end of the number of bits for the compression is stored.
+#define POS_OF_N 0x46
+//! Position in the stub where the address is stored at which the data is decompressed.
+#define POS_OF_DEST 0x6f
+//! Position in the stub where the address is stored at which the final JMP is performed.
+#define POS_OF_JMP 0x5c
+//! Position in the stub where the high byte of the destination address is stored at which the decompression process stops.
+#define POS_OF_STOPREADING 0x58
 
 
 //! \brief Array to hold the histogram.
 typedef std::array<unsigned long, 256> HistoArray;
+
 
 /* \brief Simple structure to store bits.
  *
@@ -52,12 +59,25 @@ typedef std::array<unsigned long, 256> HistoArray;
  * used in the \ref CompressionBits array.
  */
 struct Bits {
-  unsigned data;
-  unsigned bits;
+  unsigned data; //!< Storage area for the bits.
+  unsigned bits; //!< Number of bits stored.
 
+  //! Default Constructor
   Bits() : data(0), bits(0) {}
+  /*! Constructor with predefined data
+   *
+   * \param data_ bit data to initialise
+   * \param n number of bits in the data
+   */
   Bits(unsigned data_, unsigned n) : data(data_), bits(n) {}
 };
+
+
+/*! \brief Output operator for Bits
+ *
+ * This function will print the bits stored in a human-readable
+ * manner.
+ */
 std::ostream &operator<<(std::ostream &o, const Bits &x) {
   for(int i = x.bits - 1; i >= 0; --i) {
     if((x.data & (1 << i)) != 0) {
@@ -70,6 +90,10 @@ std::ostream &operator<<(std::ostream &o, const Bits &x) {
 }
   
 
+/*! \brief Histogram entry
+ *
+ * Stores a mapping of byte to byte frequency/count.
+ */
 class HistEntry {
 public:
   uint8_t byte;
@@ -78,14 +102,29 @@ public:
   bool operator<(const HistEntry &x) const { return freq > x.freq; }
 };
 
+
+//! Convenience type definition for an array of 256 byte counts.
 typedef std::array<Bits, 256> CompressionBits;
 
+
+/*! \brief Input data type.
+ *
+ * This class stores the loaded data and extracts the original load
+ * address. The data can be accessed via the public data member data.
+ */
 class Data {
 protected:
-  uint16_t loadaddr;
+  uint16_t loadaddr; //!< original load address
 public:
-  std::vector<uint8_t> data;
+  std::vector<uint8_t> data; //!< binary data without the load address
 
+  /*! \brief Constructor with raw binary data as input.
+   *
+   * Constructs the objects with the given binary data. The load
+   * address is extracted immediately.
+   *
+   * \param inp raw binary data, must be at least three bytes long
+   */
   Data(const std::vector<uint8_t> &inp) {
     if(inp.size() < 3) {
       throw std::underflow_error("not enough bytes for Data");
@@ -94,10 +133,31 @@ public:
     data.resize(inp.size() - 2);
     std::copy(inp.begin() + 2, inp.end(), data.begin());
   }
+  /*! \brief get load address of data
+   *
+   * Just returns the deducted load address.
+   *
+   * \return load address as an 16 bit unsigned integer.
+   */
   uint16_t get_loadaddr() const { return loadaddr; }
+  /*! \brief get data size
+   *
+   * Return the number of bytes in the data structure.
+   *
+   * \return number of bytes
+   */
   std::vector<uint8_t>::size_type size() const { return data.size(); }
 };
 
+
+/*! \brief Read data from a file
+ *
+ * Input is read and an exception is thrown if the file can not be
+ * opened.
+ *
+ * \param fname file name
+ * \return Data object with loaded binary data
+ */
 Data read_data(const char *fname) {
   std::vector<uint8_t> data;
   std::ifstream inp(fname, std::ios::binary);
@@ -118,6 +178,14 @@ Data read_data(const char *fname) {
   return Data(data);
 }
 
+
+/*! \brief calculate the histogram
+ *
+ * For each byte in the input data the frequency is calculated.
+ *
+ * \param data binary data
+ * \return An array of frequencies of type \ref HistoArray
+ */
 HistoArray calc_histo(const std::vector<uint8_t> &data) {
   HistoArray histo;
 
@@ -128,12 +196,30 @@ HistoArray calc_histo(const std::vector<uint8_t> &data) {
   return histo;
 }
 
+
+/*! \brief Output a histogram entry
+ *
+ * This is used to display the nice table of the 64 most common bytes.
+ *
+ * \param o output stream to write to
+ * \param x \ref HistEntry to output
+ * \return output stream for stl-conforming usage
+ */
 std::ostream &operator<<(std::ostream &o, const HistEntry &x) {
   o << '(' << x.freq << " * $" << std::hex << (int)x.byte << std::dec << ')';
   return o;
 }
 
 
+/*! \brief Sort histogram entries
+ *
+ * The histogram entries are sorted according to their
+ * frequencies. The most common bytes are moved to teh beginning of
+ * the array.
+ *
+ * \param harr array of histogram entries
+ * \return vector of histogram entries, sorted
+ */
 std::vector<HistEntry> sort_histo(const HistoArray &harr) {
   std::vector<HistEntry> shisto;
 
@@ -151,7 +237,7 @@ std::vector<HistEntry> sort_histo(const HistoArray &harr) {
  *
  * \param n number of bits
  * \param data file data
- * \param hitarr sorted histogram data
+ * \param histarr sorted histogram data
  * \return number of compressed bytes (with fractional part)
  */
 float calc_comp(int n, const Data &data, const std::vector<HistEntry> &histarr) {
@@ -170,6 +256,16 @@ float calc_comp(int n, const Data &data, const std::vector<HistEntry> &histarr) 
 }
 
 
+/*! \brief create compression table
+ *
+ * Generates a table of 256 entries where the \ref n bits are stored
+ * according to their frequency or the eight bits of the byte value if
+ * not compressed.
+ *
+ * \param compressable histogram entries for the generation of the compression table
+ * \param n how many bits to use
+ * \return Table of 256 entries containing the bits for each byte, type is \ref CompressionBits
+ */
 CompressionBits create_compression_bits(const std::vector<HistEntry> &compressable, int n) {
   CompressionBits bits;
   int i;
@@ -183,6 +279,20 @@ CompressionBits create_compression_bits(const std::vector<HistEntry> &compressab
   return bits;
 }
 
+
+/*! \brief write the decrunch stub
+ *
+ * The decrunching stub is written and all parameters like decrunching
+ * address and jump address are adjusted. Please take care to adjust
+ * all the defines above otherwise the code will probably just
+ * crash. It may also fry your cat so be careful!
+ *
+ * \param out output stream to write to
+ * \param n number of bits
+ * \param size number of compressed bytes
+ * \param jmp jump address to jump after decrunching
+ * \return output stream
+ */
 std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t jmp) {
   // Create a local copy.
   std::vector<uint8_t> stub(decrunchxipzstub, decrunchxipzstub + decrunchxipzstub_len);
@@ -215,6 +325,16 @@ std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t jmp) 
 }
 
 
+/*! \brief write compression table
+ *
+ * This table contains the 2^n most common bytes in order of
+ * decreasing frequency.
+ *
+ * \param out output stream to write to
+ * \param n number of bits
+ * \param histe histogram entries, they contain the sorted list of bytes
+ * \return output stream
+ */
 std::ostream &write_compression_table(std::ostream &out, int n, const std::vector<HistEntry> &histe) {
   for(int i = 0; i < (1 << n); ++i) {
     const HistEntry &curr = histe.at(i);
@@ -224,12 +344,35 @@ std::ostream &write_compression_table(std::ostream &out, int n, const std::vecto
 }
 
 
+/*! \brief write the compressed data
+ *
+ * Write the binary compressed data into the output stream.
+ *
+ * \param out output stream to write to
+ * \param data binary data to write
+ * \return output stream
+ */
 std::ostream &write_compressed_data(std::ostream &out, const std::vector<uint8_t> &data) {
   std::copy(data.begin(), data.end(), std::ostream_iterator<unsigned char>(out));
   return out;
 }
 
 
+/*! \brief Create compressed data 
+ *
+ * The table of compression bits (\ref CompressionBits) is all that is
+ * needed to compress the data in \ref data. Every output token is
+ * prepended with a '1' bit if it is a literal token (aka byte) or
+ * with a '0' bit if it is compressed data. In this case only the bits
+ * in the compbits table are written.
+ *
+ * If not a whole byte is filled at the end, then zero bits are
+ * appended.
+ *
+ * \param data binary data to crunch
+ * \param compbits compression table
+ * \return compressed data
+ */
 std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionBits &compbits) {
   unsigned long bitstore = 0;
   int bit = 0;
@@ -268,7 +411,21 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
 }
 
 
-void compress(const std::string &oldname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto) {
+/*! \brief Perform the whole crunching process.
+ *
+ * The following operations are performed:
+ *  - the compressed data is generated
+ *  - the decrunching stub is written
+ *  - the compression table is written
+ *  - finally the compressed data is written
+ *
+ * \param oldname original filename (a ".out" is added)
+ * \param data original data
+ * \param compbits the compression bits table
+ * \param n number of bits to use for compression
+ * \param shisto the sorted histogram array is needed
+ */
+void crunch(const std::string &oldname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto) {
   std::ofstream out(oldname + ".out", std::ios::binary);
   std::vector<uint8_t> cdata(create_compressed_data(data, compbits));
 
@@ -288,6 +445,10 @@ void compress(const std::string &oldname, const Data &data, const CompressionBit
 }
 
 
+/*! Output the most common bytes and their frequencies.
+ *
+ * \param shisto sorted histogram array
+ */
 void output_64_common(const std::vector<HistEntry> &shisto) {
   int count = 0;
 
@@ -328,6 +489,7 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
   return n;
 }
 
+
 /*!\brief main function
  *
  * Main function which takes a single file name as an argument.
@@ -348,7 +510,7 @@ int main(int argc, char **argv) {
       int n = choose_optimal_n(data, shisto);
       std::cout << "Optimal number of bits: N=" << n << std::endl;
       CompressionBits compbits(create_compression_bits(shisto, n));
-      compress(argv[1], data, compbits, n, shisto);
+      crunch(argv[1], data, compbits, n, shisto);
     }
     catch(const std::exception &e) {
       std::cerr << "Exception: " << e.what() << std::endl;

@@ -6,7 +6,7 @@ CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 OBJS = xipz.o
 
 .PHONY:	all clean doc
-all:	decrunchxipzstub.inc xipz doc
+all:	decrunchxipzstub.inc xipz
 
 doc:
 	doxygen

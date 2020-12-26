@@ -33,7 +33,7 @@ parameters:
 	.word	tocopy
 parameters_end:
 
-;;; Must be entered with X=0, Y=0, A=0.
+;;; Must be entered with X=lo byte of source address, Y=0, A=0.
 ;;; Must be entered via decrunch_entry!!!
 decrunchdata:
 	.org	DECRUNCHTARGET
@@ -105,9 +105,9 @@ _main:				; Must be the first code so that SYS works.
 	lda	$58		; Now add $00ff (256-1) to the pointer.
 	clc
 	adc	#$ff
-	sta	decrunch::sourceptr
+	tax			; Put into X for later use, see decunch_entry
 	lda	$59
 	adc	#$00		; Adjust to beginning of compressed data.
 	sta	decrunch::sourceptr+1
-	txa
+	tya			; Clear A
 	jmp	decrunch::decrunch_entry
