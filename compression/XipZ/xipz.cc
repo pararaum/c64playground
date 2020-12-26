@@ -8,14 +8,12 @@
 #include <numeric>
 #include <sstream>
 #include <boost/format.hpp>
+#include "xipz-version.hh"
 
 /*! \file xipz.cc
  *
  * Source file containing the main function.
  */
-
-//! Version information.
-#define VERSION "0.0.0"
 
 /*
 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|

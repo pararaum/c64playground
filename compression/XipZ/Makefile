@@ -2,6 +2,7 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
+VERSION = 0.0.0
 #
 OBJS = xipz.o
 #
@@ -16,9 +17,9 @@ bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
 
-.PHONY:	all bin clean install pkg
+.PHONY:	xipz-version.hh all bin clean install pkg
 
-all:	decrunchxipzstub.inc xipz
+all:	xipz-version.hh decrunchxipzstub.inc xipz
 
 bin:	xipz
 
@@ -37,6 +38,9 @@ pkg:	bin doc
 
 doc:
 	doxygen
+
+xipz-version.hh:
+	@sed -i 's/VERSION "\(.*\)"/VERSION "$(VERSION)"/' $@
 
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
