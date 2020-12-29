@@ -4,7 +4,7 @@ CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
 VERSION = 0.0.0
 #
-OBJS = xipz.o
+OBJS = xipz.o cmdline.o
 #
 PACKAGENAME=xipz
 prefix = $(DESTDIR)/usr/local
@@ -17,7 +17,7 @@ bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
 
-.PHONY:	xipz-version.hh all bin clean install pkg
+.PHONY:	xipz-version.hh command_line.ggo all bin clean install pkg
 
 all:	xipz-version.hh decrunchxipzstub.inc xipz
 
@@ -39,8 +39,14 @@ pkg:	bin doc
 doc:
 	doxygen
 
+cmdline.c: command_line.ggo
+	gengetopt -i $+
+
 xipz-version.hh:
 	@sed -i 's/VERSION "\(.*\)"/VERSION "$(VERSION)"/' $@
+
+command_line.ggo:
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $@
 
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
@@ -58,6 +64,7 @@ clean:
 distclean:
 	$(MAKE) clean
 	rm -f xipz.tbz
+	rm -f cmdline.*
 
 xipz:	decrunchxipzstub.inc $(OBJS)
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS)

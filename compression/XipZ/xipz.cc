@@ -9,6 +9,7 @@
 #include <sstream>
 #include <boost/format.hpp>
 #include "xipz-version.hh"
+#include "cmdline.h"
 
 /*! \file xipz.cc
  *
@@ -156,7 +157,7 @@ public:
  * \param fname file name
  * \return Data object with loaded binary data
  */
-Data read_data(const char *fname) {
+Data read_data(const std::string &fname) {
   std::vector<uint8_t> data;
   std::ifstream inp(fname, std::ios::binary);
   uint8_t tmp;
@@ -417,18 +418,23 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
  *  - the compression table is written
  *  - finally the compressed data is written
  *
- * \param oldname original filename (a ".out" is added)
+ * \param outname output filename
  * \param data original data
  * \param compbits the compression bits table
  * \param n number of bits to use for compression
  * \param shisto the sorted histogram array is needed
+ * \param raw should the compressed data be written raw (without decompression stub)
  */
-void crunch(const std::string &oldname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto) {
-  std::ofstream out(oldname + ".out", std::ios::binary);
+void crunch(const std::string &outname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto, bool raw) {
+  std::ofstream out(outname, std::ios::binary);
   std::vector<uint8_t> cdata(create_compressed_data(data, compbits));
 
-  std::cout << "Writing decrunching stub...\n";
-  write_stub(out, n, cdata.size(), data.get_loadaddr());
+  if(raw) {
+    std::cout << "Skipping writing the decrunching stub!\n";
+  } else {
+    std::cout << "Writing decrunching stub...\n";
+    write_stub(out, n, cdata.size(), data.get_loadaddr());
+  }
   std::cout << boost::format("Writing table, %d bytes...\n") % (1 << n);
   write_compression_table(out, n, shisto);
   std::cout << boost::format("Writing %u bytes compressed data...\n") % cdata.size();
@@ -488,32 +494,59 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
 }
 
 
-/*!\brief main function
+/*!\brief main function using xip
+ *
+ * Main function for compression using the xip algorithm.
+ *
+ * \param inputname input filename
+ * \param outputname outout filename
+ * \param raw should the compressed data be written raw (without decompression stub)
+ */
+int main_xip(const std::string &inputname, const std::string &outputname, bool raw) {
+  try {
+    std::cout << "XiZ Version " << VERSION << std::endl;
+    Data data(read_data(inputname));
+    std::cout << "Bytes read (without load address): " << data.data.size() << std::endl;
+    std::cout << "Load address: " << data.get_loadaddr() << std::endl;
+    HistoArray histo(calc_histo(data.data));
+    std::vector<HistEntry> shisto(sort_histo(histo));
+    output_64_common(shisto);
+    int n = choose_optimal_n(data, shisto);
+    std::cout << "Optimal number of bits: N=" << n << std::endl;
+    CompressionBits compbits(create_compression_bits(shisto, n));
+    crunch(outputname, data, compbits, n, shisto, raw);
+  }
+  catch(const std::exception &e) {
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+/*!\brief main function using xip
  *
  * Main function which takes a single file name as an argument.
  */
 int main(int argc, char **argv) {
-  // Parse CLI
-  if(argc < 2) {
-    std::cerr << "xipz <filename>\n";
+  gengetopt_args_info args;
+  int ret = -1;
+
+  if(cmdline_parser(argc, argv, &args) != 0) {
+    return 1;
   } else {
-    try {
-      std::cout << "XiZ Version " << VERSION << std::endl;
-      Data data(read_data(argv[1]));
-      std::cout << "Bytes read (without load address): " << data.data.size() << std::endl;
-      std::cout << "Load address: " << data.get_loadaddr() << std::endl;
-      HistoArray histo(calc_histo(data.data));
-      std::vector<HistEntry> shisto(sort_histo(histo));
-      output_64_common(shisto);
-      int n = choose_optimal_n(data, shisto);
-      std::cout << "Optimal number of bits: N=" << n << std::endl;
-      CompressionBits compbits(create_compression_bits(shisto, n));
-      crunch(argv[1], data, compbits, n, shisto);
+    if(args.inputs_num < 1) {
+      std::cerr << "At least one filename must be provided!\n";
+      return 1;
     }
-    catch(const std::exception &e) {
-      std::cerr << "Exception: " << e.what() << std::endl;
-      return -1;
+    std::string inpnam(args.inputs[0]);
+    std::string outnam;
+    if(args.inputs_num < 2) {
+      outnam = inpnam + (args.raw_given ? ".raw" : ".prg");
+    } else {
+      outnam = args.inputs[1];
     }
+
+    ret = main_xip(inpnam, outnam, args.raw_given);
   }
-  return 0;
+  return ret;
 }
