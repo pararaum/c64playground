@@ -2,7 +2,7 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
-VERSION = 0.0.0
+VERSION = 0.1.0
 #
 OBJS = xipz.o cmdline.o
 #
