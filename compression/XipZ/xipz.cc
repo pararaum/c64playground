@@ -9,6 +9,7 @@
 #include <sstream>
 #include <boost/format.hpp>
 #include "cmdline.h"
+#include "data.hh"
 
 /*! \file xipz.cc
  *
@@ -105,49 +106,6 @@ public:
 typedef std::array<Bits, 256> CompressionBits;
 
 
-/*! \brief Input data type.
- *
- * This class stores the loaded data and extracts the original load
- * address. The data can be accessed via the public data member data.
- */
-class Data {
-protected:
-  uint16_t loadaddr; //!< original load address
-public:
-  std::vector<uint8_t> data; //!< binary data without the load address
-
-  /*! \brief Constructor with raw binary data as input.
-   *
-   * Constructs the objects with the given binary data. The load
-   * address is extracted immediately.
-   *
-   * \param inp raw binary data, must be at least three bytes long
-   */
-  Data(const std::vector<uint8_t> &inp) {
-    if(inp.size() < 3) {
-      throw std::underflow_error("not enough bytes for Data");
-    }
-    loadaddr = (static_cast<uint16_t>(inp.at(1)) << 8) | inp.at(0);
-    data.resize(inp.size() - 2);
-    std::copy(inp.begin() + 2, inp.end(), data.begin());
-  }
-  /*! \brief get load address of data
-   *
-   * Just returns the deducted load address.
-   *
-   * \return load address as an 16 bit unsigned integer.
-   */
-  uint16_t get_loadaddr() const { return loadaddr; }
-  /*! \brief get data size
-   *
-   * Return the number of bytes in the data structure.
-   *
-   * \return number of bytes
-   */
-  std::vector<uint8_t>::size_type size() const { return data.size(); }
-};
-
-
 /*! \brief Read data from a file
  *
  * Input is read and an exception is thrown if the file can not be
@@ -184,7 +142,7 @@ Data read_data(const std::string &fname) {
  * \param data binary data
  * \return An array of frequencies of type \ref HistoArray
  */
-HistoArray calc_histo(const std::vector<uint8_t> &data) {
+HistoArray calc_histo(const Data &data) {
   HistoArray histo;
 
   histo.fill(0);
@@ -376,7 +334,7 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
   int bit = 0;
   std::vector<uint8_t> out;
 
-  for(auto i: data.data) {
+  for(auto i: data) {
     bitstore <<= 1; // Move one bit to the left.
     ++bit;
     if(compbits[i].bits == 8) {
@@ -479,7 +437,7 @@ void output_64_common(const std::vector<HistEntry> &shisto) {
  */
 int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
   int n = 0;
-  float minsize = data.data.size();
+  float minsize = data.size();
   float f;
 
   for(int i = 1; i <= 6; ++i) {
@@ -502,23 +460,17 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
  * \param raw should the compressed data be written raw (without decompression stub)
  */
 int main_xip(const std::string &inputname, const std::string &outputname, bool raw) {
-  try {
-    std::cout << "XiZ Version " << CMDLINE_PARSER_VERSION << std::endl;
-    Data data(read_data(inputname));
-    std::cout << "Bytes read (without load address): " << data.data.size() << std::endl;
-    std::cout << "Load address: " << data.get_loadaddr() << std::endl;
-    HistoArray histo(calc_histo(data.data));
-    std::vector<HistEntry> shisto(sort_histo(histo));
-    output_64_common(shisto);
-    int n = choose_optimal_n(data, shisto);
-    std::cout << "Optimal number of bits: N=" << n << std::endl;
-    CompressionBits compbits(create_compression_bits(shisto, n));
-    crunch(outputname, data, compbits, n, shisto, raw);
-  }
-  catch(const std::exception &e) {
-    std::cerr << "Exception: " << e.what() << std::endl;
-    return -1;
-  }
+  std::cout << "XiZ Version " << CMDLINE_PARSER_VERSION << std::endl;
+  Data data(read_data(inputname));
+  std::cout << "Bytes read (without load address): " << data.size() << std::endl;
+  std::cout << "Load address: " << data.get_loadaddr() << std::endl;
+  HistoArray histo(calc_histo(data));
+  std::vector<HistEntry> shisto(sort_histo(histo));
+  output_64_common(shisto);
+  int n = choose_optimal_n(data, shisto);
+  std::cout << "Optimal number of bits: N=" << n << std::endl;
+  CompressionBits compbits(create_compression_bits(shisto, n));
+  crunch(outputname, data, compbits, n, shisto, raw);
   return 0;
 }
 
@@ -537,15 +489,20 @@ int main(int argc, char **argv) {
       std::cerr << "At least one filename must be provided!\n";
       return 1;
     }
-    std::string inpnam(args.inputs[0]);
-    std::string outnam;
-    if(args.inputs_num < 2) {
-      outnam = inpnam + (args.raw_given ? ".raw" : ".prg");
-    } else {
-      outnam = args.inputs[1];
+    try {
+      std::string inpnam(args.inputs[0]);
+      std::string outnam;
+      if(args.inputs_num < 2) {
+	outnam = inpnam + (args.raw_given ? ".raw" : ".prg");
+      } else {
+	outnam = args.inputs[1];
+      }
+      ret = main_xip(inpnam, outnam, args.raw_given);
     }
-
-    ret = main_xip(inpnam, outnam, args.raw_given);
+    catch(const std::exception &e) {
+      std::cerr << "Exception: " << e.what() << std::endl;
+      ret = -1;
+    }
   }
   return ret;
 }
