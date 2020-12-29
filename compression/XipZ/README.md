@@ -23,13 +23,30 @@ or has a jump prepended.
 the top element of the stack as the decode leaves a garbage byte on
 the stack. This was done so save byte in the decompressor.
 
+## Simple Usage ##
+
 The XipZ executable is called via:
 
-	xipz <filename>
+	xipz [OPTION]… <filename> [<outputfilename>]
 
 It will create a file named like the original file but with an added
-".out". This is the C64 binary which can be loaded with `load
+".prg". This is the C64 binary which can be loaded with `load
 "*",8`. Start this program with `RUN`.
+
+## Advanced Usage ##
+
+XipZ has some advanced features which can be used like writing in a
+"raw" version where no decrunching stub is added (in this case the
+default extension added is, of course, ".raw"). For further help just
+call the executable with the "-h" option switch, like this `xipz -h`.
+
+Here is an excerpt from the command-line help:
+
+	Usage: XipZ [OPTION]...  <filename> [<outputfilename>]
+
+	  -h, --help     Print help and exit
+	  -V, --version  Print version and exit
+	  -r, --raw      output raw crunched data without header  (default=off)
 
 # Building #
 
@@ -42,6 +59,7 @@ The following tools and packages are needed:
  * cc65
  * xxd, hd
  * libboost-dev
+ * gengetopt
 
 ## Compilation ##
 
