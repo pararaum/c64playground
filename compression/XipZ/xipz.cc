@@ -10,6 +10,7 @@
 #include <boost/format.hpp>
 #include "cmdline.h"
 #include "data.hh"
+#include "qadz.hh"
 
 /*! \file xipz.cc
  *
@@ -115,7 +116,7 @@ typedef std::array<Bits, 256> CompressionBits;
  * \return Data object with loaded binary data
  */
 Data read_data(const std::string &fname) {
-  std::vector<uint8_t> data;
+  std::vector<uint8_t> rawdata;
   std::ifstream inp(fname, std::ios::binary);
   uint8_t tmp;
 
@@ -124,14 +125,17 @@ Data read_data(const std::string &fname) {
     out << "can not open file '" << fname << '\'';
     throw std::runtime_error(out.str());
   };
-  //So such iterator? std::copy(std::istreambuf_iterator<uint8_t>(inp), std::istreambuf_iterator<uint8_t>(), std::back_inserter(data));
+  //So such iterator? std::copy(std::istreambuf_iterator<uint8_t>(inp), std::istreambuf_iterator<uint8_t>(), std::back_inserter(rawdata));
   do {
     tmp = inp.get();
     if(!inp.eof()) {
-      data.push_back(tmp);
+      rawdata.push_back(tmp);
     }
   } while(inp);
-  return Data(data);
+  Data data(rawdata);
+  std::cout << "Bytes read (without load address): " << data.size() << std::endl;
+  std::cout << "Load address: " << data.get_loadaddr() << std::endl;
+  return data;
 }
 
 
@@ -460,10 +464,7 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
  * \param raw should the compressed data be written raw (without decompression stub)
  */
 int main_xip(const std::string &inputname, const std::string &outputname, bool raw) {
-  std::cout << "XiZ Version " << CMDLINE_PARSER_VERSION << std::endl;
   Data data(read_data(inputname));
-  std::cout << "Bytes read (without load address): " << data.size() << std::endl;
-  std::cout << "Load address: " << data.get_loadaddr() << std::endl;
   HistoArray histo(calc_histo(data));
   std::vector<HistEntry> shisto(sort_histo(histo));
   output_64_common(shisto);
@@ -471,6 +472,23 @@ int main_xip(const std::string &inputname, const std::string &outputname, bool r
   std::cout << "Optimal number of bits: N=" << n << std::endl;
   CompressionBits compbits(create_compression_bits(shisto, n));
   crunch(outputname, data, compbits, n, shisto, raw);
+  return 0;
+}
+
+/*!\brief main function using qadz
+ *
+ * Main function for compression using the qadz (LZ77-like) algorithm.
+ *
+ * \param inputname input filename
+ * \param outputname outout filename
+ * \param raw should the compressed data be written raw (without decompression stub)
+ */
+int main_qadz(const std::string &inputname, const std::string &outputname, bool raw) {
+  Data data(read_data(inputname));
+  std::vector<uint8_t> compressed(crunch_qadz(data));
+  std::cout << "Compressed size: " << compressed.size() << std::endl;
+  std::ofstream out(outputname);
+  write_compressed_data(out,compressed);
   return 0;
 }
 
@@ -489,6 +507,7 @@ int main(int argc, char **argv) {
       std::cerr << "At least one filename must be provided!\n";
       return 1;
     }
+    std::cout << "XiZ Version " << CMDLINE_PARSER_VERSION << std::endl;
     try {
       std::string inpnam(args.inputs[0]);
       std::string outnam;

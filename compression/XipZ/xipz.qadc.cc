@@ -5,6 +5,14 @@
 #include <vector>
 #include <boost/format.hpp>
 #include <stdio.h>
+#include "data.hh"
+
+/*! \file
+ *
+ * Simpe LZ77 like compression routine. It is optimised to use while
+ * bytes as using nybbles is quite expensinve on an architecture like
+ * the 6502. This make LZ4 painful.
+ */
 
 #define LOOK_BACK 255
 #define MAX_LEN 128
@@ -12,12 +20,6 @@
 
 using namespace std;
 using boost::format;
-/*! \file xipz-qadc.cc
- *
- * An experimental alternative compression routine which should lead
- * to a very small decompression program.
- */
-
 
 int decrunch_main(int argc, char **argv) {
   FILE *inpf;
@@ -61,49 +63,47 @@ int decrunch_main(int argc, char **argv) {
   return 0;
 }
 
-int crunch_main(int argc, char **argv) {
-  vector<char> data(LOOK_BACK);
-  ifstream in;
-  istream *inptr; //Easier to handle stdin and file this way...
+std::vector<uint8_t> crunch_qadz(const Data &data) {
+  vector<uint8_t> lookback(LOOK_BACK);
   struct Outclass {
     long out_bytes;
     vector<char> buf;
+    std::vector<uint8_t> out;
 
     Outclass() : out_bytes(0), buf(MAX_PLAIN_LEN) {}
-    ~Outclass() { putc(0); flush(); }
+    ~Outclass() {
+      putc(0);
+      flush();
+    }
     void flush() { 
       if(out_bytes > 0) {
-	cout << static_cast<char>(out_bytes);
-	copy(buf.begin(), buf.begin() + out_bytes, ostream_iterator<char>(cout));
+	out.push_back(static_cast<uint8_t>(out_bytes));
+	copy(buf.begin(), buf.begin() + out_bytes, back_inserter(out));
 	out_bytes = 0;
       }
     }
-    void putc(char c) { buf[out_bytes++] = c; if(out_bytes == MAX_PLAIN_LEN) flush(); }
+    void putc(char c) {
+      buf[out_bytes++] = c;
+      if(out_bytes == MAX_PLAIN_LEN) {
+	flush();
+      }
+    }
     void puttoken(long pos, long len) { 
-      cout << static_cast<signed char>(-len) << static_cast<unsigned char>(-pos);
+      out.push_back(static_cast<uint8_t>(-len));
+      out.push_back(static_cast<uint8_t>(-pos));
     }	   
   } outclass;
 
-  switch(argc) {
-  case 1:
-    inptr = &cin;
-    break;
-  case 2:
-    in.open(argv[1]);
-    if(!in) { cerr << "Error opening file!\n"; return 2; }
-    inptr = &in;
-    break;
-  default:
-    cerr << "Usage: qadc [FILENAME]\n";
-    return 1;
-  }
-  copy(istreambuf_iterator<char>(*inptr), istreambuf_iterator<char>(), back_inserter(data));
-  //copy(data.begin(), data.end(), ostream_iterator<signed char>(cout));
-  for(long pos = LOOK_BACK; pos < data.size(); ++pos) {
-    long cmpi, cmpj, posi, match = 0;
+  //Todo: Fix this! No look back at the beginning! This will fail if
+  //there are a lot of zeros in the 6502 decompressor!
+  std::copy(data.begin(), data.end(), std::back_inserter(lookback));
+  for(unsigned long pos = LOOK_BACK; pos < lookback.size(); ++pos) {
+    unsigned long cmpi, cmpj, posi, match = 0;
     for(cmpj = 0; cmpj < LOOK_BACK; cmpj++) {
       for(cmpi = 0; cmpi < MAX_LEN; ++cmpi)
-	if(pos + cmpi >= data.size() || cmpi + cmpj >= LOOK_BACK || data.at(pos - LOOK_BACK + cmpj + cmpi) != data.at(pos + cmpi)) break;
+	if(pos + cmpi >= lookback.size() || cmpi + cmpj >= LOOK_BACK || lookback[pos - LOOK_BACK + cmpj + cmpi] != lookback[pos + cmpi]) {
+	  break;
+	}
       //cout << format("cmpi=%ld\n") % cmpi;
       if(cmpi > match) {
 	posi = cmpj - LOOK_BACK;
@@ -111,7 +111,7 @@ int crunch_main(int argc, char **argv) {
       }
     }
     if(match < 3) {
-      outclass.putc(data[pos]);
+      outclass.putc(lookback[pos]);
     } else {
       outclass.flush();
       outclass.puttoken(posi, match);
@@ -119,5 +119,5 @@ int crunch_main(int argc, char **argv) {
       pos += match - 1;
     }
   }
-  return 0;
+  return outclass.out;
 }
