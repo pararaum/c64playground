@@ -8,7 +8,6 @@
 #include <numeric>
 #include <sstream>
 #include <boost/format.hpp>
-#include "xipz-version.hh"
 #include "cmdline.h"
 
 /*! \file xipz.cc
@@ -504,7 +503,7 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
  */
 int main_xip(const std::string &inputname, const std::string &outputname, bool raw) {
   try {
-    std::cout << "XiZ Version " << VERSION << std::endl;
+    std::cout << "XiZ Version " << CMDLINE_PARSER_VERSION << std::endl;
     Data data(read_data(inputname));
     std::cout << "Bytes read (without load address): " << data.data.size() << std::endl;
     std::cout << "Load address: " << data.get_loadaddr() << std::endl;

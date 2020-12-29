@@ -17,9 +17,9 @@ bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
 
-.PHONY:	xipz-version.hh command_line.ggo all bin clean install pkg
+.PHONY:	command_line.ggo all bin clean install pkg
 
-all:	xipz-version.hh decrunchxipzstub.inc xipz
+all:	decrunchxipzstub.inc xipz
 
 bin:	xipz
 
@@ -41,9 +41,6 @@ doc:
 
 cmdline.c: command_line.ggo
 	gengetopt -i $+
-
-xipz-version.hh:
-	@sed -i 's/VERSION "\(.*\)"/VERSION "$(VERSION)"/' $@
 
 command_line.ggo:
 	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $@
