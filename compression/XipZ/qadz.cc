@@ -5,6 +5,8 @@
 #include <vector>
 #include <boost/format.hpp>
 #include <stdio.h>
+#include <stdint.h>
+#include <limits.h>
 #include "data.hh"
 
 /*! \file
@@ -64,6 +66,7 @@ int decrunch_main(int argc, char **argv) {
 }
 
 std::vector<uint8_t> crunch_qadz(const Data &data) {
+  long datasize = static_cast<long>(data.size());
   struct Outclass {
     std::vector<uint8_t> buf; //!< temporary buffer to collect plain tokens
     std::vector<uint8_t> out;
@@ -86,18 +89,22 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
 	flush();
       }
     }
-    void puttoken(long pos, long len) { 
+    void puttoken(int pos, int len) { 
       flush();
       out.push_back(static_cast<uint8_t>(-len));
-      out.push_back(static_cast<uint8_t>(-pos));
+      out.push_back(static_cast<uint8_t>(pos));
     }
   } outclass;
 
-  for(long pos = 0; pos < static_cast<long>(data.size()); ++pos) {
-    long posi;
+  /* This is not the fastest nor the smartest way to perform the
+     search. Improve in future! */
+  for(long pos = 0; pos < datasize; ++pos) {
+    long posi = LONG_MIN;
+    int cmpi = INT_MIN;
+    int cmpj;
     int max_look_back;
     int max_look_ahead;
-    unsigned long match = 0;
+    int match = INT_MIN;
     // Move backwards from the current position.
     if(pos >= LOOK_BACK) {
       // There is enough space to do a full look back.
@@ -106,26 +113,27 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
       // Only go back to the beginning.
       max_look_back = pos;
     }
-    for(int cmpj = max_look_back; cmpj >= 0; --cmpj) {
+    //std::cout << "max_look_back: " << max_look_back << std::endl;
+    for(cmpj = max_look_back; cmpj > 0; --cmpj) {
       // Inner loop for comparison.
-      for(int cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
-	if(pos - cmpj + cmpi < 0) {
-	  // We are out of bounds.
-	  break;
-	}
-	if(pos + cmpi >= data.size()) {
-	  // We are out of bounds.
-	  break;
-	}
+      if(pos + MAX_LEN < datasize) {
+	max_look_ahead = MAX_LEN;
+      } else {
+	max_look_ahead = datasize - pos;
+      }
+      //std::cout << "max_look_ahead: " << max_look_ahead << std::endl;
+      for(cmpi = 0; cmpi < max_look_ahead; ++cmpi) {
 	if(data[pos - cmpj + cmpi] != data[pos + cmpi]) {
 	  break;
 	}
-	std::cout << format("pos=%lu '%c' cmpi=%lu cmpj=%lu match=%lu\n") % pos % data[pos] % cmpi % cmpj % match;
-	if(cmpi > match) {
-	  posi = cmpj - LOOK_BACK;
-	  match = cmpi;
-	}
+	//std::cout << format("pos=%lu '%c' cmpi=%d cmpj=%d\n") % pos % data[pos] % cmpi % cmpj;
       }
+      //std::cout << format("cmpi=%d match=%lu → ") % cmpi % match;
+      if(cmpi > match) {
+	posi = cmpj;
+	match = cmpi;
+      }
+      //std::cout << format("cmpi=%d match=%lu\n") % cmpi % match;
     }
     if(match < 3) {
       outclass.putc(data[pos]);
@@ -135,5 +143,6 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
       pos += match - 1;
     }
   }
+  outclass.flush();
   return outclass.out;
 }
