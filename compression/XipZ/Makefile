@@ -50,9 +50,16 @@ decrunchxipzstub.inc:	decrunchxipzstub
 	xxd -i $+ > $@
 	hd $+
 
+decrunchqadzstub.inc:	decrunchqadzstub
+	xxd -i $+ > $@
+	hd $+
+
+decrunchqadzstub:	decrunchqadzstub.s
+	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+
 clean:
 	rm -f *.lst *.map *.label *.o
-	rm -f decrunchxipzstub decrunchxipzstub.inc
+	rm -f decrunchqadzstub decrunchxipzstub decrunchxipzstub.inc
 	rm -f xipz
 	rm -rf html
 
@@ -61,5 +68,5 @@ distclean:
 	rm -f xipz.tbz
 	rm -f cmdline.*
 
-xipz:	decrunchxipzstub.inc $(OBJS)
+xipz:	decrunchxipzstub.inc decrunchqadzstub.inc $(OBJS)
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS)

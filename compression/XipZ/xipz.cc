@@ -488,8 +488,9 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
   std::vector<uint8_t> compressed(crunch_qadz(data));
   std::cout << "Compressed size: " << compressed.size() << std::endl;
   std::ofstream out(outputname);
-  if(raw) {
-    std::cerr << "Warning! Raw was ignored!\n";
+  if(!raw) {
+    std::cout << "Writing decrunching stub...\n";
+    write_qadz_stub(out, compressed.size(), data.get_loadaddr());
   }
   write_compressed_data(out,compressed);
   return 0;

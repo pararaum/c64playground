@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include "data.hh"
+#include "decrunchqadzstub.inc"
 
 /*! \file
  *
@@ -65,6 +66,49 @@ int decrunch_main(int argc, char **argv) {
   return 0;
 }
 
+
+std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t jmp) {
+  // Create a local copy.
+  std::vector<uint8_t> stub(decrunchqadzstub, decrunchqadzstub + decrunchqadzstub_len);
+// 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
+// 00000010  bd 31 08 95 58 ca 10 f8  20 bf a3 78 b9 3a 08 99  |.1..X... ..x.:..|
+// 00000020  f7 00 c8 d0 f7 e6 59 a9  3c 85 26 a9 03 85 27 4c  |......Y.<.&...'L|
+// 00000030  f7 00 00 10 a4 08 54 37  44 a4 08 a0 00 b1 58 30  |......T7D.....X0|
+// 00000040  1d d0 03 4c 3c 03 aa a8  e6 58 d0 02 e6 59 b1 58  |...L<....X...Y.X|
+// 00000050  91 26 88 10 f9 20 47 01  20 54 01 4c f7 00 49 ff  |.&... G. T.L..I.|
+// 00000060  18 69 01 aa c8 b1 58 8d  2a 01 a5 58 38 e9 00 85  |.i....X.*..X8...|
+// 00000070  28 a5 59 e9 00 85 29 8a  a8 b1 28 91 26 88 10 f9  |(.Y...)...(.&...|
+// 00000080  20 54 01 a2 02 20 47 01  4c f7 00 8a 18 65 58 85  | T... G.L....eX.|
+// 00000090  58 a5 59 69 00 85 59 60  8a 18 65 26 85 26 a5 27  |X.Yi..Y`..e&.&.'|
+// 000000a0  69 00 85 27 60                                    |i..'`|
+  const int POS_OF_JMP = 0x44;
+  const int POS_OF_END_OF_CDATA = 0x34;
+  //const int POS_OF_BEGIN_OF_CDATA = 0x39;
+  const int POS_OF_DEST_LOW = 0x28;
+  const int POS_OF_DEST_HIGH = 0x2c;
+  unsigned endptr = stub.at(POS_OF_END_OF_CDATA) | (stub.at(POS_OF_END_OF_CDATA + 1) << 8);
+  // unsigned beginptr = stub.at(POS_OF_BEGIN_OF_CDATA) | (stub.at(POS_OF_BEGIN_OF_CDATA + 1) << 8);
+  
+  // Assign new end of compressed data.
+  endptr += size; // Add number of bytes of compressed data.
+  endptr += 1; // End pointer must point to the byte *after* the data.
+  stub.at(POS_OF_END_OF_CDATA) = endptr & 0xFF;
+  stub.at(POS_OF_END_OF_CDATA + 1) = (endptr >> 8) & 0xFF;
+  // Assign the new jmp position.
+  stub.at(POS_OF_JMP) = jmp & 0xFF;
+  stub.at(POS_OF_JMP + 1) = (jmp >> 8) & 0xFF;
+  // Assign destination address.
+  stub.at(POS_OF_DEST_LOW) = jmp & 0xFF;
+  stub.at(POS_OF_DEST_HIGH) = (jmp >> 8) & 0xFF;
+  // Set the maximal read position high-byte.
+  //stub.at(POS_OF_STOPREADING) = 0x10; // Todo: configurable!
+  // Now copy the modified stub.
+  std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
+  return out;
+}
+
+
+
 std::vector<uint8_t> crunch_qadz(const Data &data) {
   long datasize = static_cast<long>(data.size());
   struct Outclass {
@@ -117,7 +161,7 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
 #endif
     for(cmpj = max_look_back; cmpj > 0; --cmpj) {
       // Inner loop for comparison.
-      for(cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
+      for(cmpi = 0; cmpi < (cmpj < MAX_LEN ? cmpj : MAX_LEN); ++cmpi) {
 	if(pos + cmpi >= datasize) {
 	  // End of data reached.
 	  break;
