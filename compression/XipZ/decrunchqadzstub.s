@@ -58,10 +58,9 @@ litcop:	lda	(SRCPTR),y
 	jsr	incdst
 	jmp	decrunch
 backref:
-	eor	#$ff		; Negate A
-	clc
-	adc	#1
+	eor	#$ff		; Negate A, see below
 	tax			; Keep run length safe.
+	inx			; see above, negate is eor #$ff, then +1
 	iny
 	lda	(SRCPTR),y	; How far to go back?
 	sta	@sbc		; Self-modifying trick.
