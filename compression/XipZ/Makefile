@@ -2,7 +2,7 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
-VERSION = 0.1.0
+VERSION = 0.2.0
 #
 OBJS = xipz.o cmdline.o qadz.o
 #
@@ -30,7 +30,7 @@ install:	bin doc
 	cp -r README.md html $(docdir)
 
 pkg:	bin doc
-	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $@
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' command_line.ggo
 	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
 	mkdir $(PKGTMP)/xipz-$(VERSION)
 	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
