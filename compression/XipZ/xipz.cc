@@ -492,7 +492,7 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
     std::cout << "Writing decrunching stub...\n";
     write_qadz_stub(out, compressed.size(), data.get_loadaddr());
   }
-  write_compressed_data(out,compressed);
+  write_compressed_data(out, compressed);
   return 0;
 }
 
