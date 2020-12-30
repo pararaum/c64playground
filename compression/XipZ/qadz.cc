@@ -103,7 +103,6 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
     int cmpi = INT_MIN;
     int cmpj;
     int max_look_back;
-    int max_look_ahead;
     int match = INT_MIN;
     // Move backwards from the current position.
     if(pos >= LOOK_BACK) {
@@ -113,16 +112,16 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
       // Only go back to the beginning.
       max_look_back = pos;
     }
-    //std::cout << "max_look_back: " << max_look_back << std::endl;
+#ifdef DEBUG
+    std::cout << "pos: " << pos << " max_look_back: " << max_look_back << std::endl;
+#endif
     for(cmpj = max_look_back; cmpj > 0; --cmpj) {
       // Inner loop for comparison.
-      if(pos + MAX_LEN < datasize) {
-	max_look_ahead = MAX_LEN;
-      } else {
-	max_look_ahead = datasize - pos;
-      }
-      //std::cout << "max_look_ahead: " << max_look_ahead << std::endl;
-      for(cmpi = 0; cmpi < max_look_ahead; ++cmpi) {
+      for(cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
+	if(pos + cmpi >= datasize) {
+	  // End of data reached.
+	  break;
+	}
 	if(data[pos - cmpj + cmpi] != data[pos + cmpi]) {
 	  break;
 	}
