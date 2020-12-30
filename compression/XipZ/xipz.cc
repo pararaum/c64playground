@@ -250,10 +250,11 @@ CompressionBits create_compression_bits(const std::vector<HistEntry> &compressab
  * \param out output stream to write to
  * \param n number of bits
  * \param size number of compressed bytes
+ * \param loadaddr original load address
  * \param jmp jump address to jump after decrunching
  * \return output stream
  */
-std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t jmp) {
+std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
   // Create a local copy.
   std::vector<uint8_t> stub(decrunchxipzstub, decrunchxipzstub + decrunchxipzstub_len);
   unsigned endptr = stub.at(POS_OF_END_OF_CDATA) | (stub.at(POS_OF_END_OF_CDATA + 1) << 8);
@@ -275,8 +276,8 @@ std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t jmp) 
   stub.at(POS_OF_JMP) = jmp & 0xFF;
   stub.at(POS_OF_JMP + 1) = (jmp >> 8) & 0xFF;
   // Assign the destination position (currently equals the jump).
-  stub.at(POS_OF_DEST) = jmp & 0xFF;
-  stub.at(POS_OF_DEST + 1) = (jmp >> 8) & 0xFF;
+  stub.at(POS_OF_DEST) = loadaddr & 0xFF;
+  stub.at(POS_OF_DEST + 1) = (loadaddr >> 8) & 0xFF;
   // Set the maximal read position high-byte.
   stub.at(POS_OF_STOPREADING) = 0x10; // Todo: configurable!
   // Now copy the modified stub.
@@ -385,8 +386,9 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
  * \param n number of bits to use for compression
  * \param shisto the sorted histogram array is needed
  * \param raw should the compressed data be written raw (without decompression stub)
+ * \param ujmp jump address to jump after decrunching
  */
-void crunch(const std::string &outname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto, bool raw) {
+void crunch(const std::string &outname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto, bool raw, uint16_t jump) {
   std::ofstream out(outname, std::ios::binary);
   std::vector<uint8_t> cdata(create_compressed_data(data, compbits));
 
@@ -394,7 +396,7 @@ void crunch(const std::string &outname, const Data &data, const CompressionBits 
     std::cout << "Skipping writing the decrunching stub!\n";
   } else {
     std::cout << "Writing decrunching stub...\n";
-    write_stub(out, n, cdata.size(), data.get_loadaddr());
+    write_stub(out, n, cdata.size(), data.get_loadaddr(), jump);
   }
   std::cout << boost::format("Writing table, %d bytes...\n") % (1 << n);
   write_compression_table(out, n, shisto);
@@ -462,8 +464,9 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
  * \param inputname input filename
  * \param outputname outout filename
  * \param raw should the compressed data be written raw (without decompression stub)
+ * \param jump jump address, -1 = equal to load address
  */
-int main_xip(const std::string &inputname, const std::string &outputname, bool raw) {
+int main_xip(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
   Data data(read_data(inputname));
   HistoArray histo(calc_histo(data));
   std::vector<HistEntry> shisto(sort_histo(histo));
@@ -471,7 +474,8 @@ int main_xip(const std::string &inputname, const std::string &outputname, bool r
   int n = choose_optimal_n(data, shisto);
   std::cout << "Optimal number of bits: N=" << n << std::endl;
   CompressionBits compbits(create_compression_bits(shisto, n));
-  crunch(outputname, data, compbits, n, shisto, raw);
+  uint16_t jumpaddr = jump < 0 ? data.get_loadaddr() : jump;
+  crunch(outputname, data, compbits, n, shisto, raw, jumpaddr);
   return 0;
 }
 
@@ -482,15 +486,23 @@ int main_xip(const std::string &inputname, const std::string &outputname, bool r
  * \param inputname input filename
  * \param outputname outout filename
  * \param raw should the compressed data be written raw (without decompression stub)
+ * \param jump jump address, -1 = equal to load address
  */
-int main_qadz(const std::string &inputname, const std::string &outputname, bool raw) {
+int main_qadz(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
+  uint16_t jumpaddr;
+
   Data data(read_data(inputname));
   std::vector<uint8_t> compressed(crunch_qadz(data));
   std::cout << "Compressed size: " << compressed.size() << std::endl;
   std::ofstream out(outputname);
   if(!raw) {
+    if(jump >= 0) {
+      jumpaddr = jump;
+    } else {
+      jumpaddr = data.get_loadaddr();
+    }
     std::cout << "Writing decrunching stub...\n";
-    write_qadz_stub(out, compressed.size(), data.get_loadaddr());
+    write_qadz_stub(out, compressed.size(), data.get_loadaddr(), jumpaddr);
   }
   write_compressed_data(out, compressed);
   return 0;
@@ -523,10 +535,10 @@ int main(int argc, char **argv) {
       }
       switch(args.algorithm_arg) {
       case algorithm_arg_xipz:
-	ret = main_xip(inpnam, outnam, args.raw_given);
+	ret = main_xip(inpnam, outnam, args.raw_given, args.jump_arg);
 	break;
       case algorithm_arg_qadz:
-	ret = main_qadz(inpnam, outnam, args.raw_given);
+	ret = main_qadz(inpnam, outnam, args.raw_given, args.jump_arg);
 	break;
       case algorithm__NULL:
 	throw std::logic_error("algorithm vanished");

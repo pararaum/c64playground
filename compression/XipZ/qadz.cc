@@ -67,7 +67,7 @@ int decrunch_main(int argc, char **argv) {
 }
 
 
-std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t jmp) {
+std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
   // Create a local copy.
   std::vector<uint8_t> stub(decrunchqadzstub, decrunchqadzstub + decrunchqadzstub_len);
 // 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
@@ -98,8 +98,8 @@ std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t jmp) {
   stub.at(POS_OF_JMP) = jmp & 0xFF;
   stub.at(POS_OF_JMP + 1) = (jmp >> 8) & 0xFF;
   // Assign destination address.
-  stub.at(POS_OF_DEST_LOW) = jmp & 0xFF;
-  stub.at(POS_OF_DEST_HIGH) = (jmp >> 8) & 0xFF;
+  stub.at(POS_OF_DEST_LOW) = loadaddr & 0xFF;
+  stub.at(POS_OF_DEST_HIGH) = (loadaddr >> 8) & 0xFF;
   // Set the maximal read position high-byte.
   //stub.at(POS_OF_STOPREADING) = 0x10; // Todo: configurable!
   // Now copy the modified stub.
