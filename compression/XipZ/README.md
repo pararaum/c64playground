@@ -1,15 +1,16 @@
 # XipZ #
 
-Another special purpose decruncher for very small games, demos,
-etc. It is based on the ideas of XIP by S. Judd but we needed a
-runnable version with a basic header and the maximum memory position
-to use was $0FFF.
-
-Xip is designed for a very specific task:
+XipZ is designed for a very specific task:
 https://itch.io/jam/the-c64-cassette-50-charity-competition. The
 design goal was to have a small stub with a decent compression ration
 while meeting the competition rules.
 
+It is another special purpose decruncher for very small games, demos,
+etc. It is based on the ideas of XIP by S. Judd and has a cruncher
+which uses an algorithm similar to LZ77 compressors.
+
+The program has to be runnable vir `RUN` therefore we needed a basic
+header and the maximum memory position to use was $0FFF.
 
 # Usage #
 
@@ -21,7 +22,7 @@ or has a jump prepended.
 
 *Warning!* If you like to return to the OS via `RTS` make sure to pull
 the top element of the stack as the decode leaves a garbage byte on
-the stack. This was done so save byte in the decompressor.
+the stack. This was done to save some bytes in the decompressor.
 
 ## Simple Usage ##
 
@@ -44,9 +45,10 @@ Here is an excerpt from the command-line help:
 
 	Usage: XipZ [OPTION]...  <filename> [<outputfilename>]
 
-	  -h, --help     Print help and exit
-	  -V, --version  Print version and exit
-	  -r, --raw      output raw crunched data without header  (default=off)
+	-h, --help            Print help and exit
+	-V, --version         Print version and exit
+	-r, --raw             output raw crunched data without header  (default=off)
+	-a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz", "qadz" default=`xipz')
 
 # Building #
 
@@ -65,15 +67,9 @@ The following tools and packages are needed:
 
 Usually a `make` should be sufficient to build the executable.
 
+# Algorithms #
 
-# Maximizing compression #
-
-## Algorithm ##
-
-The following text was taken mostly verbatim from XIPs manual.
-
-Optimizing a program for xip is not very hard and can easily get you
-several dozen more bytes.
+## XipZ ##
 
 A very simple algorithm is used.  It has to, to keep the decompression
 routine small.  All it does is assign n bits to the most common
@@ -89,7 +85,38 @@ The decompression algorithm is:
 
 The decoding stops when the source pointer hits 0x1000.
 
-## Some thoughs on maximising compression ##
+## qadz ##
+
+This is a LZ77 variant. The stream is scanned for recurring byte
+sequences and these are stored as back references. Data is then
+classified as either a literal token run or as a back reference
+token. These are emitted into the output stream.
+
+The decompression is done as following:
+
+ * Get a single byte from the stream as a signed eight bit integer.
+   - If it is zero, the decompression ends
+   - If it is greater than zero the following number of bytes are
+     copied verbatim into the output.
+   - If it is less than zero, it is negated and a further byte is
+     read. This last byte will inticate how far to go back and the
+     negated byte indicates how many bytes are to be copied to the
+     output stream.
+ * Advance the corresponding pointers.
+ * Rinse and repeat.
+
+This is very similar to the way LZ4 handels the data but instead of
+nibbles we use whole bytes as the 6502 architecture is ill equipped to
+handle nibbles.
+
+# Maximizing compression #
+
+## XipZ Algorithm ##
+
+The following text was taken mostly verbatim from XIPs manual.
+
+Optimizing a program for xip is not very hard and can easily get you
+several dozen more bytes.
 
 The key to maximizing compression is to maximize the frequency of the
 most common bytes.  For example, a common byte is $A9 (LDA #).  In
@@ -120,7 +147,7 @@ Also it's just kind-of interesting :).
 The program also lists the compression performance for various values of n,
 the number of bits. 
 
-## Some common bytes and corresponding memory locations ##
+### Some common bytes and corresponding memory locations ###
 
 Remember: you can use zp locations (like $20), absolute locations like $2020,
 and combined locations like $204c or whatever.
@@ -147,6 +174,10 @@ and combined locations like $204c or whatever.
  * $d0	bne, $d0 Flag used by CHRIN (input screen/keyboard); usable i/o	$d0xx
  * $e8	inx	$e8	screen line link table; ok if not using FFD2 etc.
 
+## qadz ##
+
+It seems that using xipz on a data compressed with qadz still shaves
+some bytes of. For now you have to adjust the jump address by hand!
 
 # Links #
 
