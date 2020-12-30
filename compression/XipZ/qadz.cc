@@ -64,58 +64,67 @@ int decrunch_main(int argc, char **argv) {
 }
 
 std::vector<uint8_t> crunch_qadz(const Data &data) {
-  vector<uint8_t> lookback(LOOK_BACK);
   struct Outclass {
-    long out_bytes;
-    vector<char> buf;
+    std::vector<uint8_t> buf; //!< temporary buffer to collect plain tokens
     std::vector<uint8_t> out;
 
-    Outclass() : out_bytes(0), buf(MAX_PLAIN_LEN) {}
+    Outclass() {}
     ~Outclass() {
       putc(0);
       flush();
     }
     void flush() { 
-      if(out_bytes > 0) {
-	out.push_back(static_cast<uint8_t>(out_bytes));
-	copy(buf.begin(), buf.begin() + out_bytes, back_inserter(out));
-	out_bytes = 0;
+      if(!buf.empty()) {
+	out.push_back(static_cast<uint8_t>(buf.size()));
+	copy(buf.begin(), buf.end(), back_inserter(out));
+	buf.clear();
       }
     }
-    void putc(char c) {
-      buf[out_bytes++] = c;
-      if(out_bytes == MAX_PLAIN_LEN) {
+    void putc(uint8_t c) {
+      buf.push_back(c);
+      if(buf.size() == MAX_PLAIN_LEN) {
 	flush();
       }
     }
     void puttoken(long pos, long len) { 
+      flush();
       out.push_back(static_cast<uint8_t>(-len));
       out.push_back(static_cast<uint8_t>(-pos));
-    }	   
+    }
   } outclass;
 
   //Todo: Fix this! No look back at the beginning! This will fail if
   //there are a lot of zeros in the 6502 decompressor!
-  std::copy(data.begin(), data.end(), std::back_inserter(lookback));
-  for(unsigned long pos = LOOK_BACK; pos < lookback.size(); ++pos) {
-    unsigned long cmpi, cmpj, posi, match = 0;
-    for(cmpj = 0; cmpj < LOOK_BACK; cmpj++) {
-      for(cmpi = 0; cmpi < MAX_LEN; ++cmpi)
-	if(pos + cmpi >= lookback.size() || cmpi + cmpj >= LOOK_BACK || lookback[pos - LOOK_BACK + cmpj + cmpi] != lookback[pos + cmpi]) {
+  for(long pos = 0; pos < data.size(); ++pos) {
+    long posi;
+    unsigned long match = 0;
+    // Move backwards from the current position.
+    for(int cmpj = LOOK_BACK; cmpj >= 0; --cmpj) {
+      // Inner loop for comparison.
+      for(int cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
+	if(pos - cmpj + cmpi < 0) {
+	  // We are out of bounds.
 	  break;
 	}
-      //cout << format("cmpi=%ld\n") % cmpi;
-      if(cmpi > match) {
-	posi = cmpj - LOOK_BACK;
-	match = cmpi;
+	if(pos + cmpi >= data.size()) {
+	  // We are out of bounds.
+	  break;
+	}
+	if(data[pos - cmpj + cmpi] != data[pos + cmpi]) {
+	  break;
+	}
+	std::cout << format("pos=%lu '%c' cmpi=%lu cmpj=%lu match=%lu\n") % pos % data[pos] % cmpi % cmpj % match;
+	if(cmpi > match) {
+	  posi = cmpj - LOOK_BACK;
+	  match = cmpi;
+	}
       }
     }
     if(match < 3) {
-      outclass.putc(lookback[pos]);
+      outclass.putc(data[pos]);
     } else {
-      outclass.flush();
       outclass.puttoken(posi, match);
-      //cout << format("[pos=%ld, posi=%ld, match=%ld]") % pos % posi % match;
+      //std::cout << format("[pos=%ld, posi=%ld, match=%ld]") % pos % posi % match;
       pos += match - 1;
     }
   }

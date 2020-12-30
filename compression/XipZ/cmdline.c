@@ -34,14 +34,16 @@ const char *gengetopt_args_info_versiontext = "";
 const char *gengetopt_args_info_description = "";
 
 const char *gengetopt_args_info_help[] = {
-  "  -h, --help     Print help and exit",
-  "  -V, --version  Print version and exit",
-  "  -r, --raw      output raw crunched data without header  (default=off)",
+  "  -h, --help            Print help and exit",
+  "  -V, --version         Print version and exit",
+  "  -r, --raw             output raw crunched data without header  (default=off)",
+  "  -a, --algorithm=ENUM  crunching algorithm to use  (possible values=\"xipz\",\n                          \"qadz\" default=`xipz')",
     0
 };
 
 typedef enum {ARG_NO
   , ARG_FLAG
+  , ARG_ENUM
 } cmdline_parser_arg_type;
 
 static
@@ -54,6 +56,8 @@ cmdline_parser_internal (int argc, char **argv, struct gengetopt_args_info *args
                         struct cmdline_parser_params *params, const char *additional_error);
 
 
+const char *cmdline_parser_algorithm_values[] = {"xipz", "qadz", 0}; /*< Possible values for algorithm. */
+
 static char *
 gengetopt_strdup (const char *s);
 
@@ -63,6 +67,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->help_given = 0 ;
   args_info->version_given = 0 ;
   args_info->raw_given = 0 ;
+  args_info->algorithm_given = 0 ;
 }
 
 static
@@ -70,6 +75,8 @@ void clear_args (struct gengetopt_args_info *args_info)
 {
   FIX_UNUSED (args_info);
   args_info->raw_flag = 0;
+  args_info->algorithm_arg = algorithm_arg_xipz;
+  args_info->algorithm_orig = NULL;
   
 }
 
@@ -81,6 +88,7 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->help_help = gengetopt_args_info_help[0] ;
   args_info->version_help = gengetopt_args_info_help[1] ;
   args_info->raw_help = gengetopt_args_info_help[2] ;
+  args_info->algorithm_help = gengetopt_args_info_help[3] ;
   
 }
 
@@ -158,12 +166,22 @@ cmdline_parser_params_create(void)
   return params;
 }
 
+static void
+free_string_field (char **s)
+{
+  if (*s)
+    {
+      free (*s);
+      *s = 0;
+    }
+}
 
 
 static void
 cmdline_parser_release (struct gengetopt_args_info *args_info)
 {
   unsigned int i;
+  free_string_field (&(args_info->algorithm_orig));
   
   
   for (i = 0; i < args_info->inputs_num; ++i)
@@ -175,13 +193,54 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   clear_given (args_info);
 }
 
+/**
+ * @param val the value to check
+ * @param values the possible values
+ * @return the index of the matched value:
+ * -1 if no value matched,
+ * -2 if more than one value has matched
+ */
+static int
+check_possible_values(const char *val, const char *values[])
+{
+  int i, found, last;
+  size_t len;
+
+  if (!val)   /* otherwise strlen() crashes below */
+    return -1; /* -1 means no argument for the option */
+
+  found = last = 0;
+
+  for (i = 0, len = strlen(val); values[i]; ++i)
+    {
+      if (strncmp(val, values[i], len) == 0)
+        {
+          ++found;
+          last = i;
+          if (strlen(values[i]) == len)
+            return i; /* exact macth no need to check more */
+        }
+    }
+
+  if (found == 1) /* one match: OK */
+    return last;
+
+  return (found ? -2 : -1); /* return many values or none matched */
+}
+
 
 static void
 write_into_file(FILE *outfile, const char *opt, const char *arg, const char *values[])
 {
-  FIX_UNUSED (values);
+  int found = -1;
   if (arg) {
-    fprintf(outfile, "%s=\"%s\"\n", opt, arg);
+    if (values) {
+      found = check_possible_values(arg, values);      
+    }
+    if (found >= 0)
+      fprintf(outfile, "%s=\"%s\" # %s\n", opt, arg, values[found]);
+    else
+      fprintf(outfile, "%s=\"%s\"\n", opt, arg);
   } else {
     fprintf(outfile, "%s\n", opt);
   }
@@ -205,6 +264,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "version", 0, 0 );
   if (args_info->raw_given)
     write_into_file(outfile, "raw", 0, 0 );
+  if (args_info->algorithm_given)
+    write_into_file(outfile, "algorithm", args_info->algorithm_orig, cmdline_parser_algorithm_values);
   
 
   i = EXIT_SUCCESS;
@@ -358,7 +419,18 @@ int update_arg(void *field, char **orig_field,
       return 1; /* failure */
     }
 
-  FIX_UNUSED (default_value);
+  if (possible_values && (found = check_possible_values((value ? value : default_value), possible_values)) < 0)
+    {
+      if (short_opt != '-')
+        fprintf (stderr, "%s: %s argument, \"%s\", for option `--%s' (`-%c')%s\n", 
+          package_name, (found == -2) ? "ambiguous" : "invalid", value, long_opt, short_opt,
+          (additional_error ? additional_error : ""));
+      else
+        fprintf (stderr, "%s: %s argument, \"%s\", for option `--%s'%s\n", 
+          package_name, (found == -2) ? "ambiguous" : "invalid", value, long_opt,
+          (additional_error ? additional_error : ""));
+      return 1; /* failure */
+    }
     
   if (field_given && *field_given && ! override)
     return 0;
@@ -373,12 +445,14 @@ int update_arg(void *field, char **orig_field,
   case ARG_FLAG:
     *((int *)field) = !*((int *)field);
     break;
+  case ARG_ENUM:
+    if (val) *((int *)field) = found;
+    break;
   default:
     break;
   };
 
 	FIX_UNUSED(stop_char);
-			FIX_UNUSED(val);
 	
   /* store the original value */
   switch(arg_type) {
@@ -447,10 +521,11 @@ cmdline_parser_internal (
         { "help",	0, NULL, 'h' },
         { "version",	0, NULL, 'V' },
         { "raw",	0, NULL, 'r' },
+        { "algorithm",	1, NULL, 'a' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVr", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVra:", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -472,6 +547,18 @@ cmdline_parser_internal (
           if (update_arg((void *)&(args_info->raw_flag), 0, &(args_info->raw_given),
               &(local_args_info.raw_given), optarg, 0, 0, ARG_FLAG,
               check_ambiguity, override, 1, 0, "raw", 'r',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'a':	/* crunching algorithm to use.  */
+        
+        
+          if (update_arg( (void *)&(args_info->algorithm_arg), 
+               &(args_info->algorithm_orig), &(args_info->algorithm_given),
+              &(local_args_info.algorithm_given), optarg, cmdline_parser_algorithm_values, "xipz", ARG_ENUM,
+              check_ambiguity, override, 0, 0,
+              "algorithm", 'a',
               additional_error))
             goto failure;
         

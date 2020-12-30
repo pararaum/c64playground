@@ -34,6 +34,8 @@ extern "C" {
 #define CMDLINE_PARSER_VERSION "0.1.0"
 #endif
 
+enum enum_algorithm { algorithm__NULL = -1, algorithm_arg_xipz = 0, algorithm_arg_qadz };
+
 /** @brief Where the command line options are stored */
 struct gengetopt_args_info
 {
@@ -41,10 +43,14 @@ struct gengetopt_args_info
   const char *version_help; /**< @brief Print version and exit help description.  */
   int raw_flag;	/**< @brief output raw crunched data without header (default=off).  */
   const char *raw_help; /**< @brief output raw crunched data without header help description.  */
+  enum enum_algorithm algorithm_arg;	/**< @brief crunching algorithm to use (default='xipz').  */
+  char * algorithm_orig;	/**< @brief crunching algorithm to use original value given at command line.  */
+  const char *algorithm_help; /**< @brief crunching algorithm to use help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
   unsigned int raw_given ;	/**< @brief Whether raw was given.  */
+  unsigned int algorithm_given ;	/**< @brief Whether algorithm was given.  */
 
   char **inputs ; /**< @brief unnamed options (options without names) */
   unsigned inputs_num ; /**< @brief unnamed options number */
@@ -170,6 +176,8 @@ void cmdline_parser_free (struct gengetopt_args_info *args_info);
  */
 int cmdline_parser_required (struct gengetopt_args_info *args_info,
   const char *prog_name);
+
+extern const char *cmdline_parser_algorithm_values[];  /**< @brief Possible values for algorithm. */
 
 
 #ifdef __cplusplus

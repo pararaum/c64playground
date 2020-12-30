@@ -488,9 +488,13 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
   std::vector<uint8_t> compressed(crunch_qadz(data));
   std::cout << "Compressed size: " << compressed.size() << std::endl;
   std::ofstream out(outputname);
+  if(raw) {
+    std::cerr << "Warning! Raw was ignored!\n";
+  }
   write_compressed_data(out,compressed);
   return 0;
 }
+
 
 /*!\brief main function using xip
  *
@@ -507,7 +511,7 @@ int main(int argc, char **argv) {
       std::cerr << "At least one filename must be provided!\n";
       return 1;
     }
-    std::cout << "XiZ Version " << CMDLINE_PARSER_VERSION << std::endl;
+    std::cout << "XipZ Version " << CMDLINE_PARSER_VERSION << std::endl;
     try {
       std::string inpnam(args.inputs[0]);
       std::string outnam;
@@ -516,7 +520,16 @@ int main(int argc, char **argv) {
       } else {
 	outnam = args.inputs[1];
       }
-      ret = main_xip(inpnam, outnam, args.raw_given);
+      switch(args.algorithm_arg) {
+      case algorithm_arg_xipz:
+	ret = main_xip(inpnam, outnam, args.raw_given);
+	break;
+      case algorithm_arg_qadz:
+	ret = main_qadz(inpnam, outnam, args.raw_given);
+	break;
+      case algorithm__NULL:
+	throw std::logic_error("algorithm vanished");
+      }
     }
     catch(const std::exception &e) {
       std::cerr << "Exception: " << e.what() << std::endl;
