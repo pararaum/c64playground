@@ -93,13 +93,20 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
     }
   } outclass;
 
-  //Todo: Fix this! No look back at the beginning! This will fail if
-  //there are a lot of zeros in the 6502 decompressor!
-  for(long pos = 0; pos < data.size(); ++pos) {
+  for(long pos = 0; pos < static_cast<long>(data.size()); ++pos) {
     long posi;
+    int max_look_back;
+    int max_look_ahead;
     unsigned long match = 0;
     // Move backwards from the current position.
-    for(int cmpj = LOOK_BACK; cmpj >= 0; --cmpj) {
+    if(pos >= LOOK_BACK) {
+      // There is enough space to do a full look back.
+      max_look_back = LOOK_BACK;
+    } else {
+      // Only go back to the beginning.
+      max_look_back = pos;
+    }
+    for(int cmpj = max_look_back; cmpj >= 0; --cmpj) {
       // Inner loop for comparison.
       for(int cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
 	if(pos - cmpj + cmpi < 0) {

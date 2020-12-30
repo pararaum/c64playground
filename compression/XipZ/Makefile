@@ -17,7 +17,7 @@ bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
 
-.PHONY:	command_line.ggo all bin clean install pkg
+.PHONY:	all bin clean install pkg
 
 all:	decrunchxipzstub.inc xipz
 
@@ -30,6 +30,7 @@ install:	bin doc
 	cp -r README.md html $(docdir)
 
 pkg:	bin doc
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $@
 	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
 	mkdir $(PKGTMP)/xipz-$(VERSION)
 	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
@@ -41,9 +42,6 @@ doc:
 
 cmdline.c: command_line.ggo
 	gengetopt -i $+
-
-command_line.ggo:
-	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $@
 
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
