@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_VERSION "0.3.0"
+#define CMDLINE_PARSER_VERSION "0.3.1"
 #endif
 
 enum enum_algorithm { algorithm__NULL = -1, algorithm_arg_xipz = 0, algorithm_arg_qadz };
