@@ -372,46 +372,6 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
 }
 
 
-/*! \brief Perform the whole crunching process.
- *
- * The following operations are performed:
- *  - the compressed data is generated
- *  - the decrunching stub is written
- *  - the compression table is written
- *  - finally the compressed data is written
- *
- * \param outname output filename
- * \param data original data
- * \param compbits the compression bits table
- * \param n number of bits to use for compression
- * \param shisto the sorted histogram array is needed
- * \param raw should the compressed data be written raw (without decompression stub)
- * \param ujmp jump address to jump after decrunching
- */
-void crunch(const std::string &outname, const Data &data, const CompressionBits &compbits, int n, const std::vector<HistEntry> &shisto, bool raw, uint16_t jump) {
-  std::ofstream out(outname, std::ios::binary);
-  std::vector<uint8_t> cdata(create_compressed_data(data, compbits));
-
-  if(raw) {
-    std::cout << "Skipping writing the decrunching stub!\n";
-  } else {
-    std::cout << "Writing decrunching stub...\n";
-    write_stub(out, n, cdata.size(), data.get_loadaddr(), jump);
-  }
-  std::cout << boost::format("Writing table, %d bytes...\n") % (1 << n);
-  write_compression_table(out, n, shisto);
-  std::cout << boost::format("Writing %u bytes compressed data...\n") % cdata.size();
-  write_compressed_data(out, cdata);
-#ifdef DEBUG
-  std::cout << "\n⌲ ";
-  std::for_each(cdata.begin(), cdata.end(), [](uint8_t x) {
-      std::cout << boost::format("%02X") % (int)x;
-    });
-  std::cout << std::endl;
-#endif
-}
-
-
 /*! Output the most common bytes and their frequencies.
  *
  * \param shisto sorted histogram array
@@ -475,7 +435,18 @@ int main_xip(const std::string &inputname, const std::string &outputname, bool r
   std::cout << "Optimal number of bits: N=" << n << std::endl;
   CompressionBits compbits(create_compression_bits(shisto, n));
   uint16_t jumpaddr = jump < 0 ? data.get_loadaddr() : jump;
-  crunch(outputname, data, compbits, n, shisto, raw, jumpaddr);
+  std::ofstream out(outputname, std::ios::binary);
+  std::vector<uint8_t> cdata(create_compressed_data(data, compbits));
+  if(raw) {
+    std::cout << "Skipping writing the decrunching stub!\n";
+  } else {
+    std::cout << "Writing decrunching stub...\n";
+    write_stub(out, n, cdata.size(), data.get_loadaddr(), jumpaddr);
+  }
+  std::cout << boost::format("Writing table, %d bytes...\n") % (1 << n);
+  write_compression_table(out, n, shisto);
+  std::cout << boost::format("Writing %u bytes compressed data...\n") % cdata.size();
+  write_compressed_data(out, cdata);
   return 0;
 }
 
