@@ -45,10 +45,12 @@ Here is an excerpt from the command-line help:
 
 	Usage: XipZ [OPTION]...  <filename> [<outputfilename>]
 
-	-h, --help            Print help and exit
-	-V, --version         Print version and exit
-	-r, --raw             output raw crunched data without header  (default=off)
-	-a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz", "qadz" default=`xipz')
+	-h, --help			  Print help and exit
+	-V, --version		  Print version and exit
+	-r, --raw			  output raw crunched data without header  (default=off)
+	-a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz",
+							"qadz" default=`xipz')
+	-j, --jump=INT		  address to jump to (-1 = load address)  (default=`-1')
 
 # Building #
 
@@ -85,6 +87,8 @@ The decompression algorithm is:
 
 The decoding stops when the source pointer hits 0x1000.
 
+Have a look at the main_xipz() function.
+
 ## qadz ##
 
 This is a LZ77 variant. The stream is scanned for recurring byte
@@ -99,7 +103,7 @@ The decompression is done as following:
    - If it is greater than zero the following number of bytes are
      copied verbatim into the output.
    - If it is less than zero, it is negated and a further byte is
-     read. This last byte will inticate how far to go back and the
+     read. This last byte will indicate how far to go back and the
      negated byte indicates how many bytes are to be copied to the
      output stream.
  * Advance the corresponding pointers.
@@ -108,6 +112,8 @@ The decompression is done as following:
 This is very similar to the way LZ4 handels the data but instead of
 nibbles we use whole bytes as the 6502 architecture is ill equipped to
 handle nibbles.
+
+Have a look at the main_qadz() function.
 
 # Maximizing compression #
 
@@ -177,7 +183,8 @@ and combined locations like $204c or whatever.
 ## qadz ##
 
 It seems that using xipz on a data compressed with qadz still shaves
-some bytes of. For now you have to adjust the jump address by hand!
+some bytes of. Remember to set the jump address to 2061 (0x80d) so the
+the previous decompression stub is called.
 
 # Links #
 

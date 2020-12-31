@@ -1,6 +1,11 @@
 #ifndef __QADZ_HH_20201229__
 #define __QADZ_HH_20201229__
 
+/*! \file
+ *
+ * \brief Crunching and writing stub for qadz.
+ */
+
 /*! Compress data using the LZ77-alike compression.
  *
  * \param data binary data to compress

@@ -3,6 +3,15 @@
 #include <vector>
 #include <inttypes.h>
 
+/*! \file
+ *
+ * \brief Binary data handling.
+ * 
+ * Data structure to keep the binary data in memory. It has provisions
+ * for the handling the load address of a C64 binary.
+ */
+
+
 /*! \brief Input data type.
  *
  * This class stores the loaded data and extracts the original load

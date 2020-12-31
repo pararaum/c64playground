@@ -14,7 +14,10 @@
 
 /*! \file xipz.cc
  *
- * Source file containing the main function.
+ * \brief Source file containing the main function.
+ *
+ * Currently contains the main function of the program and the xipz
+ * compression algorithm.
  */
 
 /*
@@ -419,7 +422,7 @@ int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
  * \param raw should the compressed data be written raw (without decompression stub)
  * \param jump jump address, -1 = equal to load address
  */
-int main_xip(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
+int main_xipz(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
   Data data(read_data(inputname));
   HistorgramArray shisto(calc_histo(data));
   output_64_common(shisto);
@@ -498,7 +501,7 @@ int main(int argc, char **argv) {
       }
       switch(args.algorithm_arg) {
       case algorithm_arg_xipz:
-	ret = main_xip(inpnam, outnam, args.raw_given, args.jump_arg);
+	ret = main_xipz(inpnam, outnam, args.raw_given, args.jump_arg);
 	break;
       case algorithm_arg_qadz:
 	ret = main_qadz(inpnam, outnam, args.raw_given, args.jump_arg);

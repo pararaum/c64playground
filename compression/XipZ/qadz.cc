@@ -12,9 +12,11 @@
 
 /*! \file
  *
+ * \brief LZ77-like compression routine.
+ * 
  * Simpe LZ77 like compression routine. It is optimised to use while
  * bytes as using nybbles is quite expensinve on an architecture like
- * the 6502. This make LZ4 painful.
+ * the 6502. This makes LZ4 painful.
  */
 
 #define LOOK_BACK 255
