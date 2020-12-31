@@ -49,10 +49,6 @@ Destination address: $6f
 #define POS_OF_STOPREADING 0x58
 
 
-//! \brief Array to hold the histogram.
-typedef std::array<unsigned long, 256> HistoArray;
-
-
 /* \brief Simple structure to store bits.
  *
  * This structure is used to store the bits for the compressor, it is
@@ -102,6 +98,12 @@ public:
   bool operator<(const HistEntry &x) const { return freq > x.freq; }
 };
 
+/*! \brief Convenience type for a histogram array
+ *
+ * Used to store the \ref HistEntry entries. Mostly this table is
+ * sorted so that the most common entries are first.
+ */
+typedef std::vector<HistEntry> HistorgramArray;
 
 //! Convenience type definition for an array of 256 byte counts.
 typedef std::array<Bits, 256> CompressionBits;
@@ -143,17 +145,28 @@ Data read_data(const std::string &fname) {
  *
  * For each byte in the input data the frequency is calculated.
  *
+ * The histogram entries are sorted according to their
+ * frequencies. The most common bytes are moved to teh beginning of
+ * the array.
+ *
  * \param data binary data
- * \return An array of frequencies of type \ref HistoArray
+ * \return vector of histogram entries, sorted
  */
-HistoArray calc_histo(const Data &data) {
-  HistoArray histo;
+HistorgramArray calc_histo(const Data &data) {
+  std::array<unsigned long, 256> histo;
+  HistorgramArray shisto;
 
+  // Clear the histogram array (every body occurs zero times).
   histo.fill(0);
+  // For each byte increment the occurrence counter.
   for(uint8_t i : data) {
     ++histo[i];
   }
-  return histo;
+  for(int i = 0; i < 256; ++i) {
+    shisto.push_back(HistEntry{static_cast<uint8_t>(i), histo[i]});
+  }
+  std::sort(shisto.begin(), shisto.end());
+  return shisto;
 }
 
 
@@ -171,26 +184,6 @@ std::ostream &operator<<(std::ostream &o, const HistEntry &x) {
 }
 
 
-/*! \brief Sort histogram entries
- *
- * The histogram entries are sorted according to their
- * frequencies. The most common bytes are moved to teh beginning of
- * the array.
- *
- * \param harr array of histogram entries
- * \return vector of histogram entries, sorted
- */
-std::vector<HistEntry> sort_histo(const HistoArray &harr) {
-  std::vector<HistEntry> shisto;
-
-  for(int i = 0; i < 256; ++i) {
-    shisto.push_back(HistEntry{static_cast<uint8_t>(i), harr[i]});
-  }
-  std::sort(shisto.begin(), shisto.end());
-  return shisto;
-}
-
-
 /*! \brief calculate compressed bytes
  *
  * Calculate the number of compressed bytes at a given n.
@@ -200,7 +193,7 @@ std::vector<HistEntry> sort_histo(const HistoArray &harr) {
  * \param histarr sorted histogram data
  * \return number of compressed bytes (with fractional part)
  */
-float calc_comp(int n, const Data &data, const std::vector<HistEntry> &histarr) {
+float calc_comp(int n, const Data &data, const HistorgramArray &histarr) {
   int two_n = 1 << n;
   unsigned long compressed_bytes = 0;
   unsigned long total_bytes = data.size();
@@ -226,7 +219,7 @@ float calc_comp(int n, const Data &data, const std::vector<HistEntry> &histarr) 
  * \param n how many bits to use
  * \return Table of 256 entries containing the bits for each byte, type is \ref CompressionBits
  */
-CompressionBits create_compression_bits(const std::vector<HistEntry> &compressable, int n) {
+CompressionBits create_compression_bits(const HistorgramArray &compressable, int n) {
   CompressionBits bits;
   int i;
 
@@ -296,7 +289,7 @@ std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loada
  * \param histe histogram entries, they contain the sorted list of bytes
  * \return output stream
  */
-std::ostream &write_compression_table(std::ostream &out, int n, const std::vector<HistEntry> &histe) {
+std::ostream &write_compression_table(std::ostream &out, int n, const HistorgramArray &histe) {
   for(int i = 0; i < (1 << n); ++i) {
     const HistEntry &curr = histe.at(i);
     out << curr.byte;
@@ -376,7 +369,7 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
  *
  * \param shisto sorted histogram array
  */
-void output_64_common(const std::vector<HistEntry> &shisto) {
+void output_64_common(const HistorgramArray &shisto) {
   int count = 0;
 
   std::cout << "64 most common bytes:\n\t";
@@ -401,7 +394,7 @@ void output_64_common(const std::vector<HistEntry> &shisto) {
  * \param shisto sortet histogram aka frequencies
  * \return optimal number of bits
  */
-int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
+int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
   int n = 0;
   float minsize = data.size();
   float f;
@@ -428,8 +421,7 @@ int choose_optimal_n(const Data &data, const std::vector<HistEntry> &shisto) {
  */
 int main_xip(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
   Data data(read_data(inputname));
-  HistoArray histo(calc_histo(data));
-  std::vector<HistEntry> shisto(sort_histo(histo));
+  HistorgramArray shisto(calc_histo(data));
   output_64_common(shisto);
   int n = choose_optimal_n(data, shisto);
   std::cout << "Optimal number of bits: N=" << n << std::endl;
