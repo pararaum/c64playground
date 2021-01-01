@@ -1,4 +1,5 @@
 ;;; Simple image viewer.
+;;; cl65 --asm-include-dir ../includeCC65/ -C display_image.cfg display_image.s
 
 	.import __bitmap_LOAD__
 	.import __videomatrix_LOAD__
@@ -22,12 +23,10 @@ background:
 	sta	$d020
 	sta	$d021
 	jsr	initialise_bitmap_and_screenptr
-	lda	#<__bitmap_LOAD__
-	lda	#>__bitmap_LOAD__
-	lda	$d011
+	lda	$d011		; Enable bitmap mode.
 	ora	#$20
 	sta	$d011
-	lda	$d016
+	lda	$d016		; Multicolour.
 	ora	#$10
 	sta	$d016
 	ldx	#0
@@ -41,7 +40,7 @@ background:
 	sta	$d800+$300,x
 	inx
 	bne	@cl1
-	rts
+	jmp	*
 
 	SCREENPTR = __videomatrix_LOAD__
 	BITMAPPTR = __bitmap_LOAD__
