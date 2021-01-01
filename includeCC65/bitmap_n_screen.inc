@@ -21,11 +21,11 @@
 ;;; All registers are preserved.
 initialise_bitmap_and_screenptr:
 	pha
-	lda #(((SCREENPTR & $3FFF)/$0400) << 4) | (((BITMAPPTR & $3FFF)/$0800) << 1)
+	lda #<((((SCREENPTR & $3FFF)/$0400) << 4) | (((BITMAPPTR & $3FFF)/$0800) << 1))
         sta $d018
         lda $dd00
         and #%11111100
-        ora #(BITMAPPTR ^ $FFFF) >> 14
+        ora #<((BITMAPPTR ^ $FFFF) >> 14)
         sta $dd00
 	pla
         rts
