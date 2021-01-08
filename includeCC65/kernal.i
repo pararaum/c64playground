@@ -313,3 +313,15 @@
 ; Used registers: X, Y.
 ; Real address: $E500.
 	IOBASE = $FFF3
+
+
+;;; #############################################################################
+
+;;; Other important kernal addresses.
+
+;;; EXITIRQ. Restore registers and IRQ routine. Warning! This jump directly into the KERNAL.
+;;; Input: -
+;;; Output: -
+;;; Never returns.
+	EXITIRQ = $EA81
+
