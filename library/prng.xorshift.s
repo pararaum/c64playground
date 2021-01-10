@@ -1,5 +1,8 @@
 ;;; Taken from https://www.codebase64.org/doku.php?id=base:16bit_xorshift_random_generator
 
+	.export	xorshift
+	.export	xorshift_seed
+
 	.zeropage
 prng_state:	.res	2
 
