@@ -69,7 +69,7 @@ int decrunch_main(int argc, char **argv) {
 }
 
 
-std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
+std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp, uint8_t pagehi) {
   // Create a local copy.
   std::vector<uint8_t> stub(decrunchqadzstub, decrunchqadzstub + decrunchqadzstub_len);
 // 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
@@ -90,6 +90,7 @@ std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadadd
   const int POS_OF_DEST_HIGH = 0x2c;
   unsigned endptr = stub.at(POS_OF_END_OF_CDATA) | (stub.at(POS_OF_END_OF_CDATA + 1) << 8);
   // unsigned beginptr = stub.at(POS_OF_BEGIN_OF_CDATA) | (stub.at(POS_OF_BEGIN_OF_CDATA + 1) << 8);
+  const int POS_OF_PAGEHI = 0x33; //High page +1.
   
   // Assign new end of compressed data.
   endptr += size; // Add number of bytes of compressed data.
@@ -103,7 +104,7 @@ std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadadd
   stub.at(POS_OF_DEST_LOW) = loadaddr & 0xFF;
   stub.at(POS_OF_DEST_HIGH) = (loadaddr >> 8) & 0xFF;
   // Set the maximal read position high-byte.
-  //stub.at(POS_OF_STOPREADING) = 0x10; // Todo: configurable!
+  stub.at(POS_OF_PAGEHI) = pagehi; // Todo: configurable!
   // Now copy the modified stub.
   std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
   return out;

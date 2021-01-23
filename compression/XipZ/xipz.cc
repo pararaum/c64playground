@@ -50,6 +50,8 @@ Destination address: $6f
 #define POS_OF_JMP 0x5c
 //! Position in the stub where the high byte of the destination address is stored at which the decompression process stops.
 #define POS_OF_STOPREADING 0x58
+//! Position in the stub where the page high-byte is set, see POS_OF_STOPREADING.
+#define POS_OF_PAGEHI 0x36
 
 
 /* \brief Simple structure to store bits.
@@ -248,9 +250,10 @@ CompressionBits create_compression_bits(const HistorgramArray &compressable, int
  * \param size number of compressed bytes
  * \param loadaddr original load address
  * \param jmp jump address to jump after decrunching
+ * \param pagehi maximum page to use +1
  * \return output stream
  */
-std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
+std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loadaddr, uint16_t jmp, uint8_t pagehi) {
   // Create a local copy.
   std::vector<uint8_t> stub(decrunchxipzstub, decrunchxipzstub + decrunchxipzstub_len);
   unsigned endptr = stub.at(POS_OF_END_OF_CDATA) | (stub.at(POS_OF_END_OF_CDATA + 1) << 8);
@@ -275,7 +278,8 @@ std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loada
   stub.at(POS_OF_DEST) = loadaddr & 0xFF;
   stub.at(POS_OF_DEST + 1) = (loadaddr >> 8) & 0xFF;
   // Set the maximal read position high-byte.
-  stub.at(POS_OF_STOPREADING) = 0x10; // Todo: configurable!
+  stub.at(POS_OF_STOPREADING) = pagehi;
+  stub.at(POS_OF_PAGEHI) = pagehi;
   // Now copy the modified stub.
   std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
   return out;
@@ -421,8 +425,9 @@ int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
  * \param outputname outout filename
  * \param raw should the compressed data be written raw (without decompression stub)
  * \param jump jump address, -1 = equal to load address
+ * \param pagehi maximum page to use +1
  */
-int main_xipz(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
+int main_xipz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi) {
   Data data(read_data(inputname));
   HistorgramArray shisto(calc_histo(data));
   output_64_common(shisto);
@@ -436,7 +441,7 @@ int main_xipz(const std::string &inputname, const std::string &outputname, bool 
     std::cout << "Skipping writing the decrunching stub!\n";
   } else {
     std::cout << "Writing decrunching stub...\n";
-    write_stub(out, n, cdata.size(), data.get_loadaddr(), jumpaddr);
+    write_stub(out, n, cdata.size(), data.get_loadaddr(), jumpaddr, pagehi);
   }
   std::cout << boost::format("Writing table, %d bytes...\n") % (1 << n);
   write_compression_table(out, n, shisto);
@@ -453,8 +458,9 @@ int main_xipz(const std::string &inputname, const std::string &outputname, bool 
  * \param outputname outout filename
  * \param raw should the compressed data be written raw (without decompression stub)
  * \param jump jump address, -1 = equal to load address
+ * \param pagehi maximum page to use +1
  */
-int main_qadz(const std::string &inputname, const std::string &outputname, bool raw, int jump) {
+int main_qadz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi) {
   uint16_t jumpaddr;
 
   Data data(read_data(inputname));
@@ -468,7 +474,7 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
       jumpaddr = data.get_loadaddr();
     }
     std::cout << "Writing decrunching stub...\n";
-    write_qadz_stub(out, compressed.size(), data.get_loadaddr(), jumpaddr);
+    write_qadz_stub(out, compressed.size(), data.get_loadaddr(), jumpaddr, pagehi);
   }
   write_compressed_data(out, compressed);
   return 0;
@@ -501,10 +507,10 @@ int main(int argc, char **argv) {
       }
       switch(args.algorithm_arg) {
       case algorithm_arg_xipz:
-	ret = main_xipz(inpnam, outnam, args.raw_given, args.jump_arg);
+	ret = main_xipz(inpnam, outnam, args.raw_given, args.jump_arg, args.page_arg);
 	break;
       case algorithm_arg_qadz:
-	ret = main_qadz(inpnam, outnam, args.raw_given, args.jump_arg);
+	ret = main_qadz(inpnam, outnam, args.raw_given, args.jump_arg, args.page_arg);
 	break;
       case algorithm__NULL:
 	throw std::logic_error("algorithm vanished");

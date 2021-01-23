@@ -24,7 +24,8 @@ std::vector<uint8_t> crunch_qadz(const Data &data);
  * \param size number of compressed bytes
  * \param loadaddr original load address of the data
  * \param jmp jump address to jump after decrunching
+ * \param pagehi maximum page to use +1
  * \return output stream
  */
-std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp);
+std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp, uint8_t pagehi);
 #endif

@@ -39,6 +39,7 @@ const char *gengetopt_args_info_help[] = {
   "  -r, --raw             output raw crunched data without header  (default=off)",
   "  -a, --algorithm=ENUM  crunching algorithm to use  (possible values=\"xipz\",\n                          \"qadz\" default=`xipz')",
   "  -j, --jump=INT        address to jump to (-1 = load address)  (default=`-1')",
+  "  -p, --page=INT        maximum page to use +1  (default=`0x10')",
     0
 };
 
@@ -71,6 +72,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->raw_given = 0 ;
   args_info->algorithm_given = 0 ;
   args_info->jump_given = 0 ;
+  args_info->page_given = 0 ;
 }
 
 static
@@ -82,6 +84,8 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->algorithm_orig = NULL;
   args_info->jump_arg = -1;
   args_info->jump_orig = NULL;
+  args_info->page_arg = 0x10;
+  args_info->page_orig = NULL;
   
 }
 
@@ -95,6 +99,7 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->raw_help = gengetopt_args_info_help[2] ;
   args_info->algorithm_help = gengetopt_args_info_help[3] ;
   args_info->jump_help = gengetopt_args_info_help[4] ;
+  args_info->page_help = gengetopt_args_info_help[5] ;
   
 }
 
@@ -189,6 +194,7 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   unsigned int i;
   free_string_field (&(args_info->algorithm_orig));
   free_string_field (&(args_info->jump_orig));
+  free_string_field (&(args_info->page_orig));
   
   
   for (i = 0; i < args_info->inputs_num; ++i)
@@ -275,6 +281,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "algorithm", args_info->algorithm_orig, cmdline_parser_algorithm_values);
   if (args_info->jump_given)
     write_into_file(outfile, "jump", args_info->jump_orig, 0);
+  if (args_info->page_given)
+    write_into_file(outfile, "page", args_info->page_orig, 0);
   
 
   i = EXIT_SUCCESS;
@@ -545,10 +553,11 @@ cmdline_parser_internal (
         { "raw",	0, NULL, 'r' },
         { "algorithm",	1, NULL, 'a' },
         { "jump",	1, NULL, 'j' },
+        { "page",	1, NULL, 'p' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVra:j:", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVra:j:p:", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -594,6 +603,18 @@ cmdline_parser_internal (
               &(local_args_info.jump_given), optarg, 0, "-1", ARG_INT,
               check_ambiguity, override, 0, 0,
               "jump", 'j',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'p':	/* maximum page to use +1.  */
+        
+        
+          if (update_arg( (void *)&(args_info->page_arg), 
+               &(args_info->page_orig), &(args_info->page_given),
+              &(local_args_info.page_given), optarg, 0, "0x10", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "page", 'p',
               additional_error))
             goto failure;
         

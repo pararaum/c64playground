@@ -49,12 +49,16 @@ struct gengetopt_args_info
   int jump_arg;	/**< @brief address to jump to (-1 = load address) (default='-1').  */
   char * jump_orig;	/**< @brief address to jump to (-1 = load address) original value given at command line.  */
   const char *jump_help; /**< @brief address to jump to (-1 = load address) help description.  */
+  int page_arg;	/**< @brief maximum page to use +1 (default='0x10').  */
+  char * page_orig;	/**< @brief maximum page to use +1 original value given at command line.  */
+  const char *page_help; /**< @brief maximum page to use +1 help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
   unsigned int raw_given ;	/**< @brief Whether raw was given.  */
   unsigned int algorithm_given ;	/**< @brief Whether algorithm was given.  */
   unsigned int jump_given ;	/**< @brief Whether jump was given.  */
+  unsigned int page_given ;	/**< @brief Whether page was given.  */
 
   char **inputs ; /**< @brief unnamed options (options without names) */
   unsigned inputs_num ; /**< @brief unnamed options number */
