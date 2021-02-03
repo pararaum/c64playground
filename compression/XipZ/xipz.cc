@@ -51,7 +51,7 @@ Destination address: $6f
 //! Position in the stub where the high byte of the destination address is stored at which the decompression process stops.
 #define POS_OF_STOPREADING 0x58
 //! Position in the stub where the page high-byte is set, see POS_OF_STOPREADING.
-#define POS_OF_PAGEHI 0x36
+#define POS_OF_PAGEHI 0x37
 
 
 /* \brief Simple structure to store bits.
