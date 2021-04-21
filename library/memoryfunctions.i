@@ -14,6 +14,8 @@
 	sta	dest,x
 	inx
 	bne	@l1
+	inc	@l1+2		; increment hi of src
+	inc	@l1+5		; increment hi or dst
 	iny
 	cpy	#>size
 	bne	@l1

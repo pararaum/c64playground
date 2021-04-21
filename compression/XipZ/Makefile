@@ -58,8 +58,8 @@ decrunchqadzstub:	decrunchqadzstub.s
 	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
 clean:
-	rm -f *.lst *.map *.label *.o
-	rm -f decrunchqadzstub decrunchxipzstub decrunchxipzstub.inc
+	rm -f *.lst *.map *.label *.o *.inc
+	rm -f decrunchqadzstub decrunchxipzstub
 	rm -f xipz
 	rm -rf html
 
