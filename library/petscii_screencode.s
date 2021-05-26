@@ -1,3 +1,5 @@
+	.export	PETSCII2SCREENCODES_TABLE
+
 	.rodata
 PETSCII2SCREENCODES_TABLE:
         ;; http://codebase64.org/doku.php?id=base:petscii_to_screencode
