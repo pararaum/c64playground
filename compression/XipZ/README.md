@@ -51,6 +51,10 @@ Here is an excerpt from the command-line help:
 	-a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz",
 							"qadz" default=`xipz')
 	-j, --jump=INT		  address to jump to (-1 = load address)  (default=`-1')
+	-p, --page=INT        maximum page to use +1  (default=`0x10')
+
+Remember that the KERNAL and the BASIC ROMs are still memory
+mapped. So using a page above 0xA1 makes no sense.
 
 # Building #
 
