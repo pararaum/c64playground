@@ -2,7 +2,7 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
-VERSION = 0.3.1
+VERSION = 0.4.0
 #
 OBJS = xipz.o cmdline.o qadz.o
 #
@@ -59,7 +59,7 @@ decrunchqadzstub:	decrunchqadzstub.s
 
 clean:
 	rm -f *.lst *.map *.label *.o
-	rm -f decrunchqadzstub decrunchxipzstub decrunchxipzstub.inc
+	rm -f decrunchqadzstub decrunchxipzstub decrunchxipzstub.inc decrunchqadzstub.inc
 	rm -f xipz
 	rm -rf html
 
