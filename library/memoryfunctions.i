@@ -1,6 +1,23 @@
 ;;; -*- mode: asm -*-
 ;;; Routines to handle memory functions.
 
+;;; Memory copy macro for up to 256 bytes.
+;;; The source and destination pointers are not changed and can be reused.
+;;; Input: srcptr=pointer to the source, dstptr=pointer to the destination, size=number of bytes
+;;; Modifies: A, Y
+;;; Output: -
+	.macro	smallmemcpy_macro	srcptr, dstptr, size
+	.local	@l1
+	.if	size > 256
+	 .error	More than 256 Bytes to copy!
+	.endif
+	ldy	#0		; Set up index register.
+@l1:	lda	(srcptr),y
+	sta	(dstptr),y
+	iny			; Increment index register.
+	cpy	#<size		; Reached the end? For 256 Bytes this waits for the overflow.
+	bne	@l1
+	.endmacro
 
 ;;; Memory copy macro, copies memory downwards.
 ;;; The memory is copied from src to destination. The number of bytes must be given in size.
