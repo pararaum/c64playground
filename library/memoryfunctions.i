@@ -1,21 +1,50 @@
 ;;; -*- mode: asm -*-
 ;;; Routines to handle memory functions.
 
+;;; Memory copy macro for up to 256 bytes with pointer initialisation.
+;;; The source and destination pointers are not changed and can be reused.
+;;; Input: srcaddr=pointer to the source, dstaddr=pointer to the destination, size=number of bytes, tmpptr1=a pointer in the zeropage, tmpptr2=a pointer in the zeropage
+;;; Modifies: A, Y
+;;; Output: -
+	.macro	smallmemcpy_macro_winit	scraddr, dstaddr, size, tmpptr1, tmpptr2
+	lda	#<(scraddr)
+	sta	tmpptr1
+	lda	#>(scraddr)
+	sta	tmpptr1+1
+	lda	#<(dstaddr)
+	sta	tmpptr2
+	lda	#>(dstaddr)
+	sta	tmpptr2+1
+	smallmemcpy_macro	tmpptr1, tmpptr2, size
+	.endmacro
+
+
 ;;; Memory copy macro for up to 256 bytes.
 ;;; The source and destination pointers are not changed and can be reused.
-;;; Input: srcptr=pointer to the source, dstptr=pointer to the destination, size=number of bytes
+;;; Input: srcptr=pointer to the source,
+;;; 	dstptr=pointer to the destination,
+;;; 	size=number of bytes (#… is immediate, otherwise get from memory)
 ;;; Modifies: A, Y
 ;;; Output: -
 	.macro	smallmemcpy_macro	srcptr, dstptr, size
 	.local	@l1
-	.if	size > 256
-	 .error	More than 256 Bytes to copy!
-	.endif
+;	.if (.not .match (.left (1, {arg}), #))
+;	 .if size > 256
+;	  .error	More than 256 Bytes to copy!
+;	 .endif
+;	.endif
 	ldy	#0		; Set up index register.
 @l1:	lda	(srcptr),y
 	sta	(dstptr),y
 	iny			; Increment index register.
-	cpy	#<size		; Reached the end? For 256 Bytes this waits for the overflow.
+	.if (.match (.left (1, {size}), #))
+	;; Immediate
+	;; Reached the end? For 256 Bytes this waits for the overflow.
+	 cpy	#(.right (.tcount ({size})-1, {size}))
+	.else
+	;; Get from memory
+	 cpy	size
+	.endif
 	bne	@l1
 	.endmacro
 
