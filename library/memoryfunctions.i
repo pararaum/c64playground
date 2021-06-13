@@ -1,6 +1,12 @@
 ;;; -*- mode: asm -*-
 ;;; Routines to handle memory functions.
 
+;;; Copy exactly 1K of memory from ptr1 to ptr2
+;;; Input: ptr1, ptr2
+;;; Modifies: A,Y
+;;; Output: ptr1+=$0400, ptr2+=$0400
+	.import	memcpy1K_via_ptr
+
 ;;; Memory copy macro for up to 256 bytes with pointer initialisation.
 ;;; The source and destination pointers are not changed and can be reused.
 ;;; Input: srcaddr=pointer to the source, dstaddr=pointer to the destination, size=number of bytes, tmpptr1=a pointer in the zeropage, tmpptr2=a pointer in the zeropage
