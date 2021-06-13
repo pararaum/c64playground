@@ -106,15 +106,28 @@
 	sta dst+1
 .endmacro
 
+;;; Add two 16 bit numbers.
 .MACRO	P_add	src, dst
-	clc
-	lda src
-	adc dst
-	sta dst
-	lda src+1
-	adc dst+1
-	sta dst+1
-.endmacro
+	.if (.match (.left (1, {src}), #)) ; immediate?
+	 .local	@IARG
+	 @IARG=(.right (.tcount ({src})-1, {src}))
+	 lda	dst
+	 clc
+	 adc	#<@IARG
+	 sta	dst
+	 lda	dst+1
+	 adc	#>@IARG
+	 sta	dst+1
+	.else
+	 clc
+	 lda src
+	 adc dst
+	 sta dst
+	 lda src+1
+	 adc dst+1
+	 sta dst+1
+	.endif
+.ENDMACRO
 
 ;;; Add 8-bit immediate to a 16-bit destination. Warning! Value is *not* sign extended!
 .MACRO	P_addimm	val,dst
