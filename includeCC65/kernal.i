@@ -300,8 +300,8 @@
 
 
 ; PLOT. Save or restore cursor position.
-; Input: Carry: 0 = Restore from input, 1 = Save to output; X = Cursor column (if Carry = 0); Y = Cursor row (if Carry = 0).
-; Output: X = Cursor column (if Carry = 1); Y = Cursor row (if Carry = 1).
+; Input: Carry: 0 = Restore from input, 1 = Save to output; X = Cursor ROW (if Carry = 0); Y = Cursor COLUMN (if Carry = 0).
+; Output: X = Cursor ROW (if Carry = 1); Y = Cursor COLUMN (if Carry = 1).
 ; Used registers: X, Y.
 ; Real address: $E50A.
 	PLOT = $FFF0
