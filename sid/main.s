@@ -66,6 +66,11 @@ output_released:
 	jmp	_output_string20
 
 _start:
+	lda	$2a6		; NTSC/PAL? PAL=1
+	lsr			; Put LSB into Carry.
+	ror			; Move into MSB
+	ora	$dd0e		; CIA2 Timer A control register (Bit#7 TOD speed).
+	sta	$dd0e		; Bit#7=1 if 50 Hz.
 	lda	#1		; Turn border and background to white.
 	sta	$d020
 	sta	$d021
