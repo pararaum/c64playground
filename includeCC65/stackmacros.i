@@ -1,6 +1,12 @@
 ;;; -*- mode: asm -*-
 ;;; Macros to ease stack manipulations.
 
+;;; Counter to be used for local labels.
+
+	.ifndef	LOCALLABELCOUNTER
+	LOCALLABELCOUNTER .set	0
+	.endif
+
 ;;; The follwoing is a pair of functions which are dangerous but can
 ;	help greatly in handling parameters via the stack. The come in
 ;	pairs:
@@ -8,29 +14,30 @@
 ;	* PullStoreStackptr
 ;	* RetrievePushStackptr
 
-;;; Pull the return address of the stack and store it in a temporary area. Warning! No major labels can be defined as we are using cheap local labels.
+;;; Pull the return address of the stack and store it in a temporary area. Warning! If not used properly this will lead to hard to debug errors!
 ;;; Input: -
 ;;; Output: -
 ;;; Modifies: A
-;;; Data: @tempstackptrl and @tempstrh are cheap local labels which contain the old stack pointer.
+;;; Data: A unique label "UNIQUELABEL%04X"+offset is used to store the old stack pointer.
 .macro	PullStoreStackptr
 	pla
-	sta	@tempstackptrl
+	sta	.ident(.sprintf("UNIQUELABEL%04X", LOCALLABELCOUNTER))+4
 	pla
-	sta	@tempstackptrh
+	sta	.ident(.sprintf("UNIQUELABEL%04X", LOCALLABELCOUNTER))+1
 .endmacro
 
 ;;; Retrieve the return address from the temporary area and push it back on the stack.
 ;;; Input: -
 ;;; Output: -
 ;;; Modifies: A
+;;; After this macro the LOCALLABELCOUNTER is incremented!
 .macro	RetrievePushStackptr
+	.ident (.sprintf("UNIQUELABEL%04X", LOCALLABELCOUNTER)):
 	lda	#0
-	@tempstackptrh = *-1
 	pha
 	lda	#0
-	@tempstackptrl = *-1
 	pha
+	LOCALLABELCOUNTER .set LOCALLABELCOUNTER+1
 .endmacro
 
 ;;; Adjust the stack pointer.

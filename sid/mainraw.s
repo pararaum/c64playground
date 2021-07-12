@@ -1,26 +1,22 @@
+;;; This main program is used if the song is in `raw` format without any additional headers and only with a load address given.
 
-	;; Import the SID song begin and end (pointer after last byte).
 	.import	SIDSONG_BEGIN
 	.import	SIDSONG_END
 	.import	SONGNAME
 	.import	SONGAUTHOR
 	.import	SONGRELEASED
-	.import	SONGLOADADDRPTR
+	.import	copy_song
 	.importzp	ptr1,ptr2
 	.import	setup
 	.import	setup_irq
-	.import _output_string20
 	.import output_stringat20
-	.import	copy_song
 
 	.export	_start
 
-	.segment	"ONCE"
-
 	.macro	OutputMacro txtptr,col,row
-	lda	txtptr
+	lda	#<txtptr
 	pha
-	lda	txtptr+1
+	lda	#>txtptr
 	pha
 	lda	#row
 	pha
@@ -29,6 +25,7 @@
 	jsr	output_stringat20
 	.endmacro
 
+	.segment	"ONCE"
 _start:
 	jsr	setup
 	OutputMacro	SONGNAME,12,8
@@ -39,13 +36,11 @@ _start:
 	jsr	setup_irq
 	jmp	main
 
-
-	;; 💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾
 	.code
 main:
-	lda	#<SONGLOADADDRPTR
+	lda	#<SIDSONG_BEGIN
 	sta	ptr1
-	lda	#>SONGLOADADDRPTR
+	lda	#>SIDSONG_BEGIN
 	sta	ptr1+1
 	lda	#<(SIDSONG_END-SIDSONG_BEGIN)
 	ldx	#>(SIDSONG_END-SIDSONG_BEGIN)
