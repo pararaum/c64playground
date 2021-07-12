@@ -15,8 +15,6 @@
 
 	.export	_start
 
-	.segment	"ONCE"
-
 	.macro	OutputMacro txtptr,col,row
 	lda	txtptr
 	pha
@@ -29,20 +27,8 @@
 	jsr	output_stringat20
 	.endmacro
 
-_start:
-	jsr	setup
-	OutputMacro	SONGNAME,12,8
-	OutputMacro	SONGAUTHOR,12,10
-	OutputMacro	SONGRELEASED,12,12
-	lda	#<$1003
-	ldx	#>$1003
-	jsr	setup_irq
-	jmp	main
-
-
-	;; 💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾💾
 	.code
-main:
+.proc main
 	lda	#<SONGLOADADDRPTR
 	sta	ptr1
 	lda	#>SONGLOADADDRPTR
@@ -50,7 +36,26 @@ main:
 	lda	#<(SIDSONG_END-SIDSONG_BEGIN)
 	ldx	#>(SIDSONG_END-SIDSONG_BEGIN)
 	jsr	copy_song
-	lda	#0
-	jsr	$1000
+	lda	#0		; Initialise song.
+	jsr	$FFFF
+	MUZAKVECTOR = *-2
 	cli
 	jmp	*
+.endproc
+
+	.segment	"ONCE"
+_start:
+	jsr	setup
+	OutputMacro	SONGNAME,12,8
+	OutputMacro	SONGAUTHOR,12,10
+	OutputMacro	SONGRELEASED,12,12
+	;; Init address is at $a in the header.
+	lda	SIDSONG_BEGIN+$a+1 ; Address is stored big endian!
+	ldx	SIDSONG_BEGIN+$a
+	sta	main::MUZAKVECTOR
+	stx	main::MUZAKVECTOR+1
+	;; Play address is at $c in the header.
+	lda	SIDSONG_BEGIN+$c+1 ; Address is stored big endian!
+	ldx	SIDSONG_BEGIN+$c
+	jsr	setup_irq
+	jmp	main

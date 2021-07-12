@@ -7,7 +7,7 @@ CFLAGS=-C memmap.cfg
 LDFLAGS=-C memmap.cfg -L../library
 ASFLAGS=-I../library -I../includeCC65
 
-TARGETS=julia.prg bananas-01.prg song.prg
+TARGETS=julia.prg bananas-01.prg
 LIBOBJS=$(addsuffix .o, $(basename $(wildcard lib/*.s)))
 OBJS=main.o $(LIBOBJS)
 
@@ -31,9 +31,6 @@ julia.bin:	main.o default_screen_simple.o sidplay.lib julia.o
 	@sed '/^Segment list/,/^$$/p' -n $@.map
 
 bananas-01.bin:	main.o default_screen_simple.o sidplay.lib bananas-01.o
-	$(LD) $(LDFLAGS) -m $@.map -Ln $@.labels -o $@ $+ libT7D.lib
-
-song.bin:	mainraw.o default_screen_simple.o sidplay.lib song.o
 	$(LD) $(LDFLAGS) -m $@.map -Ln $@.labels -o $@ $+ libT7D.lib
 
 run:	$(TARGETS)
