@@ -26,6 +26,13 @@
 	sta	.ident(.sprintf("UNIQUELABEL%04X", LOCALLABELCOUNTER))+1
 .endmacro
 
+.macro	PullStoreStackptrLOCAL
+	pla
+	sta	@tempstackptrLO
+	pla
+	sta	@tempstackptrHI
+.endmacro
+
 ;;; Retrieve the return address from the temporary area and push it back on the stack.
 ;;; Input: -
 ;;; Output: -
@@ -38,6 +45,14 @@
 	lda	#0
 	pha
 	LOCALLABELCOUNTER .set LOCALLABELCOUNTER+1
+.endmacro
+.macro	RetrievePushStackptrLOCAL
+	lda	#0
+	@tempstackptrHI=*-1
+	pha
+	lda	#0
+	@tempstackptrLO=*-1
+	pha
 .endmacro
 
 ;;; Adjust the stack pointer.

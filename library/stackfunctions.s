@@ -3,11 +3,11 @@
 	.export	adjust_stackptr
 
 .proc	adjust_stackptr
-	sta	@tmp		; Store the delta for later use (self-modifying code).
-	PullStoreStackptr
+	sta	@tmpdelta	; Store the delta for later use (self-modifying code).
+	PullStoreStackptrLOCAL
 	lda	#0		; modified, see above
-	@tmp = *-1
+	@tmpdelta = *-1
 	AdjustStackptrA
-	RetrievePushStackptr
+	RetrievePushStackptrLOCAL
 	rts
 .endproc
