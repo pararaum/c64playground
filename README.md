@@ -42,8 +42,9 @@ C64 programming playground. Examples, code fragments, etc.
  * http://www.retrosoftware.co.uk/forum/viewtopic.php?f=73&t=999 (lz4, lzsa, and other)
  * https://github.com/emmanuel-marty/lzsa
  * http://forum.6502.org/viewtopic.php?f=2&t=4595 (another homebrew)
+ * https://github.com/emmanuel-marty/lzsa
  * https://xxl.atari.pl/lz4-decompressor/
- * http://pferrie.host22.com/misc/appleii.htm
+ * http://pferrie.epizy.com/misc/appleii.htm?i=1
  * http://madteam.atari8.info/index.php?prod=uzytki
  * https://github.com/bbbradsmith/huffmunch
  * https://wiki.nesdev.com/w/index.php/Text_compression

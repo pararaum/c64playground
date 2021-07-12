@@ -87,6 +87,61 @@
 	.endif
 	.endmacro
 
+
+
+;;; Memory copy macro, copies memory upwards.
+;;; The memory is copied from src to destination. The number of bytes must be given in size.
+;;; Input: from, to=two pointers in ZP to use, src=source address, dest=destination address, size=size in bytes
+;;; Reference: http://6502.org/source/general/memory_move.html
+;;; Modifies: A/X/Y, ptr1, ptr2
+	.macro	memcpy_ptr_up_macro	fromptr, toptr, src, dest, size
+	.local	@mu1,@mu2,@mu3
+	lda	#<(src)
+	sta	fromptr
+	lda	#>(src)
+	sta	fromptr+1
+	lda	#<(dest)
+	sta	toptr
+	lda	#>(dest)
+	sta	toptr+1
+	ldx	#>(size)	; the last byte must be moved first
+	clc			; start at the final pages of FROMPTR and TOPTR
+	txa
+	adc	fromptr+1
+	sta	fromptr+1
+	clc
+	txa
+	adc	toptr+1
+	sta	toptr+1
+	inx	     ; allows the use of BNE after the DEX below
+	ldy	#<(size)
+	beq	@mu3
+	dey	     ; move bytes on the last page first
+	beq	@mu2
+@mu1:
+	lda	(fromptr),y
+	sta	(toptr),y
+	dey
+	bne	@mu1
+@mu2:
+	lda	(fromptr),y	; handle Y = 0 separately
+	sta	(toptr),y
+@mu3:
+	dey
+	dec	fromptr+1	; move the next page (if any)
+	dec	toptr+1
+	dex
+	bne	@mu1
+	.endmacro
+
+
+;;; Function to copy the memory upwards
+;;; Input: ptr1=pointer to src, ptr2=destination pointer, A/X=size
+;;; Output: X=0
+;;; Modifies: ptr1, ptr2, A,X,Y
+	.import	memcpy_up
+
+
 ;;; Clear a memory area macro.
 ;;; The memory is cleared with zeros. Warning! Only usable once.
 ;;; Modifies: A/X/Y
