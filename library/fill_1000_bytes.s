@@ -15,7 +15,7 @@ l1:	sta	(ptr1),y
 	bne	l1
 	inc	ptr1+1
 	dex
-	bne	l1
+	bpl	l1
 l2:	sta	(ptr1),y
 	iny
 	cpy	#<(1000-3*256)
