@@ -135,3 +135,24 @@
 	;;    %111, 7: $3800-$3FFF, 14336-16383.
 	sta	$d018
 .endmacro
+
+;;; Enable IRQ at rasterline. Enables the IRQ rasterline interrupt.
+;;; Modifies: A
+;;; https://codebase64.org/doku.php?id=base:handling_irqs_with_some_simple_macros
+;;; https://www.c64-wiki.com/wiki/Page_208-211
+;;; https://codebase64.org/doku.php?id=base:introduction_to_raster_irqs
+.macro	EnableIRQatRasterline rasterline
+	lda	#<(rasterline)	; Set the rasterline
+	sta	$d012
+	.if rasterline>255
+	lda	$d011
+	or	#$80
+	sta	$d011
+	.else
+	lda	$d011
+	and	#$7f
+	sta	$d011
+	.endif
+	lda	#$01		; Enable raster IRQ
+	sta	$d01A
+.endmacro
