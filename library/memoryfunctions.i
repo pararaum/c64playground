@@ -1,11 +1,26 @@
 ;;; -*- mode: asm -*-
 ;;; Routines to handle memory functions.
 
+
 ;;; Copy exactly 1K of memory from ptr1 to ptr2
 ;;; Input: ptr1, ptr2
 ;;; Modifies: A,Y
 ;;; Output: ptr1+=$0400, ptr2+=$0400
 	.import	memcpy1K_via_ptr
+
+;;; Copy exactly 1K of memory (see above) as a macro.
+	.macro	Memcpy1KViaPtr	source, destination
+	lda	#<(source)
+	sta	ptr1
+	lda	#>(source)
+	sta	ptr1+1
+	lda	#<(destination)
+	sta	ptr2
+	lda	#>(destination)
+	sta	ptr2+1
+	jsr	memcpy1K_via_ptr
+	.endmacro
+
 
 ;;; Memory copy macro for up to 256 bytes with pointer initialisation.
 ;;; The source and destination pointers are not changed and can be reused.
