@@ -1,4 +1,6 @@
 *~
+*.label
+*.lst
 *.bin
 *.lib
 *.o

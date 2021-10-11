@@ -7,7 +7,7 @@ CFLAGS=-C memmap.cfg
 LDFLAGS=-C memmap.cfg -L../library
 ASFLAGS=-I../library -I../includeCC65
 
-TARGETS=julia.prg bananas-01.prg
+TARGETS=julia.prg bananas-01.prg Manual_Vision.prg
 LIBOBJS=$(addsuffix .o, $(basename $(wildcard lib/*.s)))
 OBJS=main.o $(LIBOBJS)
 
@@ -19,7 +19,7 @@ endif
 all:	bin
 
 clean:
-	rm -f $(TARGET) *.bin *.o lib/*.o *.prg *.map *.labels *.lib a.out
+	rm -f $(TARGET) *.bin *.o lib/*.o *.prg *.map *.label *.lib a.out
 
 sidplay.lib:	$(LIBOBJS)
 	ar65 r $@ $^
@@ -27,11 +27,14 @@ sidplay.lib:	$(LIBOBJS)
 bin:	$(OBJS) sidplay.lib $(TARGETS)
 
 julia.bin:	main.o default_screen_simple.o sidplay.lib julia.o
-	$(LD) $(LDFLAGS) -m $@.map -Ln $@.labels -o $@ $+ libT7D.lib
+	$(LD) $(LDFLAGS) -m $@.map -Ln $@.label -o $@ $+ libT7D.lib
 	@sed '/^Segment list/,/^$$/p' -n $@.map
 
 bananas-01.bin:	main.o default_screen_simple.o sidplay.lib bananas-01.o
-	$(LD) $(LDFLAGS) -m $@.map -Ln $@.labels -o $@ $+ libT7D.lib
+	$(LD) $(LDFLAGS) -m $@.map -Ln $@.label -o $@ $+ libT7D.lib
+
+Manual_Vision.bin:	main.o default_screen_simple.o sidplay.lib Manual_Vision.o
+	$(LD) $(LDFLAGS) -m $@.map -Ln $@.label -o $@ $+ libT7D.lib
 
 run:	$(TARGETS)
 	x64 -keybuf "sys828:\n" julia.bin
