@@ -6,7 +6,7 @@ CC65LIB=$(CC65ROOT)/lib
 
 AFLAGS = -DNDEBUG
 AINC = -I ../includeCC65
-OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift.o petscii_screencode.o prng.lfsr.o multiply_by_40.o memcpy1K_via_ptr.o memcpy_up.o fill_1000_bytes.o
+OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift.o petscii_screencode.o prng.lfsr.o multiply_by_40.o memcpy1K_via_ptr.o memcpy_up.o fill_1000_bytes.o sprite_high_bits.o
 PROJECT = libT7D
 
 all:	$(PROJECT).lib
