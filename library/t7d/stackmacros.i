@@ -55,6 +55,25 @@
 	pha
 .endmacro
 
+;;; Macro to put back the adjusted return address onto the stack. Use in conjunction with PullStoreStackptrLOCAL
+;;; Input: delta=bytes to add.
+;;; Output: Return address+delta on stack.
+;;; Modifies: A, X
+.macro	RetrievePushStackptrAdjLOCAL delta
+	lda	#0		; Overwritten LO value.
+	@tempstackptrLO=*-1
+	clc			; Adjust now.
+	adc	#delta
+	tax			; But keep safe in X.
+	lda	#0		; Overwritten HI value.
+	@tempstackptrHI=*-1
+	adc	#0		; Take care of carry.
+	pha
+	txa			; Now get LO.
+	pha			; And put on stack.
+.endmacro
+
+
 ;;; Adjust the stack pointer.
 ;;; Input: -
 ;;; Output: A=new stack pointer value

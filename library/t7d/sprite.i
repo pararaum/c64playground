@@ -1,5 +1,12 @@
 ; -*- mode: asm -*-
 
+;;; Routine to set the colours of all sprites to the same value.
+;;; Input: A=colour
+;;; Output: -
+;;; Modifies: -
+	.import	set_all_sprites_colour
+
+
 ;;; Sprite high bits table for easy and fast access to the high bit of a sprite.
 	.import SPRITE_HIGH_BITS
 

@@ -25,3 +25,11 @@
 ;;; Output:
 ;;; Modifies: A,X,Y,ptr1
 	.import	fill_1000_bytes
+
+;;; Busy wait for a frame.
+;;; This is achieved by polling $d011. The pm variant uses BPL/BMI the mp variant BMI/BPL.
+;;; Input: -
+;;; Output: -
+;;; Modifies: -
+	.import busywait_frame_pm
+	.import busywait_frame_mp

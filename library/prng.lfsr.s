@@ -1,6 +1,7 @@
 
 	.export	lfsr16_seed
 	.export	lfsr16_call
+	.export	lfsr16_set_feedbackterm
 
 	.data
 lfsr16_register:
@@ -10,6 +11,11 @@ lfsr16_register:
 ;;; http://users.ece.cmu.edu/~koopman/lfsr/16.txt
 lfsr16_feedbackterm:
 	.word	$8117
+
+lfsr16_set_feedbackterm:
+	sta	lfsr16_feedbackterm
+	stx	lfsr16_feedbackterm+1
+	rts
 
 lfsr16_seed:
 	sta	lfsr16_register

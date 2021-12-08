@@ -24,7 +24,16 @@
 
 ;;; Memory copy macro for up to 256 bytes with pointer initialisation.
 ;;; The source and destination pointers are not changed and can be reused.
-;;; Input: srcaddr=pointer to the source, dstaddr=pointer to the destination, size=number of bytes, tmpptr1=a pointer in the zeropage, tmpptr2=a pointer in the zeropage
+;;;
+;;; WARNING! Remember to put a '#' in front of the size if the value
+;;;	is fixed. Otherwise the end value is fetched from memory.
+;;;
+;;; Input:
+;;;	srcaddr=pointer to the source,
+;;;	dstaddr=pointer to the destination,
+;;;	size=#number of bytes or use variable/memory location,
+;;;	tmpptr1=a pointer in the zeropage,
+;;;	tmpptr2=a pointer in the zeropage
 ;;; Modifies: A, Y
 ;;; Output: -
 	.macro	smallmemcpy_macro_winit	scraddr, dstaddr, size, tmpptr1, tmpptr2
@@ -74,7 +83,7 @@
 ;;; Modifies: A/X/Y
 	.macro	memcpy_down_macro	src, dest, size
 	.local	@l1,@l2
-	.if	>size <> 0
+	.if	>(size) <> 0
 	ldy	#0
 	ldx	#0
 @l1:	lda	src,x
@@ -161,25 +170,25 @@
 ;;; The memory is cleared with zeros. Warning! Only usable once.
 ;;; Modifies: A/X/Y
 	.macro bzero_once_macro	dest, size
-	.if	>size <> 0
+	.if	>(size) <> 0
 	lda	#0
 	tax
 	tay
 @l1:	sta	dest,x
 	inx
 	bne	@l1
-	inc	@li+2		; Increment hi of dest
+	inc	@l1+2		; Increment hi of dest
 	iny
-	cpy	#>size
+	cpy	#>(size)
 	bne	@l1
 	.endif
-	.if	<size <> 0
-	.if	<size = 1
-	sta	dest+(size & $ff00)
+	.if	<(size) <> 0
+	.if	<(size) = 1
+	sta	dest+((size) & $ff00)
 	.else
-@l2:	sta	dest+(size & $ff00),x
+@l2:	sta	dest+((size) & $ff00),x
 	inx
-	cpx	#<size
+	cpx	#<(size)
 	bne	@l2
 	.endif
 	.endif

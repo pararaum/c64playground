@@ -1,5 +1,5 @@
 
-	.include	"stackmacros.i"
+	.include	"t7d/stackmacros.i"
 	.export	adjust_stackptr
 
 .proc	adjust_stackptr

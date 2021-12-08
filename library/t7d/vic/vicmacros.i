@@ -67,7 +67,7 @@
 	;; By setting bit 3, we can configure which of the locations to use.
 	;;
 	lda	$d018
-	.if address=0
+	.if (address&$3fff)=0
         and	#%11110111
 	.else
         ora	#%00001000
