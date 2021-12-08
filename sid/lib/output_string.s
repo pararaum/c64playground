@@ -1,5 +1,5 @@
-	.include	"kernal.i"
-	.include	"stackmacros.i"
+	.include	"t7d/kernal.i"
+	.include	"t7d/stackmacros.i"
 	.importzp	ptr1
 
 	.export	_output_string20

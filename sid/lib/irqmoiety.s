@@ -1,6 +1,6 @@
 ;;; Interrupt handling routines.
 	.include	"libt7d.i"
-	.include	"kernal.i"
+	.include	"t7d/kernal.i"
 
 	.export	setup_irq
 

@@ -1,5 +1,5 @@
 ;;; Setup functions for screen, etc.
-	.include	"vicmacros.i"
+	.include	"t7d/vic/vicmacros.i"
 	.include	"libt7d.i"
 	.import	PLAYERBACKGROUND
 	.import	PLAYERFOREGROUND
