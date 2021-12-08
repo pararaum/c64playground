@@ -23,7 +23,7 @@
 ; Animation Display is
 ; @ABC
 ; DEFG
-	.include	"pseudo16.inc"
+	.include	"t7d/pseudo/pseudo16.inc"
 	.import	animate_char_chargenaddr
 	.export	animate_char_fontupdate
 	.export animate_char_putat

@@ -1,8 +1,8 @@
 ;;; Animate characters (2X2) and move them horizontally.
 
-	.include	"kernal.i"
+	.include	"t7d/kernal.i"
 	.include	"irqmoiety.i"
-	.include	"vicmacros.i"
+	.include	"t7d/vic/vicmacros.i"
 	.include	"animate_char.i"
 	.import	muzak_init
 	.macpack	generic
