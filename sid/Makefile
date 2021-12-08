@@ -7,7 +7,7 @@ CFLAGS=-C memmap.cfg
 LDFLAGS=-C memmap.cfg -L../library
 ASFLAGS=-I../library -I../includeCC65
 
-TARGETS=julia.prg bananas-01.prg Manual_Vision.prg
+TARGETS=julia.prg bananas-01.prg
 LIBOBJS=$(addsuffix .o, $(basename $(wildcard lib/*.s)))
 OBJS=main.o $(LIBOBJS)
 
