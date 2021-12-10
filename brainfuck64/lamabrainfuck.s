@@ -4,7 +4,10 @@
 ;
 ; Usage: put start adress of BF program in $02/03
 ;        
-;
+; for the example programs
+; LOAD lamabrainfuck.prg
+; LOAD example program
+; POKE2,0:POKE3,9:RUN
 ; ********************************************************
 
 .include "LAMAlib.inc"
