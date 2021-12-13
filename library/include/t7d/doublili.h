@@ -1,7 +1,7 @@
 #ifndef __DOUBLILI_H_20211213__
 #define __DOUBLILI_H_20211213__
 /*
- * Simple double linked list library.
+ * Simple doubly linked list library.
  *
  * Every item aka the struct must have as its first element the
  * prev/next pointers, so the first four bytes are used for linking
@@ -21,6 +21,16 @@ typedef struct doublili_node_t DoubliliNode;
  * \param node pointer to node, must be allocated beforehand; may be NULL if no elements
  */
 DoubliliNode *doublili_insert(void **head, void *node);
+
+/*! \brief remove a node from the doubly linked list
+ *
+ * If the last element was removed, head is set to NULL. For the
+ * removed node free() is called!
+ * 
+ * \param head pointer to the head pointer
+ * \param node pointer to the node, which will be removed
+ */
+DoubliliNode *doublili_remove(void **head, void *node);
 
 void *doublili_next(void *node);
 

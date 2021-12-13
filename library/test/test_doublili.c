@@ -43,7 +43,7 @@ void print(void) {
 int main(void) {
   int tmp;
 
-  puts("testing double linked list.");
+  puts("testing doubly linked list.");
   insertdata(13);
   print();
   tmp = count(head);
@@ -52,5 +52,6 @@ int main(void) {
     printf("count is wrong, %d!=%d\n", tmp, 13);
     return 1;
   }
+  printf("%X\n", doublili_next(doublili_next(doublili_next(head))));
   return 0;
 }
