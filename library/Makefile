@@ -4,7 +4,7 @@ CC65ROOT=/usr/share/cc65
 CC65ASMINC=$(CC65ROOT)/asminc
 CC65LIB=$(CC65ROOT)/lib
 
-CFLAGS = -I $(CURDIR)/include -DNDEBUG
+CFLAGS = -O -I $(CURDIR)/include -DNDEBUG
 CC = cl65
 
 AFLAGS = -DNDEBUG
