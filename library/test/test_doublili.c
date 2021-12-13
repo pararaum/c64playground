@@ -53,5 +53,20 @@ int main(void) {
     return 1;
   }
   printf("%X\n", doublili_next(doublili_next(doublili_next(head))));
+  doublili_remove((void*)&head, doublili_next(doublili_next(doublili_next(head))));
+  print();
+  printf("%X\n", head);
+  doublili_remove((void*)&head, head);
+  print();
+  while(count(head) > 2) {
+    doublili_remove((void*)&head, head);
+  }
+  printf("%X\n", head);
+  print();
+  doublili_remove((void*)&head, doublili_next(head));
+  print();
+  printf("%X\n", head);
+  doublili_remove((void*)&head, head);
+  printf("%X\n", head);
   return 0;
 }

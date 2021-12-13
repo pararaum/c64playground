@@ -19,6 +19,7 @@ typedef struct doublili_node_t DoubliliNode;
  *
  * \param head pointer to the head pointer
  * \param node pointer to node, must be allocated beforehand; may be NULL if no elements
+ * \return new head
  */
 DoubliliNode *doublili_insert(void **head, void *node);
 
@@ -29,6 +30,7 @@ DoubliliNode *doublili_insert(void **head, void *node);
  * 
  * \param head pointer to the head pointer
  * \param node pointer to the node, which will be removed
+ * \return next element, may be NULL
  */
 DoubliliNode *doublili_remove(void **head, void *node);
 
