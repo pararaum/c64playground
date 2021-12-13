@@ -7,7 +7,37 @@
 	LOCALLABELCOUNTER .set	0
 	.endif
 
-;;; The follwoing is a pair of functions which are dangerous but can
+;;; ------------------------------------------------------------------
+;;; Macros to move memory to the stack and back. The CPU stack is used, so be careful as not much space is available.
+
+;;; Push some memory to the stack
+;;; Input: zpptr=memory pointer, size=number of bytes
+;;; Modifies: A, Y
+.macro PushMemoryToStack zpptr, size
+	.local	@loop
+	ldy	#0
+	lda	(zpptr),y
+	pha
+	iny
+	cpy	#size
+	bne	@loop
+.endmacro
+
+;;; Pull some memory fropm the stack
+;;; Input: zpptr=memory pointer, size=number of bytes
+;;; Modifies: A, Y
+.macro PullMemoryFromStack zpptr, size
+	.local	@loop
+	ldy	#size-1
+	pla
+	sta	(zpptr),y
+	dey
+	cpy	#$FF		; Underflow
+	bne	@loop
+.endmacro
+
+;;; ------------------------------------------------------------------
+;;; The following is a pair of functions which are dangerous but can
 ;	help greatly in handling parameters via the stack. The come in
 ;	pairs:
 ;
