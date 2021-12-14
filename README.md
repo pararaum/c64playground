@@ -21,6 +21,7 @@ C64 programming playground. Examples, code fragments, etc.
    - https://dustlayer.com/vic-ii/2013/4/25/vic-ii-for-beginners-beyond-the-screen-rasters-cycle
  * Cartridge
    - https://github.com/jviskari/cc65cart
+ * Sweet16: https://github.com/Silverune/Sweet16
 
 ## SID specific ##
 
