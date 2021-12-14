@@ -115,18 +115,18 @@ void print_dirline(void *node) {
 
 DirEntry *read_dir_lines(FILE *f) {
   DirEntry *curr;
-  DirEntry *head;
+  DirEntry *head = NULL;
 
   while(!feof(f)) {
     curr = malloc(sizeof(DirEntry));
     curr->name = read_dir_line(f, &(curr->size), &(curr->type));
     //printf("read %04X %s %u %s\n", curr->name, curr->name, curr->size, curr->type);
     if(curr->name == NULL) { // EOF or so...
-      puts("BREAK");
       free(curr); // Free again, as no luck here.
       break;
+    } else {
+      doublili_insert((void*)&head, curr);
     }
-    doublili_insert((void*)&head, curr);
   }
   return head;
 }
