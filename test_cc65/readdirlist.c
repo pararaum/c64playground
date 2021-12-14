@@ -10,13 +10,17 @@
 typedef struct direntry_t {
   DoubliliNode node;
   unsigned int size; //!< blocks
-  const char *name;
-  const char *type;
+  char *name;
+  char *type;
 } DirEntry;
 
 char linebuf[254];
 
 void skip_link(FILE *f) {
+  /* int c1, c2; */
+  /* c1 = fgetc(f); */
+  /* c2 = fgetc(f); */
+  /* printf("skip_link %d %d\n", c1, c2); */
   fgetc(f);
   fgetc(f);
 }
@@ -24,8 +28,8 @@ void skip_link(FILE *f) {
 unsigned int read16bit(FILE *f) {
   unsigned int v;
 
-  v = fgetc(f) << 8;
-  v |= fgetc(f);
+  v = fgetc(f);
+  v |= (unsigned char)fgetc(f) << 8;
   return v;
 }
 
@@ -46,40 +50,104 @@ char *read_until_char(FILE *f, char end) {
   return strdup(linebuf);
 }
 
-void skip_until_22(FILE *f) {
+/* \brief skip characters in stream until '"' occurs
+ *
+ * \param f file stream 
+ * \return '\0', '"', or EOF, only '"' means succesful
+ */
+int skip_until_22(FILE *f) {
   int c;
 
   do {
     c = fgetc(f);
   } while((c != '"') && (c != 0) && (c != EOF));
+  return c;
 }
 
 void skip_ws(FILE *f) {
   int c;
   do {
     c = fgetc(f);
-  } while((c != ' ') && (c != 0) && (c != EOF));
+    if((c == 0) || (c == ' ')) {
+    } else {
+      ungetc(c, f); // Push back to stream.
+      break;
+    }
+  } while(c != EOF);
 }
+
+/*
+ * \param f file stream to read from
+ * \param size pointer where to store the file size in blocks
+ * \param type pointer to store the type string
+ * \return file name or NULL
+ */
+char *read_dir_line(FILE *f, unsigned int *size, char **type) {
+  char *fname;
+
+  // First two bytes are the link, usually just $01 $01.
+  skip_link(f);
+  *size = read16bit(f); // Read the size as binary.
+  if(skip_until_22(f) != '"') { // EOF or blocks free...
+    return NULL;
+  }
+  fname = read_until_char(f, '"');
+  skip_ws(f);
+  *type = read_until_char(f, 0);
+  return fname;
+}
+
+
+void doublili_foreach(void *head, void (*functor)(void *)) {
+  DoubliliNode *_node = head;
+
+  while(_node) {
+    functor(_node);
+    _node = doublili_next(_node);
+  }
+}
+
+void print_dirline(void *node) {
+  DirEntry *_node = node;
+
+  printf("%u '%s',%s\n", _node->size, _node->name, _node->type);
+}
+
+DirEntry *read_dir_lines(FILE *f) {
+  DirEntry *curr;
+  DirEntry *head;
+
+  while(!feof(f)) {
+    curr = malloc(sizeof(DirEntry));
+    curr->name = read_dir_line(f, &(curr->size), &(curr->type));
+    if(curr->name == NULL) { // EOF or so...
+      free(curr); // Free again, as no luck here.
+      break;
+    }
+    doublili_insert((void*)&head, curr);
+  }
+  return head;
+}
+  
 
 void read_header(FILE *f) {
   int c;
   unsigned int s;
-  char *buf;
+  char *diskname;
+  char *disktype;
+  DirEntry *head;
 
   // skip load address
   fgetc(f);
   fgetc(f);
-  skip_link(f);
-  s = read16bit(f); // Read the zero as binary.
-  printf("%u: \n", s);
-  skip_until_22(f);
-  buf = read_until_char(f, '"');
-  printf("'%s' ", buf);
-  free(buf);
-  skip_ws(f);
-  buf = read_until_char(f, 0);
-  printf("%s\n", buf);
-  free(buf);
+  diskname = read_dir_line(f, &s, &disktype);
+  printf("%u: '%s', '%s'\n", s, diskname, disktype);
+  free(diskname);
+  free(disktype);
+  puts("Reading Dir");
+  head = read_dir_lines(f);
+  puts("Reading Dir Done");
+  doublili_foreach(head, &print_dirline);
   while((c = fgetc(f)) != EOF) {
     printf("%02x", c);
   }
