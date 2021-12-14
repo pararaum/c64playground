@@ -7,9 +7,12 @@ DoubliliNode *doublili_insert(void **head, void *node) {
 
   if(_head != NULL) {
     _head->prev = node;
+    _node->prev = NULL;
+    _node->next = _head;
+  } else {
+    _node->prev = NULL;
+    _node->next = NULL;
   }
-  _node->prev = NULL;
-  _node->next = _head;
-  *head = node;
+  *head = _node;
   return *head;
 }

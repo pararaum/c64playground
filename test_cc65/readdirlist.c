@@ -120,7 +120,9 @@ DirEntry *read_dir_lines(FILE *f) {
   while(!feof(f)) {
     curr = malloc(sizeof(DirEntry));
     curr->name = read_dir_line(f, &(curr->size), &(curr->type));
+    //printf("read %04X %s %u %s\n", curr->name, curr->name, curr->size, curr->type);
     if(curr->name == NULL) { // EOF or so...
+      puts("BREAK");
       free(curr); // Free again, as no luck here.
       break;
     }
@@ -147,6 +149,7 @@ void read_header(FILE *f) {
   puts("Reading Dir");
   head = read_dir_lines(f);
   puts("Reading Dir Done");
+  printf("head = %04X\n", head);
   doublili_foreach(head, &print_dirline);
   while((c = fgetc(f)) != EOF) {
     printf("%02x", c);
