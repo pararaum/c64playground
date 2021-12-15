@@ -34,6 +34,17 @@ DoubliliNode *doublili_insert(void **head, void *node);
  */
 DoubliliNode *doublili_remove(void **head, void *node);
 
+/*! \brief call a function for each element
+ *
+ * This function will call the supplied function for each element of the doubly linked list. Starting at the given head and moving in the direction of the next element.
+ *
+ * \param head head to start at
+ * \param function function will be called with a pointer to each node
+ */
+void doublili_foreach(void *head, void (*functor)(void *));
+
+
 void *doublili_next(void *node);
+void *doublili_prev(void *node);
 
 #endif

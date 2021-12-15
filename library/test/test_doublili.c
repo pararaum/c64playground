@@ -40,6 +40,13 @@ void print(void) {
   }
 }
 
+void test_prevnext() {
+  if(head != doublili_prev(doublili_next(head))) {
+    puts("prev/next pair not idempotent");
+    abort();
+  }
+}
+
 int main(void) {
   int tmp;
 
@@ -52,6 +59,7 @@ int main(void) {
     printf("count is wrong, %d!=%d\n", tmp, 13);
     return 1;
   }
+  test_prevnext();
   printf("%X\n", doublili_next(doublili_next(doublili_next(head))));
   doublili_remove((void*)&head, doublili_next(doublili_next(doublili_next(head))));
   print();
@@ -62,6 +70,14 @@ int main(void) {
     doublili_remove((void*)&head, head);
   }
   printf("%X\n", head);
+  if(head->data != 1) {
+    printf("head->data = %d?\n", head->data);
+    return 1;
+  }
+  if(((IntegerList*)(head->node.next))->data != 0) {
+    printf("head->next->data = %d?\n", ((IntegerList*)(head->node.next))->data);
+    return 1;
+  }
   print();
   doublili_remove((void*)&head, doublili_next(head));
   print();

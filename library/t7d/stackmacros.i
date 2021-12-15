@@ -16,10 +16,10 @@
 .macro PushMemoryToStack zpptr, size
 	.local	@loop
 	ldy	#0
-	lda	(zpptr),y
+@loop:	lda	(zpptr),y
 	pha
 	iny
-	cpy	#size
+	cpy	#(size)
 	bne	@loop
 .endmacro
 
@@ -29,7 +29,7 @@
 .macro PullMemoryFromStack zpptr, size
 	.local	@loop
 	ldy	#size-1
-	pla
+@loop:	pla
 	sta	(zpptr),y
 	dey
 	cpy	#$FF		; Underflow

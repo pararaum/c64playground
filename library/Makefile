@@ -6,6 +6,7 @@ CC65LIB=$(CC65ROOT)/lib
 
 CFLAGS = -O -I $(CURDIR)/include -DNDEBUG
 CC = cl65
+AS = ca65
 
 AFLAGS = -DNDEBUG
 AINC = -I $(CURDIR)
@@ -13,7 +14,7 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
 COBJS = $(patsubst %.c, %.o, $(wildcard libsrc/*.c))
 PROJECT = libT7D
 
-export	CC CFLAGS
+export	CC CFLAGS AS AFLAGS
 
 all:	$(PROJECT).lib
 
