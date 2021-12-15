@@ -98,15 +98,6 @@ char *read_dir_line(FILE *f, unsigned int *size, char **type) {
 }
 
 
-void doublili_foreach(void *head, void (*functor)(void *)) {
-  DoubliliNode *_node = head;
-
-  while(_node) {
-    functor(_node);
-    _node = doublili_next(_node);
-  }
-}
-
 void print_dirline(void *node) {
   DirEntry *_node = node;
 
