@@ -45,5 +45,6 @@ void doublili_foreach(void *head, void (*functor)(void *));
 
 
 void *doublili_next(void *node);
+void *doublili_prev(void *node);
 
 #endif
