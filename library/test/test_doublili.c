@@ -62,6 +62,14 @@ int main(void) {
     doublili_remove((void*)&head, head);
   }
   printf("%X\n", head);
+  if(head->data != 1) {
+    printf("head->data = %d?\n", head->data);
+    return 1;
+  }
+  if(((IntegerList*)(head->node.next))->data != 0) {
+    printf("head->next->data = %d?\n", ((IntegerList*)(head->node.next))->data);
+    return 1;
+  }
   print();
   doublili_remove((void*)&head, doublili_next(head));
   print();
