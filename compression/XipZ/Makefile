@@ -44,7 +44,7 @@ cmdline.c: command_line.ggo
 	gengetopt -i $+
 
 decrunchxipzstub:	decrunchxipzstub.s
-	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+	cl65 --asm-include-dir ../../library -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
 decrunchxipzstub.inc:	decrunchxipzstub
 	xxd -i $+ > $@
@@ -55,7 +55,7 @@ decrunchqadzstub.inc:	decrunchqadzstub
 	hd $+
 
 decrunchqadzstub:	decrunchqadzstub.s
-	cl65 --asm-include-dir ../../includeCC65/ -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+	cl65 --asm-include-dir ../../library -C /usr/share/cc65/cfg/c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
 clean:
 	rm -f *.lst *.map *.label *.o *.inc

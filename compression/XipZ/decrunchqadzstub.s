@@ -8,7 +8,7 @@ SRCPTR = $58
 DSTPTR = $26
 AUXPTR = $28
 
-	.include	"basic.i"
+	.include	"t7d/basic.i"
 	.export	decrunch
 	.export	tocopy
 	.export	tocopy_end

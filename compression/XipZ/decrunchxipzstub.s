@@ -7,7 +7,7 @@ ENDADDRESS = $1000
 ;;; This variable should contain a single bit moving from left to right so that after eight LSR instructions it becomes zero and can be restored via ROR. Neat trick for counting eight bits.
 bitcount = $2b			; $01 initially (basic text)
 
-	.include	"basic.i"
+	.include	"t7d/basic.i"
 	.export	decrunch
 	.export	tocopy
 	.export	tocopy_end
