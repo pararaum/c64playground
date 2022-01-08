@@ -2,7 +2,7 @@
 ; windowchrout
 ; Prints characters that are output via $FFD2 within a window
 ;
-; Jan-2022 V0.2
+; Jan-2022 V0.3
 ; Wilfried Elmenreich
 ; License: The Unlicense
 ;
@@ -129,11 +129,11 @@ output_to_screen:
 
 printablechar:
 ;convert to screencode
-	tay             	;update flags
-	bmi above128
-	and #$3f
-above128:
+	cmp #$60
+	bcc *+7
+	ora #$40
 	and #$7f
+	bit $3F29
 
 	eor rvs_mode
 
@@ -166,7 +166,7 @@ chr_right:
 ;---------------------------------------------------
 check_control_codes:
 	cmp #$0d
-	beq chr_return
+	beq clr_rvs_and_return
 
 	cmp #29		;crsr right
 	beq chr_right
@@ -256,8 +256,9 @@ chr_up:
 ;---------------------------------------------------
 ;cursor return
 ;---------------------------------------------------
-chr_return:
+clr_rvs_and_return:
 	poke rvs_mode,0
+chr_return:
 	lda window_x1
 	sta cursorx
 

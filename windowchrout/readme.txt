@@ -12,7 +12,7 @@ The page of the textscreen (stored in $288 / 648) is used to determine the outpu
 
 limitations: no backspace, no insert
 
-=== some test programs in BASIC ===
+=== Some test programs in BASIC ===
 
 0 rem *** editor
 1 sys49152
@@ -38,9 +38,9 @@ limitations: no backspace, no insert
 50 pokewb+3,20
 60 fori=1024toi+999:pokei,iand31:next
 70 sys49152:rem enable window system
-80 printchr$(147)
+80 printchr$(147)chr$(5)
 85 ti$="000000"
 90 fori=0to100:?left$("hello world, what's up?",(iand15)+1)" ";:next
-95 ?:?ti/60
+95 ?chr$(154):?ti/60
 100 wait198,1
 110 sys49152+75:rem disable window system
