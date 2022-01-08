@@ -1,6 +1,6 @@
 ;-----------------------------------------------------------------------
 ; windowchrout
-; Prints characters that are output via $FFD2 into a textwindow
+; Prints characters that are output via $FFD2 within a window
 ;
 ; Jan-2022 V0.2
 ; Wilfried Elmenreich
@@ -16,7 +16,7 @@
 ; the output screen, but if you change the screen, the routine
 ; _enable_chrout2window needs to be called again.
 ;
-; limitations: no reverse mode, no backspace, no insert
+; limitations: no backspace, no insert
 ;-----------------------------------------------------------------------
 
 .include "LAMAlib.inc"
@@ -25,10 +25,10 @@
 
 .export _chrout2window, _enable_chrout2window, _disable_chrout2window
 
-.export _homex     :=homex        ;left column
-.export _homey     :=homey        ;upper line
-.export _lastcolumn:=lastcolumn   ;right column
-.export _lastline  :=lastline     ;lower line
+.export _window_x1  :=window_x1   ;left column
+.export _window_y1  :=window_y1   ;upper line
+.export _window_x2  :=window_x2   ;right column
+.export _window_y2  :=window_y2   ;lower line
 
 ; switch for adding fileio support
 support_fileio=1	;set this to 0 if fileio is not needed while windowing is enabled
@@ -39,6 +39,7 @@ support_fileio=1	;set this to 0 if fileio is not needed while windowing is enabl
 
 cursorx  =$D3
 cursory  =$D6
+rvs_mode =$C7
 charcolor = $286
 scrpage =   $288
 
@@ -46,25 +47,25 @@ _enable_chrout2window:
 	pokew $0326,_chrout2window
 
 	;move cursorpos into window if necessary
-	lda homex
+	lda window_x1
 	cmp cursorx
 	if cs
 	  sta cursorx
 	endif
 
-	lda lastcolumn
+	lda window_x2
 	cmp cursorx
 	if cc
 	  sta cursorx
 	endif
 
-	lda homey
+	lda window_y1
 	cmp cursory
 	if cs
 	  sta cursory
 	endif
 
-	lda lastline
+	lda window_y2
 	cmp cursory
 	if cc
 	  sta cursory
@@ -93,10 +94,10 @@ _disable_chrout2window:
 rts_address:
 	rts
 
-homex:	    .byte 5
-homey:	    .byte 2
-lastcolumn: .byte 20
-lastline:   .byte 10
+window_x1:	    .byte 5
+window_y1:	    .byte 2
+window_x2: .byte 20
+window_y2:   .byte 10
 
 ;---------------------------------------------------
 ; poor man's replacement for CHROUT
@@ -134,6 +135,8 @@ printablechar:
 above128:
 	and #$7f
 
+	eor rvs_mode
+
 	ldx cursorx
 ;copy char
 scrptr=*+1
@@ -151,7 +154,7 @@ colptr=*+1
 ;---------------------------------------------------
 chr_right:
 	lda cursorx
-	cmp lastcolumn
+	cmp window_x2
 	if cs
 	  jmp chr_return
 	endif
@@ -180,9 +183,23 @@ check_control_codes:
 	cmp #157	;crsr left
 	beq chr_left
 
-	cmp #147	;clrscr
-	jeq clr_window
+	cmp #18		;rvs on
+	if eq
+	  lda #$80
+st_rvs:
+	  sta rvs_mode
+	  jmp exit_routine
+	endif
 
+	cmp #146	;rvs off
+	if eq
+	  lda #00
+	  beq st_rvs
+	endif
+
+	cmp #147	;clrscr
+	beq clr_window
+	
 	;must be a color code
 	ldy #8
 checkcolors:
@@ -203,14 +220,14 @@ nohit:
 ;---------------------------------------------------
 chr_left:
 ;go back one char
-	lda homex
+	lda window_x1
 	cmp cursorx
 	bcs up_and_to_end_of_line	;we are already at the left side of the window
 	dec cursorx
         jmp exit_routine
 
 up_and_to_end_of_line:
-	lda lastcolumn
+	lda window_x2
 	sta cursorx
 
 	;fallthrough!
@@ -219,7 +236,7 @@ up_and_to_end_of_line:
 ;cursor up
 ;---------------------------------------------------
 chr_up:
-	lda homey
+	lda window_y1
 	cmp cursory
 	if cs
 	  jmp exit_routine	;we are already at the top of the window
@@ -240,7 +257,8 @@ chr_up:
 ;cursor return
 ;---------------------------------------------------
 chr_return:
-	lda homex
+	poke rvs_mode,0
+	lda window_x1
 	sta cursorx
 
 	;fallthrough!
@@ -250,7 +268,7 @@ chr_return:
 ;---------------------------------------------------
 chr_down:
 	lda cursory
-	cmp lastline
+	cmp window_y2
 	bcc ok_down
 	jsr scrollup
 	jmp exit_routine
@@ -270,8 +288,8 @@ ok_down:
 ;clear screen (or rather the window in our case)
 ;---------------------------------------------------
 clr_window:
-	ldy homey
-	lda homex
+	ldy window_y1
+	lda window_x1
 	clc
 	adc mul40_lo,y
 	sta scr_clr_ptr2
@@ -285,9 +303,9 @@ clr_window:
 	adc #$d8
 	sta col_clr_ptr2+1
 
-	lda lastcolumn
+	lda window_x2
 	sec
-	sbc homex
+	sbc window_x1
 	sta line_width2
 
 	dey	;because we need to clear one line more
@@ -318,7 +336,7 @@ col_clr_ptr2=*+1
 	sta col_clr_ptr2
 
 	iny
-	cpy lastline
+	cpy window_y2
 	bcc clear_lines
 
 	;fallthrough!
@@ -327,9 +345,9 @@ col_clr_ptr2=*+1
 ;crsr home
 ;---------------------------------------------------
 home_pos:
-	lda homex
+	lda window_x1
 	sta cursorx
-	ldy homey
+	ldy window_y1
 	sty cursory
 
 	lda mul40_lo,y
@@ -359,8 +377,8 @@ exit_routine:
 ;scroll up and clear last line in window
 ;---------------------------------------------------
 scrollup:
-	ldy homey
-	lda homex
+	ldy window_y1
+	lda window_x1
 	clc
 	adc mul40_lo,y
 	sta scr_to_ptr
@@ -385,13 +403,13 @@ scrollup:
 	  inc col_to_ptr+1
 	endif
 
-	lda lastcolumn
+	lda window_x2
 	sec
-	sbc homex
+	sbc window_x1
 	sta line_width
 
 scroll_lines:
-	cpy lastline
+	cpy window_y2
 	bcs clear_last_line
 
 line_width=*+1
