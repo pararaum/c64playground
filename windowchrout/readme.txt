@@ -1,4 +1,4 @@
-windowchrout
+=== window_chrout ===
 Prints characters that are output via $FFD2 within a window
 
 Wilfried Elmenreich
@@ -44,3 +44,9 @@ limitations: no backspace, no insert
 95 ?chr$(154):?ti/60
 100 wait198,1
 110 sys49152+75:rem disable window system
+
+
+=== draw_frame ===
+
+draws a frame around the window area
+uses the same parameters as window_chrout

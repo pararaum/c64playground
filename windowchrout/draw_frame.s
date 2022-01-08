@@ -11,7 +11,7 @@
 
 .include "LAMAlib.inc"
 
-.export _draw_window_frame_sr
+.export _draw_frame_sr
 
 .export _frame_upper_left
 .export _frame_upper_right
@@ -40,7 +40,7 @@ _frame_horizontal:  .byte $40
 _frame_fillchar:    .byte $20
 _frame_color:       .byte $01
 
-_draw_window_frame_sr:
+_draw_frame_sr:
 	ldy _window_y1
 	ldx _window_x1
 	dex

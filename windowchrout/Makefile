@@ -19,8 +19,8 @@ clean::
 	rm -f $(TARGETS)
 	rm -f *.labels
 
-test_drawframe.prg: test_drawframe.o window_parameters.o draw_window_frame.o
+test_drawframe.prg: test_drawframe.o window_parameters.o draw_frame.o
 	$(LD) -Ln $(basename $@).labels $(LDFLAGS) -o $@ $+ LAMAlib.lib
 
-test_frame_and_window.prg: test_frame_and_window.o window_parameters.o draw_window_frame.o window_chrout.o
+test_frame_and_window.prg: test_frame_and_window.o window_parameters.o draw_frame.o window_chrout.o
 	$(LD) -Ln $(basename $@).labels $(LDFLAGS) -o $@ $+ LAMAlib.lib

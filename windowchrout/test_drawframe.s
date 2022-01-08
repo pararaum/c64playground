@@ -11,7 +11,7 @@
 
 .import _window_x1,_window_y1,_window_x2,_window_y2
 
-.import _draw_window_frame_sr
+.import _draw_frame_sr
 
-	jsr _draw_window_frame_sr
+	jsr _draw_frame_sr
 	rts
