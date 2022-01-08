@@ -2,7 +2,7 @@
 ; windowchrout
 ; Prints characters that are output via $FFD2 into a textwindow
 ;
-; Jan-2022 V0.1
+; Jan-2022 V0.2
 ; Wilfried Elmenreich
 ; License: The Unlicense
 ;
@@ -120,49 +120,11 @@ output_to_screen:
 	store Y
 
 	bit rts_address	;anded with #%01100000
-	bne printablechar  
-	cmp #$0d
-	bne noret
-	jmp chr_return
-noret:
-	cmp #29		;crsr right
-	bne noright
-	jmp chr_right
-noright:
-	cmp #$11	;crsr down
-	bne nodown
-	jmp chr_down
-nodown:
-	cmp #$13	;home
-	bne nohome
-	jmp home_pos
-nohome:
-	cmp #145	;crsr up
-	bne noup
-	jmp chr_up
-noup:
-	cmp #157	;crsr left
-	bne noleft
-	jmp chr_left
-noleft:
-	cmp #147	;clrscr
-	bne noclrscr
-	jmp clr_scr
-noclrscr:
-	;must be a color code
-	ldy #8
-checkcolors:
-	cmp color_codes,y
-	bne nohit
-	sty charcolor
-	jmp exit_routine
-nohit:
-	dey
-	bpl checkcolors
-	sec
-	sbc #140
-	sta charcolor
-	jmp exit_routine
+	beq check_control_codes  
+
+;---------------------------------------------------
+;print normal char
+;---------------------------------------------------
 
 printablechar:
 ;convert to screencode
@@ -195,6 +157,46 @@ chr_right:
 	endif
 	inc cursorx
         jmp exit_routine
+
+;---------------------------------------------------
+;check control codes
+;---------------------------------------------------
+check_control_codes:
+	cmp #$0d
+	beq chr_return
+
+	cmp #29		;crsr right
+	beq chr_right
+
+	cmp #$11	;crsr down
+	beq chr_down
+
+	cmp #$13	;home
+	jeq home_pos
+
+	cmp #145	;crsr up
+	beq chr_up
+
+	cmp #157	;crsr left
+	beq chr_left
+
+	cmp #147	;clrscr
+	jeq clr_window
+
+	;must be a color code
+	ldy #8
+checkcolors:
+	cmp color_codes,y
+	bne nohit
+	sty charcolor
+	jmp exit_routine
+nohit:
+	dey
+	bpl checkcolors
+	sec
+	sbc #140
+	sta charcolor
+	jmp exit_routine
 
 ;---------------------------------------------------
 ;cursor left
@@ -267,7 +269,7 @@ ok_down:
 ;---------------------------------------------------
 ;clear screen (or rather the window in our case)
 ;---------------------------------------------------
-clr_scr:
+clr_window:
 	ldy homey
 	lda homex
 	clc
