@@ -17,6 +17,8 @@
 ; _enable_chrout2window needs to be called again.
 ;
 ; limitations: no backspace, no insert
+;
+; Needs to be linked with window_parameters.o
 ;-----------------------------------------------------------------------
 
 .include "LAMAlib.inc"
@@ -25,10 +27,11 @@
 
 .export _chrout2window, _enable_chrout2window, _disable_chrout2window
 
-.export _window_x1  :=window_x1   ;left column
-.export _window_y1  :=window_y1   ;upper line
-.export _window_x2  :=window_x2   ;right column
-.export _window_y2  :=window_y2   ;lower line
+.import _window_x1,_window_y1,_window_x2,_window_y2
+
+.import _mul40_tbl_lo,_mul40_tbl_hi
+mul40_lo:=_mul40_tbl_lo
+mul40_hi:=_mul40_tbl_hi
 
 ; switch for adding fileio support
 support_fileio=1	;set this to 0 if fileio is not needed while windowing is enabled
@@ -47,25 +50,25 @@ _enable_chrout2window:
 	pokew $0326,_chrout2window
 
 	;move cursorpos into window if necessary
-	lda window_x1
+	lda _window_x1
 	cmp cursorx
 	if cs
 	  sta cursorx
 	endif
 
-	lda window_x2
+	lda _window_x2
 	cmp cursorx
 	if cc
 	  sta cursorx
 	endif
 
-	lda window_y1
+	lda _window_y1
 	cmp cursory
 	if cs
 	  sta cursory
 	endif
 
-	lda window_y2
+	lda _window_y2
 	cmp cursory
 	if cc
 	  sta cursory
@@ -93,11 +96,6 @@ _disable_chrout2window:
 
 rts_address:
 	rts
-
-window_x1:	    .byte 5
-window_y1:	    .byte 2
-window_x2: .byte 20
-window_y2:   .byte 10
 
 ;---------------------------------------------------
 ; poor man's replacement for CHROUT
@@ -154,7 +152,7 @@ colptr=*+1
 ;---------------------------------------------------
 chr_right:
 	lda cursorx
-	cmp window_x2
+	cmp _window_x2
 	if cs
 	  jmp chr_return
 	endif
@@ -220,14 +218,14 @@ nohit:
 ;---------------------------------------------------
 chr_left:
 ;go back one char
-	lda window_x1
+	lda _window_x1
 	cmp cursorx
 	bcs up_and_to_end_of_line	;we are already at the left side of the window
 	dec cursorx
         jmp exit_routine
 
 up_and_to_end_of_line:
-	lda window_x2
+	lda _window_x2
 	sta cursorx
 
 	;fallthrough!
@@ -236,7 +234,7 @@ up_and_to_end_of_line:
 ;cursor up
 ;---------------------------------------------------
 chr_up:
-	lda window_y1
+	lda _window_y1
 	cmp cursory
 	if cs
 	  jmp exit_routine	;we are already at the top of the window
@@ -259,7 +257,7 @@ chr_up:
 clr_rvs_and_return:
 	poke rvs_mode,0
 chr_return:
-	lda window_x1
+	lda _window_x1
 	sta cursorx
 
 	;fallthrough!
@@ -269,7 +267,7 @@ chr_return:
 ;---------------------------------------------------
 chr_down:
 	lda cursory
-	cmp window_y2
+	cmp _window_y2
 	bcc ok_down
 	jsr scrollup
 	jmp exit_routine
@@ -289,8 +287,8 @@ ok_down:
 ;clear screen (or rather the window in our case)
 ;---------------------------------------------------
 clr_window:
-	ldy window_y1
-	lda window_x1
+	ldy _window_y1
+	lda _window_x1
 	clc
 	adc mul40_lo,y
 	sta scr_clr_ptr2
@@ -304,9 +302,9 @@ clr_window:
 	adc #$d8
 	sta col_clr_ptr2+1
 
-	lda window_x2
+	lda _window_x2
 	sec
-	sbc window_x1
+	sbc _window_x1
 	sta line_width2
 
 	dey	;because we need to clear one line more
@@ -337,7 +335,7 @@ col_clr_ptr2=*+1
 	sta col_clr_ptr2
 
 	iny
-	cpy window_y2
+	cpy _window_y2
 	bcc clear_lines
 
 	;fallthrough!
@@ -346,9 +344,9 @@ col_clr_ptr2=*+1
 ;crsr home
 ;---------------------------------------------------
 home_pos:
-	lda window_x1
+	lda _window_x1
 	sta cursorx
-	ldy window_y1
+	ldy _window_y1
 	sty cursory
 
 	lda mul40_lo,y
@@ -378,8 +376,8 @@ exit_routine:
 ;scroll up and clear last line in window
 ;---------------------------------------------------
 scrollup:
-	ldy window_y1
-	lda window_x1
+	ldy _window_y1
+	lda _window_x1
 	clc
 	adc mul40_lo,y
 	sta scr_to_ptr
@@ -390,7 +388,7 @@ scrollup:
 	sta scr_to_ptr+1
 	sta scr_from_ptr+1
 	plp	;recover carry bit
-	lda mul40_hi,y
+	lda mul40_hi,y			;todo: use x to keep value
 	adc #$d8
 	sta col_to_ptr+1
 	sta col_from_ptr+1
@@ -404,13 +402,13 @@ scrollup:
 	  inc col_to_ptr+1
 	endif
 
-	lda window_x2
+	lda _window_x2
 	sec
-	sbc window_x1
+	sbc _window_x1
 	sta line_width
 
 scroll_lines:
-	cpy window_y2
+	cpy _window_y2
 	bcs clear_last_line
 
 line_width=*+1
@@ -475,14 +473,3 @@ col_clr_ptr=*+1
 
 color_codes:
 .byte 144,5,28,159,156,30,31,158,129
-
-mul40_lo:
-	.repeat 25,I
-	.byte <(I*40)
-	.endrep
-
-mul40_hi:
-	.repeat 25,I
-	.byte >(I*40)
-	.endrep
-	
