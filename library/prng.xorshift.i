@@ -1,3 +1,4 @@
+; -*- mode: asm -*-
 
 ;;; Get the next value from the PRNG.
 ;;; Input: -

@@ -7,7 +7,7 @@ CFLAGS=
 LDFLAGS=-L../library
 ASFLAGS=-I../library -I../includeCC65
 
-TARGETS=takeover_bulleteffect.prg
+TARGETS=takeover_bulleteffect.prg takeover_dissolve_left2right.prg takeover_curtain_left2right.prg
 
 ifdef DEBUG
 ASFLAGS += -DDEBUG
@@ -21,6 +21,6 @@ clean:
 	rm -f *.o *.labels *.map
 	rm -f $(TARGETS)
 
-takeover_bulleteffect.prg: takeover_bulleteffect.o
-	$(LD) $(LDFLAGS) -C takeover_bulleteffect.cfg -m $@.map -Ln $@.labels -o $@ $+ libT7D.lib
+%.prg: %.o
+	$(LD) $(LDFLAGS) -C takeover_default.cfg -m $@.map -Ln $@.labels -o $@ $+ libT7D.lib
 

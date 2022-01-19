@@ -93,19 +93,19 @@
 	inc	@l1+2		; increment hi of src
 	inc	@l1+5		; increment hi or dst
 	iny
-	cpy	#>size
+	cpy	#>(size)
 	bne	@l1
 	.endif
-	.if	<size <> 0
-	.if	<size = 1
-	lda	src+(size & $ff00)
-	sta	dest+(size & $ff00)
+	.if	<(size) <> 0
+	.if	<(size) = 1
+	lda	src+((size) & $ff00)
+	sta	dest+((size) & $ff00)
 	.else
 	ldx	#0
-@l2:	lda	src+(size & $ff00),x
-	sta	dest+(size & $ff00),x
+@l2:	lda	src+((size) & $ff00),x
+	sta	dest+((size) & $ff00),x
 	inx
-	cpx	#<size
+	cpx	#<(size)
 	bne	@l2
 	.endif
 	.endif

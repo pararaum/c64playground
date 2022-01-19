@@ -23,6 +23,19 @@ typedef struct doublili_node_t DoubliliNode;
  */
 DoubliliNode *doublili_insert(void **head, void *node);
 
+/*! \brief insert a node into the doubly linked list after some element in the list
+ *
+ * Please note that for this function no reference to the head is
+ * needed. Just be careful if head is NULL as we use call-by-value
+ * which means that the caller has to take care of the overwriting of
+ * the head.
+ * 
+ * \param _node pointer to node to insert the element after
+ * \param _new, new element to be inserted, must be allocated beforehand; should not be NULL
+ * \return pointer to the new element
+ */
+DoubliliNode *doublili_insertafter(void *_node, void *_new);
+
 /*! \brief remove a node from the doubly linked list
  *
  * If the last element was removed, head is set to NULL. For the
