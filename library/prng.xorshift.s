@@ -2,6 +2,11 @@
 
 	.export	xorshift
 	.export	xorshift_seed
+	.export	_xorshift
+	.export	_xorshift_seed
+
+_xorshift_seed=xorshift_seed
+_xorshift=xorshift
 
 	.zeropage
 prng_state:	.res	2

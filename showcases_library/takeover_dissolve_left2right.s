@@ -1,13 +1,15 @@
 	.include	"libt7d.i"
 	.include	"t7d/kernal.i"
-	.include	"takeover_effects/bullets_to_right_bottom.i"
+	.include	"takeover_effects/dissolve_left2right.i"
 
-	.import	__FONT0_START__
 	.import	__SCREEN0_START__
-	
-CHARGEN_DESTINATION := __FONT0_START__
+	TAKEOVER_SCREENBASE=__SCREEN0_START__
 
-	.export	CHARGEN_DESTINATION
+	.export TAKEOVER_SCREENBASE
+	.exportzp	ptr1
+
+	.zeropage
+ptr1:	.res	2
 
 	.data
 frames_before_effect:		; Number of frames before the effect starts.
@@ -32,26 +34,18 @@ once:	lda	#0
 	.segment	"MUZAK"
 	.incbin	"../sid/bananas-01.sid",$7c+2
 
-
 irq:	jsr	$1003
-	lda	frames_before_effect
-	beq	@run
-	dec	frames_before_effect
-	jmp	@skip
-@run:
-	jsr	update_takeover_bulleteffect
-	bcs	@skip
-	lda	#0
-	sta	$d020
-	sta	$d011
-@skip:
+	;; 	inc	$d020
+	jsr	update_takeover_dissolve_left2right
+	;; 	dec	$d020
 	asl	$d019
 	jmp	EXITIRQ
 
+
 	.code
 main:	sei
-	lda	$d020
-	jsr	init_takeover_bulleteffect
+	lda	#121
+	jsr	init_takeover_dissolve_left2right
 	jsr	_disable_cia_irq
 	SetIRQ314Pointer	irq
 	lda	#0		; Set rasterline
@@ -62,5 +56,11 @@ main:	sei
 	lda	#1		; Enable IRQ
 	sta	$d01a
 	cli
+l1:	lda	takeover_dissolve_left2righ
+	bne	l1
+	lda	#13
+	sta	$d020
+	lda	#0
+	sta	$d011
 	jmp	*
 	brk
