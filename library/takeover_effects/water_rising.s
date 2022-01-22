@@ -15,6 +15,7 @@
         .export takeover_water_rising
         .export init_takeover_water_rising
         .export update_takeover_water_rising
+	.export takeover_water_level := waterline
 
 TAKEOVER_DISSOLVE_SPEED=0
 WATERLINE_HIGH=$05
@@ -123,7 +124,7 @@ cycljmp:jsr $c000   ;this address will be overwritten
         if cs
           dec waterline
           sec
-          sbc #$26
+          sbc #$28
           cmp #200
           if cc
             lsr
@@ -131,14 +132,15 @@ cycljmp:jsr $c000   ;this address will be overwritten
             lsr
             tay
             lda linelo,y
-            sta linebase
+            sta ptr1
             lda linehi,y
-            sta linebase+1
+            sta ptr1+1
             ldy #$27
-            lda #$20
             for y,$27,downto,0
-linebase=*+1
-              sta $d800,y
+              lda (ptr1),y
+              and #%11000000
+              ora #$20
+              sta (ptr1),y
             next
           endif
           jmp endofloop

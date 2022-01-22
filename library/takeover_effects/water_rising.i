@@ -15,6 +15,10 @@
 ;;; the variable contains zero then the effect has finished.
 	.global	takeover_water_rising
 
+;;; Global variable that can be tested if the effect has finished. If
+;;; the variable contains zero then the effect has finished.
+	.global	takeover_water_level
+
 ;;; Init the takeover effect engine. *Must* be called first!
 ;;; Input: 
 ;;;	TAKEOVER_SCREENBASE: Address where the C64 screen is to be found.

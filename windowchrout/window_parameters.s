@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------------
-; parameters for window_chrout and draw_window_frame
+; parameters for window_chrout and draw_frame
 ;-----------------------------------------------------------------------
 
 .export _window_x1 ;left column
