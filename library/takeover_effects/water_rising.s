@@ -19,7 +19,7 @@
 
 TAKEOVER_DISSOLVE_SPEED=0
 WATERLINE_HIGH=$05
-WATERLINE_LOW=$F8
+WATERLINE_LOW=$F4
 RISING_DELAY=$03
 
 UPPER_BG=6  ;background above waterline
@@ -38,7 +38,7 @@ wave_delay=4
         poke takeover_water_rising,1  ;Effekt is active
         poke 53265,91    ;turn on ECM mode
         poke updown_counter,$80
-        poke waterline,$ee
+        poke waterline,WATERLINE_LOW
 
         poke $d020,UPPER_FR
         lda #UPPER_BG
