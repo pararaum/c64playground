@@ -51,7 +51,7 @@ def gen(line):
         X=cols[1]
     print("do")
     print("  cpy $d012")
-    print("loop while cs")
+    print("loop while pl")
     printpoke("$d020",getcol(cycles[0], line,0))
     for bgcols in range(4):
         printpoke("$d02"+str(bgcols+1),getcol(cycles[bgcols], line,1))

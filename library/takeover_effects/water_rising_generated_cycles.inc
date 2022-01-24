@@ -3,7 +3,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -14,7 +14,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -26,7 +26,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -39,7 +39,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 lda #1
@@ -53,7 +53,7 @@ lda #1
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -66,7 +66,7 @@ lda #3
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -78,7 +78,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -88,7 +88,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -102,7 +102,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -113,7 +113,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -125,7 +125,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 lda #1
@@ -138,7 +138,7 @@ lda #1
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -150,7 +150,7 @@ lda #3
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -162,7 +162,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -172,7 +172,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -182,7 +182,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -196,7 +196,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -207,7 +207,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 lda #1
@@ -219,7 +219,7 @@ lda #1
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -230,7 +230,7 @@ lda #3
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -241,7 +241,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -251,7 +251,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -261,7 +261,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -271,7 +271,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -285,7 +285,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -296,7 +296,7 @@ lda #1
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -307,7 +307,7 @@ lda #3
 ldx #1
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -319,7 +319,7 @@ lda #14
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -331,7 +331,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -343,7 +343,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -353,7 +353,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -363,7 +363,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -377,7 +377,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -388,7 +388,7 @@ lda #1
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -399,7 +399,7 @@ lda #3
 ldx #1
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -411,7 +411,7 @@ lda #14
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -424,7 +424,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -437,7 +437,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -449,7 +449,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -459,7 +459,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -473,7 +473,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -484,7 +484,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -495,7 +495,7 @@ lda #1
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -506,7 +506,7 @@ lda #3
 ldx #1
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -518,7 +518,7 @@ lda #14
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -530,7 +530,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -542,7 +542,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -552,7 +552,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -566,7 +566,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -577,7 +577,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -588,7 +588,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -599,7 +599,7 @@ lda #1
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -610,7 +610,7 @@ lda #3
 ldx #1
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -621,7 +621,7 @@ lda #14
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -632,7 +632,7 @@ lda #6
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 stx $d022
@@ -642,7 +642,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -656,7 +656,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -667,7 +667,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -678,7 +678,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -690,7 +690,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 stx $d021
 stx $d022
@@ -703,7 +703,7 @@ lda #1
 ldx #3
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -715,7 +715,7 @@ lda #3
 ldx #14
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -727,7 +727,7 @@ lda #14
 ldx #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022
@@ -737,7 +737,7 @@ iny  ;increase Y to go to next rasterline
 lda #6
 do
   cpy $d012
-loop while cs
+loop while pl
 sta $d020
 sta $d021
 sta $d022

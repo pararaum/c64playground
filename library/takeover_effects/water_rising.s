@@ -19,14 +19,17 @@
 
 TAKEOVER_DISSOLVE_SPEED=0
 WATERLINE_HIGH=$05
-WATERLINE_LOW=$F4
+WATERLINE_LOW_NTSC=252
+WATERLINE_LOW_PAL=<(312-24)
 RISING_DELAY=$03
 
 UPPER_BG=6  ;background above waterline
 UPPER_FR=14 ;frame color above waterline
 
+WAVE_DELAY=4
 
-wave_delay=4
+BPL_CODE=$10
+BMI_CODE=$30
 
         .code
 
@@ -38,7 +41,16 @@ wave_delay=4
         poke takeover_water_rising,1  ;Effekt is active
         poke 53265,91    ;turn on ECM mode
         poke updown_counter,$80
-        poke waterline,WATERLINE_LOW
+
+	lda $02A6	;PAL/NTSC switch
+	if eq
+	  poke rasterbit8_test,BMI_CODE	;NTSC, block on rasterlines > $ff
+	  lda #WATERLINE_LOW_NTSC
+	else
+	  poke rasterbit8_test,BPL_CODE	;PAL, block initially on rasterlines <= $ff
+          lda #WATERLINE_LOW_PAL
+	endif
+        sta waterline
 
         poke $d020,UPPER_FR
         lda #UPPER_BG
@@ -47,41 +59,19 @@ wave_delay=4
         sta $d023
         sta $d024
 
-        ;set high-bits in screen area   
-        pokew ptr1,TAKEOVER_SCREENBASE
-
-        ldy #0
-        sty ecm_mask
-        sty end_idx
-        ldx #2  ;2,1,0 are normal iterations, then comes the $e8 loop
-
-screen_loop:
-        lda (ptr1),y
-        and #%00111111
-ecm_mask=*+1
-        eor #00
-        sta (ptr1),y
-        
-        tya
-        and #$01        ;is Y an odd number?
-        if ne
-          lda ecm_mask
-          clc
-          adc #$40
-          sta ecm_mask
-        endif
-
-        iny
-end_idx=*+1
-        cpy #00
-        bne screen_loop
-
-        inc ptr1+1
-        dex
-        bpl screen_loop
-        poke end_idx,$e8   ;last $e8 bytes from screen base + $300...$3e8 
-        tya                ;check if y is $00 or $e8
-        beq screen_loop    ;go into loop one more time if y was $00
+        ;set ECM high-bits in screen area   
+	for x,24,downto,0
+	  lda linelo,x
+	  sta ptr1
+	  lda linehi,x
+	  sta ptr1+1
+	  for y,39,downto,0
+            lda (ptr1),y
+            and #%00111111	    
+	    ora ECM_scr_mask,y
+            sta (ptr1),y
+	  next
+	next
         rts
 .endproc
 
@@ -105,6 +95,16 @@ cycle:  ldx #00
 
 ::waterline=*+1
         ldy #$ee        ;water should go between $ee and $30
+
+	if mi		;negative value indicates that we are in a rasterline <=$ff
+	  poke rasterbit8_test,BMI_CODE
+	endif
+
+wait_hi:
+	bit $D011
+::rasterbit8_test=*
+	bmi wait_hi
+
 wait0:
         cpy $d012         ;warning: this breaks eventually when the IRQ is not synched to screen
         bne wait0
@@ -120,6 +120,12 @@ cycljmp:jsr $c000   ;this address will be overwritten
         lda #00
         sta updown_counter
         lda waterline
+	ldx #BPL_CODE
+	cpx rasterbit8_test
+	if eq
+          dec waterline
+	  jmp endofloop
+	endif
         cmp #WATERLINE_HIGH
         if cs
           dec waterline
@@ -152,7 +158,7 @@ cycljmp:jsr $c000   ;this address will be overwritten
 endofloop:
         dec wave_counter
 	if eq
-          lda #wave_delay
+          lda #WAVE_DELAY
           sta wave_counter
           lda cycle+1
           clc
@@ -163,13 +169,15 @@ endofloop:
         rts
 .endproc
 
-wave_counter: .byte wave_delay
+wave_counter: .byte WAVE_DELAY
 updown_counter: .byte 00
 
 .include "water_rising_generated_cycles.inc"
 
 cyctable_l: .byte <cycle0,<cycle1,<cycle2,<cycle3,<cycle4,<cycle5,<cycle6,<cycle7
 cyctable_h: .byte >cycle0,>cycle1,>cycle2,>cycle3,>cycle4,>cycle5,>cycle6,>cycle7
+
+ECM_scr_mask: .byte $40,$40,$80,$80,$c0,$c0,$c0,$80,$80,$40,$40,$00,$00,$00,$40,$40,$80,$80,$c0,$c0,$c0,$80,$80,$40,$40,$00,$00,$00,$40,$40,$80,$80,$c0,$c0,$c0,$80,$80,$40,$40,$00
 
 linelo:
 .REPEAT 25,I
