@@ -37,7 +37,7 @@ $(PROJECT).lib:	$(OBJS) $(COBJS)
 clean:
 	$(MAKE) -C test clean
 	rm -f *.o takeover_effects/*.o libsrc/*.o
-	rm -f $(PROJECT).*
+	rm -f $(PROJECT).lib
 
 distclean:	clean
 	rm -f *~
