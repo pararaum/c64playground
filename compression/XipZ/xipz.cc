@@ -53,6 +53,12 @@ Destination address: $6f
 //! Position in the stub where the page high-byte is set, see POS_OF_STOPREADING.
 #define POS_OF_PAGEHI 0x37
 
+enum Program_Return_Values
+  {
+   RETURN_NO_FILENAME = 1,
+   RETURN_DATA_BELOW_ROM,
+   RETURN_UNKNOWN_EXCEPTION = -1
+};
 
 /* \brief Simple structure to store bits.
  *
@@ -487,16 +493,23 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
  */
 int main(int argc, char **argv) {
   gengetopt_args_info args;
-  int ret = -1;
+  int ret = RETURN_UNKNOWN_EXCEPTION; // See below!
 
   if(cmdline_parser(argc, argv, &args) != 0) {
     return 1;
   } else {
     if(args.inputs_num < 1) {
       std::cerr << "At least one filename must be provided!\n";
-      return 1;
+      return RETURN_NO_FILENAME;
     }
     std::cout << "XipZ Version " << CMDLINE_PARSER_VERSION << std::endl;
+    if(args.page_arg > 0xa0) {
+      // In this case part of the data will end up under the ROM. As
+      // we are using a routine from BASIC ROM and the ROM is not
+      // switched off during decrunching this is considered an error.
+      std::cerr << "Error! Data may end up below the ROM aborting!\n";
+      return RETURN_DATA_BELOW_ROM;
+    }
     try {
       std::string inpnam(args.inputs[0]);
       std::string outnam;
@@ -518,7 +531,7 @@ int main(int argc, char **argv) {
     }
     catch(const std::exception &e) {
       std::cerr << "Exception: " << e.what() << std::endl;
-      ret = -1;
+      // Return value defaults to RETURN_UNKNOWN_EXCEPTION.
     }
   }
   return ret;

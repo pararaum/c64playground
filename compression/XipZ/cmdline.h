@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_VERSION "0.4.0"
+#define CMDLINE_PARSER_VERSION "0.4.1"
 #endif
 
 enum enum_algorithm { algorithm__NULL = -1, algorithm_arg_xipz = 0, algorithm_arg_qadz };
@@ -49,7 +49,7 @@ struct gengetopt_args_info
   int jump_arg;	/**< @brief address to jump to (-1 = load address) (default='-1').  */
   char * jump_orig;	/**< @brief address to jump to (-1 = load address) original value given at command line.  */
   const char *jump_help; /**< @brief address to jump to (-1 = load address) help description.  */
-  int page_arg;	/**< @brief maximum page to use +1 (default='0x10').  */
+  int page_arg;	/**< @brief maximum page to use +1 (default='0xA0').  */
   char * page_orig;	/**< @brief maximum page to use +1 original value given at command line.  */
   const char *page_help; /**< @brief maximum page to use +1 help description.  */
   
