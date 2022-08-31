@@ -39,7 +39,7 @@ const char *gengetopt_args_info_help[] = {
   "  -r, --raw             output raw crunched data without header  (default=off)",
   "  -a, --algorithm=ENUM  crunching algorithm to use  (possible values=\"xipz\",\n                          \"qadz\" default=`xipz')",
   "  -j, --jump=INT        address to jump to (-1 = load address)  (default=`-1')",
-  "  -p, --page=INT        maximum page to use +1  (default=`0x10')",
+  "  -p, --page=INT        maximum page to use +1  (default=`0xA0')",
     0
 };
 
@@ -84,7 +84,7 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->algorithm_orig = NULL;
   args_info->jump_arg = -1;
   args_info->jump_orig = NULL;
-  args_info->page_arg = 0x10;
+  args_info->page_arg = 0xA0;
   args_info->page_orig = NULL;
   
 }
@@ -612,7 +612,7 @@ cmdline_parser_internal (
         
           if (update_arg( (void *)&(args_info->page_arg), 
                &(args_info->page_orig), &(args_info->page_given),
-              &(local_args_info.page_given), optarg, 0, "0x10", ARG_INT,
+              &(local_args_info.page_given), optarg, 0, "0xA0", ARG_INT,
               check_ambiguity, override, 0, 0,
               "page", 'p',
               additional_error))

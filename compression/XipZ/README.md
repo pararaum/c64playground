@@ -10,7 +10,8 @@ etc. It is based on the ideas of XIP by S. Judd and has a cruncher
 which uses an algorithm similar to LZ77 compressors.
 
 The program has to be runnable vir `RUN` therefore we needed a basic
-header and the maximum memory position to use was $0FFF.
+header and the maximum memory position to use in the competition was
+$0FFF. The program was later extended to handle larger files.
 
 # Usage #
 
@@ -89,7 +90,8 @@ The decompression algorithm is:
    - if bit=0, then read next n bits and look up value in table
    - if bit=1, then read next 8 bits store value, increment pointers, and keep going
 
-The decoding stops when the source pointer hits 0x1000.
+The decoding stops when the source pointer hi-byte hits the 
+predefined page.
 
 Have a look at the main_xipz() function.
 
