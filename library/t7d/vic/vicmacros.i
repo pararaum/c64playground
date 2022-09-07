@@ -1,5 +1,21 @@
 ;;; -*- mode: asm -*-
-;;; Ripped from https://gist.github.com/visy/1f800697f2c1025c212fc72de0b41130
+
+;;; Set Screen RAM and Chargen Address at the same time.
+;;; Input:
+;;;	scrnaddr = address of screen RAM
+;;;	chrgaddr = address of chargen RAM
+;;; Modifies: A
+.macro	SwitchScreenAndChargenAddress scrnaddr, chrgaddr
+	.if ((scrnaddr & $e000) <> (chrgaddr & $e000))
+	.error "Screen and Chargen not in same VIC bank!"
+	.endif
+	SwitchVICBank (scrnaddr >> 14)
+	SetScreenMemory scrnaddr
+	SetChargenAddress chrgaddr
+.endmacro
+
+
+;;; Partially ripped from https://gist.github.com/visy/1f800697f2c1025c212fc72de0b41130
 ;;
 ;; Switch bank in VIC-II
 ;;
@@ -82,7 +98,7 @@
 ;; Args:
 ;;   address: Address relative to current VIC-II bank base address.
 ;;            Valid values: $0000-$3c00. Must be a multiple of $0400.
-;;
+;; Modifies: A
 .macro SetScreenMemory	address
     ;; 
     ;; The most significant nibble of $D018 selects where the screen is
@@ -118,6 +134,8 @@
 .endmacro
 
 ;;; Set Chargen Address (in current bank, of course)
+;;; Input:
+;;;	address address of the chargen
 ;;; Modifies: A
 ;;; https://codebase64.org/doku.php?id=base:quick_vicii_screen_setup
 ;;; https://sta.c64.org/cbm64mem.html

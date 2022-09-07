@@ -1,8 +1,10 @@
 
 	.include	"t7d/stackmacros.i"
 	.import		pushax, _write
+	.import		exit
 	.importzp	ptr1
-	
+	.forceimport	__STARTUP__
+
 	.export _main
 
 	.data
@@ -13,7 +15,7 @@ text_end:
 target:	.res	32
 
 	.code
-	
+
 _main:
 	lda	#<text
 	sta	ptr1

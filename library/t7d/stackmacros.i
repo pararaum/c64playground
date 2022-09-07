@@ -28,12 +28,11 @@
 ;;; Modifies: A, Y
 .macro PullMemoryFromStack zpptr, size
 	.local	@loop
-	ldy	#size-1
+	ldy	#(size)-1
 @loop:	pla
 	sta	(zpptr),y
 	dey
-	cpy	#$FF		; Underflow
-	bne	@loop
+	bpl	@loop
 .endmacro
 
 ;;; ------------------------------------------------------------------

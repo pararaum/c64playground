@@ -1,5 +1,30 @@
 ;;; -*- mode: asm -*-
 
+	.IFNDEF	PSEUDO16_ALREADY_INCLUDED2022
+	PSEUDO16_ALREADY_INCLUDED2022=1
+
+;;; P_cmp src, dst; P_cmp #imm, dst
+.MACRO	P_cmp	src, dst
+	.scope
+        .if (.match (.left (1, {src}), #))
+        ; immediate mode
+        lda	#>(.right (.tcount ({src})-1, {src}))
+	cmp	1+(dst)
+        bne	@end
+        lda	#<(.right (.tcount ({src})-1, {src}))
+	cmp	0+(dst)
+        .else
+        ; absolute or zero page
+        lda	1+(src)
+	cmp	1+(dst)
+        bne	@end
+	lda	0+(src)
+        cmp	0+(dst)
+        .endif
+@end:
+	.endscope
+.ENDMACRO
+
 .MACRO	P_and	src, dst
 	lda src
 	and dst
@@ -18,6 +43,7 @@
 	sta dst+1
 .endmacro
 
+;;; Load indirect from src into the register dst.
 .MACRO	P_load	src, dst
 	ldy #0
 	lda (src),y
@@ -28,14 +54,17 @@
 .endmacro
 
 ;;; Load a byte pointer to by src into destination register. The high byte is set to zero.
+;;; Modifies: A,Y
 .MACRO	P_loadb	src, dst
 	ldy	#0
 	lda	(src),y
 	sta	dst
 	sty	dst+1
 .endmacro
-	
-.MACRO	P_loadi	reg, val
+
+;;; Load an immediate value into a register.
+;;; Modifies: A
+.MACRO	P_loadi	val, reg
 	lda #<(val)
 	sta reg
 	lda #>(val)
@@ -175,3 +204,5 @@
 	dec	dst+1
 @skip:	dec	dst
 .endmacro
+
+	.ENDIF

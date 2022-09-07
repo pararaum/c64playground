@@ -9,20 +9,26 @@
         sta     ptr1+1           ; Clear high of pointer
         tya                     ; A = y-pos
         asl                     ; Multiply by 8
+        rol     ptr1+1
         asl
+        rol     ptr1+1
         asl
-        pha
+        rol     ptr1+1
         sta     ptr1             ; Low byte of pointer.
+	lda	ptr1+1
+        pha
+	lda	ptr1
+	pha
         asl     ptr1             ;*16
         rol     ptr1+1
         asl     ptr1             ;*32
         rol     ptr1+1
-        pla                     ; y-pos*8
+        pla                     ; y-pos*8, LO
         clc
         adc     ptr1
         sta     ptr1
-        bcc     @noinc
-        inc     ptr1+1
-@noinc:
+	pla			; y-pos*8, HI
+        adc	ptr1+1
+	sta	ptr1+1
         rts
 .endproc
