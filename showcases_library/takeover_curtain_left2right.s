@@ -1,4 +1,4 @@
-	.include	"libt7d.i"
+	.include	"t7d/libt7d.i"
 	.include	"t7d/kernal.i"
 	.include	"takeover_effects/curtain_left2right.i"
 

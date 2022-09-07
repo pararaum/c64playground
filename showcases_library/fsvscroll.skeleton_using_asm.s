@@ -3,11 +3,11 @@
 	.macpack	longbranch
 	.macpack	generic
 
-	.include	"copy_chargen.i"
+	.include	"t7d/copy_chargen.i"
 	.include	"t7d/memoryconfig.i"
 	.include	"t7d/vic/vicmacros.i"
 	.include	"t7d/pseudo/pseudo16.inc"
-	.include	"libt7d.i"
+	.include	"t7d/libt7d.i"
 	.include	"t7d/scroller/fsvscroll.i"
 	.include	"t7d/kernal.i"
 
