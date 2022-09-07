@@ -2,7 +2,7 @@
 ##echo $(shell pgrep -f "x64.*-remotemonitor" || x64 -remotemonitor )&
 
 AFLAGS = -DNDEBUG
-AINC = -I ../includeCC65
+AINC = -I ../library
 OBJS = wavy.o startup.o fillcolram.o animationfont.o
 
 TARGET = wavy

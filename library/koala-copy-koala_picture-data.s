@@ -1,6 +1,6 @@
 
 	.include	"t7d/stackmacros.i"
-	.include	"memoryfunctions.i"
+	.include	"t7d/memoryfunctions.i"
 
 	.importzp	ptr1, ptr2, ptr3
 

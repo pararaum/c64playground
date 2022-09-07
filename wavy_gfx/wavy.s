@@ -16,7 +16,7 @@
 	wavymation_screenptr = SCREENPTR
 
 	.code
-	.include "screen_n_char.inc"
+	.include "t7d/vic/screen_n_char.inc"
 
 	.rodata
 muzak:	.incbin	"Waitress_on_Roller_Skates.sid",$7c+2

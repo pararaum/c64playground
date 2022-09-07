@@ -1,7 +1,8 @@
 #! /usr/bin/make -f
 
-CC65ROOT=/usr/share/cc65
+CC65ROOT=$(DESTDIR)/usr/share/cc65
 CC65ASMINC=$(CC65ROOT)/asminc
+CC65INCLUDE=$(CC65ROOT)/include
 CC65LIB=$(CC65ROOT)/lib
 
 CFLAGS = -O -I $(CURDIR)/include -DNDEBUG
@@ -21,7 +22,9 @@ all:	$(PROJECT).lib
 
 install: all
 	mkdir -p $(CC65ASMINC)/t7d
-	cp *.i $(CC65ASMINC)/t7d
+	mkdir -p $(CC65INCLUDE)/t7d
+	cp -r t7d/* $(CC65ASMINC)/t7d
+	cp -r include/t7d/* $(CC65INCLUDE)/t7d
 	cp $(PROJECT).lib $(CC65LIB)
 
 uninstall:

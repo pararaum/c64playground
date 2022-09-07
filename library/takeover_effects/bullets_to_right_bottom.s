@@ -2,7 +2,7 @@ NOBCHARS=7
 BULLETSPEED=1
 
 	.include	"t7d/vic/vicmacros.i"
-	.include	"copy_chargen.i"
+	.include	"t7d/copy_chargen.i"
 
 	.import	__SCREEN0_START__
 	.import	CHARGEN_DESTINATION

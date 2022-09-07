@@ -3,7 +3,7 @@
 
 	.include	"t7d/pseudo/pseudo16.inc"
 	.include	"t7d/scroller/fsvscroll.i"
-	.include	"multiply_by_40.i"
+	.include	"t7d/multiply_by_40.i"
 	.importzp	ptr1
 
 	.export	_fsvscroll_init
