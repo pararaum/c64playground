@@ -40,7 +40,7 @@ run:	$(TARGETS)
 	x64 -keybuf "sys828:\n" julia.bin
 
 %.prg:	%.bin
-	./pucrunch -x 0x33c $+ $@
+	pucrunch -x 0x33c $+ $@
 	@#./exomizer sfx 0x33c  -s 'lda #0 sta 53265' -x3 -o $@ $+
 
 #$(LD) $+

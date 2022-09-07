@@ -1,4 +1,4 @@
-	.include	"memoryfunctions.i"
+	.include	"t7d/memoryfunctions.i"
 	.importzp	ptr1,ptr2
 
 	.export	copy_song
