@@ -1,7 +1,7 @@
-;;; cl65 --asm-include-dir include --asm-include-dir library towers_of_babylon.s code.s
+;;; cl65 -t c64 towers_of_babylon.s code.s
 
-	.include	"memoryfunctions.i"
-	.include	"kernal.i"
+	.include	"t7d/memoryfunctions.i"
+	.include	"t7d/kernal.i"
 	.import		map_data
 	.import		map_colour_data
 	.importzp	SCREEN_BACKGROUND_COLOUR
