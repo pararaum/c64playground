@@ -48,7 +48,7 @@
 	sta	fsvscroll_current_screenpage
 	lda	#>(spareaddr)
 	sta	fsvscroll_spare_screenpage
-	lda	#((screenaddr^spareaddr)/$400)<<4
+	lda	#(((screenaddr)^(spareaddr))/$400)<<4
 	sta	fsvscroll_d018_pageflip_eor
 	.endmacro
 
