@@ -1,6 +1,6 @@
 	.include	"t7d/libt7d.i"
 	.include	"t7d/kernal.i"
-	.include	"takeover_effects/bullets_to_right_bottom.i"
+	.include	"t7d/takeover_effects/bullets_to_right_bottom.i"
 
 	.import	__FONT0_START__
 	.import	__SCREEN0_START__

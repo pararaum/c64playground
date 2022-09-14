@@ -1,6 +1,6 @@
 	.include	"t7d/libt7d.i"
 	.include	"t7d/kernal.i"
-	.include	"takeover_effects/dissolve_left2right.i"
+	.include	"t7d/takeover_effects/dissolve_left2right.i"
 
 	.import	__SCREEN0_START__
 	TAKEOVER_SCREENBASE=__SCREEN0_START__
