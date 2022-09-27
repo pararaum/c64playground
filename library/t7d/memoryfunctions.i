@@ -193,3 +193,13 @@
 	.endif
 	.endif
 	.endmacro
+
+;;; Copy memory with strides, this function needs several variables. Use this function to copy e.g. a block of PETSCII chars from one frame into another.
+;;; memcpy_strided_srcwidth, memcpy_strided_srcheight, memcpy_strided_srcstride, memcpy_strided_dststride
+;;; Input: memcpy_strided_srcwidth, memcpy_strided_srcheight, memcpy_strided_srcstride, memcpy_strided_dststride
+;;; Modifies: A,X,Y,ptr1,ptr2
+	.global	memcpy_strided	; Function.
+	.global	memcpy_strided_srcwidth ; Width of the rectangle.
+	.global	memcpy_strided_srcheight ; Height of the rectangle.
+	.global	memcpy_strided_srcstride ; Stride (width of page/frame) of source.
+	.global	memcpy_strided_dststride ; Stride (width of page/frame) of destination.

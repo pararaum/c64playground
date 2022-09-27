@@ -9,9 +9,9 @@
 
 ;;; This generates the CRC-Table to be used to calculate the CRC-8. This should be called first before calulating any CRC.
 ;;; Input: -
-;;; Output: -
+;;; Output: data into CRCTABLE
 ;;; Modifies: A/X/Y
-	;; Required size is 256 Bytes.
+	;; Required size of CRCTABLE is 256 Bytes.
 	.import	make_crctable
 
 ;;; This constant contains the last calculated CRC-8.
