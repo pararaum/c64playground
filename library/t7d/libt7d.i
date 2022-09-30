@@ -46,6 +46,8 @@
 	jsr	busywait_frame_mp
 	dey
 	bne	*-4
+	.if number > 255
 	dex
 	bne	*-7
+	.endif
 	.endmacro
