@@ -33,3 +33,19 @@
 ;;; Modifies: -
 	.import busywait_frame_pm
 	.import busywait_frame_mp
+
+;;; Busy wait several frames, uses busywait_frame_mp.
+;;; Input: number=number of frames to wait
+;;; Output: Y=0
+;;; Modifies: (X),Y
+	.macro BusywaitFramesMP number
+	.if number > 255
+	ldx	#>(number)
+	.endif
+	ldy	#<(number)
+	jsr	busywait_frame_mp
+	dey
+	bne	*-4
+	dex
+	bne	*-7
+	.endmacro
