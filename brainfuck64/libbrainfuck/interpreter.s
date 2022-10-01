@@ -2,32 +2,39 @@
 ; Brainfuck Interpreter for C64/128
 ; by Wil 2021
 ;
-; Usage: put start adress of BF program in $02/03
-;        
-; for the example programs
-; LOAD lamabrainfuck.prg
-; LOAD example program
-; POKE2,0:POKE3,9:RUN
 ; ********************************************************
+	.SETCPU "6502X"
 
-.include "LAMAlib.inc"
+	.include "LAMAlib.inc"
+	.MACPACK longbranch
 
-.MACPACK longbranch
 
-prg_ptr  =$2
-data_ptr =$4
+	.import	__BRAINFUCKWORK_START__
+	.import	__BRAINFUCKWORK_SIZE__
+	.importzp	ptr1,ptr2
 
-DATA_SIZE =$5000	;must be multiples of $100
-DEFAULT_DATA_AREA=$5000
+	shadow_d020 = $7f6
+	shadow_d021 = $7f7
 
-execute_prg:
-	lda data_ptr
-	if ne
-	  pokew data_ptr,DEFAULT_DATA_AREA
-	endif
+	use_illegal_opcodes = 1
+
+	.export	interpret_brainfuck
+	
+	.zeropage
+prg_ptr:	.res	2
+data_ptr:	.res	2
+mem_config:	.res	1	;intended memory configuration
+
+	.code
+interpret_brainfuck:
+	sta	prg_ptr
+	stx	prg_ptr+1
+	pokew	data_ptr,__BRAINFUCKWORK_START__
+	lda	$1
+	sta	mem_config	;remember current memory configuration
 
 	; clear data area
-	ldx #>DATA_SIZE
+	ldx #>__BRAINFUCKWORK_SIZE__
 	lda data_ptr+1
 	pha
 	ldy #0
@@ -46,29 +53,42 @@ execute_prg:
 	;start interpreting
 
 interpret:
+	bit	$91		; Get status of RUN/STOP.
+	bmi	@running	; Key is not pressed, continue the loop.
+	sec
+	rts
+@running:
 	ldy #00
 	lda (prg_ptr),y
 	if eq
-	  rts
+	  clc
+	  rts			; Return to caller.
 	endif
 	inc16 prg_ptr
 	switch A
 	case '+'
+.if use_illegal_opcodes=0
 	  lda (data_ptr),y
 	  ;sec   ;C==1 because of matched case CMP
 	  adc #0
 	  sta (data_ptr),y
+.else
+	  isc (data_ptr),y
+.endif
 	  jmp interpret
 	case '-'
+.if use_illegal_opcodes=0
 	  lda (data_ptr),y
 	  ;sec   ;C==1 because of matched case CMP
 	  sbc #1
 	  sta (data_ptr),y
+.else
+	  dcp (data_ptr),y
+.endif
 	  jmp interpret
-
 	case '>'
 	  inc16 data_ptr
-	  beq interpret ;unconditional
+	  bne interpret ;unconditional
 
 	case '<'
 	  dec16 data_ptr
@@ -77,31 +97,37 @@ interpret:
 	case '.'
 	  lda (data_ptr),y
 output_char:
-	  cmp cr_char
-	  if eq
-	    lda #$0d
-	  endif
+	  jsr ascii_to_petscii
+	  ldx #$36
+	  stx $1
 	  jsr CHROUT
+	  ldx mem_config
+	  stx $1
+jmp_interpret:
 	  jmp interpret
 
 	case ','
+	  ldx #$36
+	  stx $1
+	  turn_on_cursor
 	  do
 	    jsr GETIN
 	    tax
 	  loop while eq
-	  cmp #$0d
-	  if eq
-cr_char=*+1
-	    lda #$0a
-	  endif
-	  
+	  pha
+	  turn_off_cursor
+	  pla
+	  ldx mem_config
+	  stx $1
+	  jsr petscii_to_ascii
+ 
 	  ldy #00
 	  sta (data_ptr),y
-	  beq output_char	;unconditional
+	  beq jmp_interpret	;unconditional
 
 	case '['
 	  lda (data_ptr),y
-	  bne interpret		;data byte was not 0, we don't jump
+	  bne jmp_interpret		;data byte was not 0, we don't jump
 	  ;jmp forward to next matching ]
 	  ldx #1
 
@@ -163,3 +189,65 @@ exit_loop_backward:
 	  ;fallthrough
 	endswitch
 	jmp interpret
+
+
+
+; convert PETSCII value in A to ASCII code
+.proc petscii_to_ascii
+	cmp #97
+	if cs
+	  cmp #123
+	  if cc
+	    eor #$20
+	    rts
+	  endif
+	endif
+	cmp #65
+	if cs
+	  cmp #91
+	  if cc
+	    eor #$20
+	    rts
+	  endif
+	endif
+	cmp #$0d
+	if eq
+	  lda #$0a
+	endif
+	rts
+.endproc
+
+; convert ASCII value in A to PETSCII code
+.proc ascii_to_petscii
+	cmp #97
+	if cs
+	  cmp #123
+	  if cc
+	    eor #$20
+	    rts
+	  endif
+	endif
+	cmp #65
+	if cs
+	  cmp #91
+	  if cc
+	    eor #$20
+	    rts
+	  endif
+	endif
+	cmp #$0a
+	if eq
+	  lda #$0d
+	endif
+	; intended side effects of F5 and F7 key
+        cmp #135	;F5 key? -> dark background
+        if eq
+          ldx #00
+          stx shadow_d021
+        endif
+        cmp #136	;F7 key? -> next background color
+        if eq
+          inc shadow_d021
+        endif
+	rts
+.endproc

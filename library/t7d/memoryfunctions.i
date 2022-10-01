@@ -1,6 +1,21 @@
 ;;; -*- mode: asm -*-
 ;;; Routines to handle memory functions.
 
+;;; Copy exactly 1K of memory in an inlined function.
+;;; Input: source, destination
+;;; Output: -
+;;; Modifies: A,X
+	.macro	Memcpy1KInline	source,destination
+	.local	 @loop
+	ldx	#0
+@loop:
+	.repeat	4,I
+	  lda	source+I*$100,x
+	  sta	destination+I*$100,x
+	.endrepeat
+	dex
+	bne	@loop
+	.endmacro
 
 ;;; Copy exactly 1K of memory from ptr1 to ptr2
 ;;; Input: ptr1, ptr2
