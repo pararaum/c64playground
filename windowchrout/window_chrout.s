@@ -6,7 +6,7 @@
 ; Wilfried Elmenreich
 ; License: The Unlicense
 ;
-; Routine is almost twice as fast as the KERNAL routine
+; Bonus: Routine is almost twice as fast as the KERNAL routine
 ;
 ; Note that control character keypresses in direct mode are not handled
 ; via FFD2, therefore pressing for example CLR/HOME will leave the
