@@ -132,3 +132,37 @@
 	tax			; X=A as the stack pointer can be transfered to X only.
 	txs			; Change the stack pointer to the new value.
 	.endmacro
+
+;;; Remove (!) the return address minus one (!) and put it into a pointer (destptr).
+;;; Warning, remember to use one-based access!
+;;; see L.A. Leventhal, W. Saville, "6502 Assembly Language Subroutines", Osborne/McGraw-Hill, 1982, p. 44.
+;;; Input: (Stack)
+;;; Output: retaddr
+;;; Modifies: A
+	.macro	GetReturnAddrIntoPointer retaddr
+	PLA			; LSB
+	STA	0+(retaddr)
+	PLA			; MSB
+	STA	1+(retaddr)
+	.endmacro
+
+;;; If using the above macro to get the return address minus one into a pointer then this macro will put the return address back on the stack. It can be adjusted so that following parameters will be skipped.
+;;; Input: retaddr
+;;; Output: (Stack)
+;;; Modifies: A,Y
+	.macro	PointerAdjustedToStack retaddr, adjust
+	.local	@PATSskip
+	lda	0+(retaddr)
+	.if (adjust) <> 0
+	clc
+	adc	#(adjust)
+	.endif
+	tay			; Keep LSB safe.
+	bcc	@PATSskip	; Skip increment if no carry.
+	inc	0+(retaddr)
+@PATSskip:
+	lda	1+(retaddr)
+	pha			; MSB
+	tya
+	pha			; LSB
+	.endmacro
