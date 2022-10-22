@@ -1,4 +1,3 @@
-
 	.include	"t7d/kernal.i"
 	.import	TAKEOVER_SPRITEBUFFER
 	.import	TAKEOVER_SCREENBASE
@@ -10,6 +9,7 @@
 	.export update_takeover_curtain_left2right
 
 TAKEOVER_DISSOLVE_SPEED=0
+TAKEOVER_FIRST_SPRITEX=$10	; Just outside the left border.
 
 	.bss
 skip_frames:	.res	1
@@ -31,7 +31,7 @@ l2:	lda	#<((TAKEOVER_SPRITEBUFFER&$3FFF)/$40)
 	txa
 	asl
 	tay
-	lda	#$10		; Just outside the left border.
+	lda	#TAKEOVER_FIRST_SPRITEX
 	sta	$d000,y		; X-position
 	lda	tmp1
 	sta	$d001,y		; Y-position
@@ -61,11 +61,9 @@ l1:	lda	#$ff
 	lda	#0
 	sta	$d01d		; All sprites have normale width.
 	sta	$d010		; All MSBs are cleared.
-	lda	#$8e
-	sta	takeover_curtain_left2righ
-	jsr	CHROUT
 	lda	#121
 	sta	skip_frames
+	sta	takeover_curtain_left2righ ; nonzero means we are busy
 	lda	#<TAKEOVER_SCREENBASE
 	sta	topleftscreen
 	lda	#>TAKEOVER_SCREENBASE
