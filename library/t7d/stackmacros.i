@@ -11,10 +11,16 @@
 ;;; Macros to move memory to the stack and back. The CPU stack is used, so be careful as not much space is available.
 
 ;;; Push some memory to the stack
-;;; Input: zpptr=memory pointer, size=number of bytes
+;;; Input: zpptr=memory pointer, size=number of bytes, init(optional)=initialise zpptr
 ;;; Modifies: A, Y
-.macro PushMemoryToStack zpptr, size
+.macro PushMemoryToStack zpptr, size, init
 	.local	@loop
+	.ifnblank init
+	 ldy	#<(init)
+	 sty	zpptr
+	 ldy	#>(init)
+	 sty	zpptr+1
+	.endif
 	ldy	#0
 @loop:	lda	(zpptr),y
 	pha
@@ -24,10 +30,16 @@
 .endmacro
 
 ;;; Pull some memory fropm the stack
-;;; Input: zpptr=memory pointer, size=number of bytes
+;;; Input: zpptr=memory pointer, size=number of bytes, init(optional)=initialise zpptr
 ;;; Modifies: A, Y
-.macro PullMemoryFromStack zpptr, size
+.macro PullMemoryFromStack zpptr, size, init
 	.local	@loop
+	.ifnblank init
+	 ldy	#<(init)
+	 sty	zpptr
+	 ldy	#>(init)
+	 sty	zpptr+1
+	.endif
 	ldy	#(size)-1
 @loop:	pla
 	sta	(zpptr),y
