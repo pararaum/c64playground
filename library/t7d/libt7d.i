@@ -8,10 +8,21 @@
 ;;; Modifies: A
 ;;; Output: -
 .macro	SetIRQ314Pointer	addr
-	lda	#<addr
+	lda	#<(addr)
 	sta	$314
-	lda	#>addr
+	lda	#>(addr)
 	sta	$315
+.endmacro
+
+;;; Set the CPU's interrupt pointer.
+;;; Input: addr=address to the kernal pointer to
+;;; Modifies: A
+;;; Output: -
+.macro	SetIRQCPUPointer	addr
+	lda	#<(addr)
+	sta	$FFFE
+	lda	#>(addr)
+	sta	$FFFF
 .endmacro
 
 ;;; Fill the colour RAM
