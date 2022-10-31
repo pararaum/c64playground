@@ -51,3 +51,9 @@
 	bne	*-7
 	.endif
 	.endmacro
+
+;;; Default simple decrunch routine for pucrunch.
+;;; Input: A/X=address of packed data
+;;; Ouput: A/X=exec address
+;;; Modifies: A, X, Y
+	.import	pudecrunch_default
