@@ -36,6 +36,23 @@
 	jsr	memcpy1K_via_ptr
 	.endmacro
 
+;;; Memory copy macro for up to 255 bytes.
+;;;
+;;; Input:
+;;;	srcaddr=pointer to the source,
+;;;	size=Number of bytes to copy
+;;;	dstaddr=pointer to the destination,
+;;; Modifies: A, X
+;;; Output: -
+	.macro	SmallMemCpy	srcaddr,size,dstaddr
+	.local	@loop
+	ldx	#<(size)
+@loop:	lda	0+(srcaddr)-1,x
+	sta	0+(dstaddr)-1,x
+	dex
+	bne	@loop
+	.endmacro
+
 
 ;;; Memory copy macro for up to 256 bytes with pointer initialisation.
 ;;; The source and destination pointers are not changed and can be reused.
