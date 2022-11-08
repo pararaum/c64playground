@@ -18,6 +18,14 @@
         bpl     @loop
 .endmacro
 
+;;; Copies the sprite data into a destination buffer.
+;;; Input: A/X=pointer to the destination buffer
+;;;	   Y=which sprite number in the spritepad data
+;;;	   ptr1=pointer to the spridepad data
+;;; Output: Y=$FF, ptr2=pointer into the spritepad data (@Y-th sprite)
+;;; Modifies: A, Y, ptr2
+	.global	copy_spad_data
+
 ;;; Get the colour of a sprite.
 ;;; Input: sprdataptr=pointer to the spridepad data
 ;;;        num=which sprite number in the spritepad data
