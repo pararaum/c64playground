@@ -178,3 +178,21 @@
 	tya
 	pha			; LSB
 	.endmacro
+
+;;; If using the GetReturnAddrIntoPointer macro to get the return address minus one into a pointer then this macro will put the return address back on the stack. It can be adjusted by a value in A so that following parameters will be skipped.
+;;; Input: A, retaddr
+;;; Output: (Stack)
+;;; Modifies: A,Y
+	.macro	PointerAAdjustedToStack retaddr
+	.local	@PATSskip
+	clc
+	adc	0+(retaddr)
+	tay			; Keep LSB safe.
+	bcc	@PATSskip	; Skip increment if no carry.
+	inc	1+(retaddr)
+@PATSskip:
+	lda	1+(retaddr)
+	pha			; MSB
+	tya
+	pha			; LSB
+	.endmacro
