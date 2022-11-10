@@ -23,7 +23,7 @@ no_hi_inc:
 	adc	ptr2+1
 	sta	ptr2+1
 	ldy     #63-1
-loop:  lda     (ptr2),y
+loop:	lda     (ptr2),y
         sta     destination,y
 destination=*-2
         dey
