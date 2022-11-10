@@ -171,7 +171,7 @@
 	.endif
 	tay			; Keep LSB safe.
 	bcc	@PATSskip	; Skip increment if no carry.
-	inc	0+(retaddr)
+	inc	1+(retaddr)
 @PATSskip:
 	lda	1+(retaddr)
 	pha			; MSB
