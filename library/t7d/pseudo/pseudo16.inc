@@ -118,14 +118,27 @@
 	sta (dst),y
 .endmacro
 
+;;; Subtract two 16 bit numbers.
 .MACRO	P_sub	src, dst
-	sec
-	lda dst
-	sbc src
-	sta dst
-	lda dst+1
-	sbc src+1
-	sta dst+1
+	.if (.match (.left (1, {src}), #)) ; immediate?
+	  .local	@IARG
+	  @IARG=(.right (.tcount ({src})-1, {src}))
+	  sec
+	  lda dst
+	  sbc #<@IARG
+	  sta dst
+	  lda dst+1
+	  sbc #>@IARG
+	  sta dst+1
+	.else
+	  sec
+	  lda dst
+	  sbc src
+	  sta dst
+	  lda dst+1
+	  sbc src+1
+	  sta dst+1
+	.endif
 .endmacro
 
 .MACRO	P_transfer	src, dst
