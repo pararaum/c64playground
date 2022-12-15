@@ -1,4 +1,6 @@
 	.include	"t7d/memoryconfig.i"
+	.include	"t7d/vic/vicmacros.i"
+	.include	"t7d/libt7d.i"
 	.importzp	ptr1,ptr2,ptr3
 	.importzp	tmp1,tmp2
 
@@ -71,4 +73,10 @@ nocarry:
 	bne	convloop
 	memoryconfig_basic
 	cli
+	SetHiresBitmapMode
+	SetBitmapAddress	BITMAP
+	lda	#<TEXTSCREEN
+	ldx	#>TEXTSCREEN
+	ldy	#(14<<4)|6
+	jsr	fill_1000_bytes
 	rts
