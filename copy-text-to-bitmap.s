@@ -16,7 +16,8 @@
 	.code
 _main:	nop
 	rts
-copy_char:
+
+	.proc	copy_char
 	ldy	#0
 	sty	chrsrc+1	; HI
 	lda	(txtsrc),y
@@ -35,6 +36,7 @@ l1:	lda	(chrsrc),y
 	dey
 	bpl	l1
 	rts
+	.endproc
 	
 	.segment	"STARTUP"
 	lda	#<TEXTSCREEN
@@ -47,8 +49,26 @@ l1:	lda	(chrsrc),y
 	sta	bmpdst+1
 	sei
 	memoryconfig_charrom
-	ldy	#0
+convloop:
 	jsr	copy_char
+	;; txtsrc+=1
+	inc	txtsrc		; LO of txtsrc
+	bne	nocarry2
+	inc	txtsrc+1	; HI of txtsrc
+nocarry2:
+	;; bmpdst+=8
+	lda	bmpdst
+	clc
+	adc	#8
+	sta	bmpdst
+	bcc	nocarry
+	inc	bmpdst+1
+nocarry:
+	cmp	#<(BITMAP+8000)	; A has still LO in it.
+	bne	convloop
+	lda	bmpdst+1
+	cmp	#>(BITMAP+8000)
+	bne	convloop
 	memoryconfig_basic
 	cli
 	rts
