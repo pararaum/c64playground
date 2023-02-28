@@ -44,7 +44,7 @@
 	;; Basic floating-point routines and macros
 	;; ════════════════════════════════════════
 
-	;; Lothar Englisch, Das Maschinensprachbuche Buch für Fortgeschrittene zum C64&PC128, Data Becker, 1985. 
+	;; Lothar Englisch, Das Maschinensprachbuche Buch für Fortgeschrittene zum C64&PC128, Data Becker, 1985. Table with functions on page 67.
 
 	;; Load FAC1 with signed 8-bit value.
 	BASIC_FAC1_WITH_INT8 = $BC3C
