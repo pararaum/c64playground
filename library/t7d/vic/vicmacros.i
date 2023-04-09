@@ -164,7 +164,7 @@
 	sta	$d012
 	.if rasterline>255
 	lda	$d011
-	or	#$80
+	ora	#$80
 	sta	$d011
 	.else
 	lda	$d011
