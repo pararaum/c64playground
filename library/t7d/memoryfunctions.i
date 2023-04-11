@@ -202,6 +202,7 @@
 ;;; The memory is cleared with zeros. Warning! Only usable once.
 ;;; Modifies: A/X/Y
 	.macro bzero_once_macro	dest, size
+	.local	@l1,@l2
 	.if	>(size) <> 0
 	lda	#0
 	tax
@@ -218,13 +219,54 @@
 	.if	<(size) = 1
 	sta	dest+((size) & $ff00)
 	.else
-@l2:	sta	dest+((size) & $ff00),x
+@l2:	sta	0+(dest+((size) & $ff00)),x
 	inx
 	cpx	#<(size)
 	bne	@l2
 	.endif
 	.endif
 	.endmacro
+
+
+;;; Clear a memory area macro.
+;;; The memory is cleared with zeros. This code set the pointer at the
+;;;	beginning, therefore it can be called in a loop or a function
+;;;	multiple times.
+;;; Modifies: A/X/Y
+	.macro BZeroMacro	dest, size
+	.local	@l1,@l2,@destptr
+	.if	>(size) <> 0
+	lda	#<(dest)
+	sta	@destptr
+	lda	#>(dest)
+	sta	@destptr+1
+	lda	#0
+	tax
+	tay
+@l1:	sta	0+(dest),x
+	@destptr=*-2
+	inx
+	bne	@l1
+	inc	@destptr+1		; Increment hi of dest
+	iny
+	cpy	#>(size)
+	bne	@l1
+	.else
+	lda	#0
+	tax
+	.endif
+	.if	<(size) <> 0
+	.if	<(size) = 1
+	sta	(dest)+((size) & $ff00)
+	.else
+@l2:	sta	0+((dest)+((size) & $ff00)),x
+	inx
+	cpx	#<(size)
+	bne	@l2
+	.endif
+	.endif
+	.endmacro
+
 
 ;;; Copy memory with strides, this function needs several variables. Use this function to copy e.g. a block of PETSCII chars from one frame into another.
 ;;; memcpy_strided_srcwidth, memcpy_strided_srcheight, memcpy_strided_srcstride, memcpy_strided_dststride
