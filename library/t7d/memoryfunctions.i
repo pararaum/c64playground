@@ -267,6 +267,18 @@
 	.endif
 	.endmacro
 
+;;; Clear a memory block.
+;;; Input: ptr1=source address, A/X=size in bytes
+;;; Output: A=0, X=0
+;;; Modifies: A,X,Y,ptr1
+	.global	clear_memory
+
+;;; Clear a memory block, using program memory for parameters.
+;;; Input: offset after JSR: +0 destination address, +2 size in bytes
+;;; Output: A=0, X=0
+;;; Modifies: A,X,Y,ptr1,ptr2
+	.global	clear_memory_progmem
+
 
 ;;; Copy memory with strides, this function needs several variables. Use this function to copy e.g. a block of PETSCII chars from one frame into another.
 ;;; memcpy_strided_srcwidth, memcpy_strided_srcheight, memcpy_strided_srcstride, memcpy_strided_dststride

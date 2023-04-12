@@ -159,21 +159,20 @@
 	.endmacro
 
 ;;; If using the above macro to get the return address minus one into a pointer then this macro will put the return address back on the stack. It can be adjusted so that following parameters will be skipped.
+;;; Can be used to implement parameter passing via program memory, see L.A. Leventhal, W. Saville, "6502 Assembly Language Subroutines", Osborne/McGraw-Hill, p. 44.
 ;;; Input: retaddr
 ;;; Output: (Stack)
 ;;; Modifies: A,Y
 	.macro	PointerAdjustedToStack retaddr, adjust
-	.local	@PATSskip
 	lda	0+(retaddr)
+	clc			; Clear even if adjust == 0!
 	.if (adjust) <> 0
-	clc
 	adc	#(adjust)
 	.endif
 	tay			; Keep LSB safe.
-	bcc	@PATSskip	; Skip increment if no carry.
-	inc	1+(retaddr)
-@PATSskip:
-	lda	1+(retaddr)
+	lda	#0		; Prepare A, C unchanged
+	;; Now add value in memory with carry, result in A!
+	adc	1+(retaddr)
 	pha			; MSB
 	tya
 	pha			; LSB
@@ -184,14 +183,12 @@
 ;;; Output: (Stack)
 ;;; Modifies: A,Y
 	.macro	PointerAAdjustedToStack retaddr
-	.local	@PATSskip
 	clc
 	adc	0+(retaddr)
 	tay			; Keep LSB safe.
-	bcc	@PATSskip	; Skip increment if no carry.
-	inc	1+(retaddr)
-@PATSskip:
-	lda	1+(retaddr)
+	lda	#0		; Prepare A, C unchanged
+	;; Now add carry to value in memory, result in A!
+	adc	1+(retaddr)
 	pha			; MSB
 	tya
 	pha			; LSB

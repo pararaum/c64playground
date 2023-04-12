@@ -16,7 +16,8 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
        run_function_list.o \
        spritepad-copy_spad_data.o \
 	t7d/takeover_effects/dissolve_left2right.o t7d/takeover_effects/curtain_left2right.o t7d/takeover_effects/water_rising.o t7d/takeover_effects/bullets_to_right_bottom.o \
-	pudecrunch.o
+	pudecrunch.o \
+	clear_memory.o clear_memory_progmem.o
 OBJS += $(patsubst %.s, %.o, $(wildcard fsvscroll.*.s))
 COBJS = $(patsubst %.c, %.o, $(wildcard libsrc/*.c))
 PROJECT = libT7D
