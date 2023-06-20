@@ -75,14 +75,16 @@ std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadadd
 // 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
 // 00000010  bd 31 08 95 58 ca 10 f8  20 bf a3 78 b9 3a 08 99  |.1..X... ..x.:..|
 // 00000020  f7 00 c8 d0 f7 e6 59 a9  3c 85 26 a9 03 85 27 4c  |......Y.<.&...'L|
-// 00000030  f7 00 00 10 a2 08 54 37  44 a2 08 a0 00 b1 58 30  |......T7D.....X0|
+// 00000030  f7 00 00 10 a7 08 54 37  44 a7 08 a0 00 b1 58 30  |......T7D.....X0|
 // 00000040  1d d0 03 4c 3c 03 aa a8  e6 58 d0 02 e6 59 b1 58  |...L<....X...Y.X|
-// 00000050  91 26 88 10 f9 20 45 01  20 52 01 4c f7 00 49 ff  |.&... E. R.L..I.|
-// 00000060  aa e8 c8 b1 58 8d 28 01  a5 26 38 e9 00 85 28 a5  |....X.(..&8...(.|
-// 00000070  27 e9 00 85 29 8a a8 b1  28 91 26 88 10 f9 20 52  |'...)...(.&... R|
-// 00000080  01 a2 02 20 45 01 4c f7  00 8a 18 65 58 85 58 a5  |... E.L....eX.X.|
-// 00000090  59 69 00 85 59 60 8a 18  65 26 85 26 a5 27 69 00  |Yi..Y`..e&.&.'i.|
-// 000000a0  85 27 60                                          |.'`|
+// 00000050  91 26 88 10 f9 20 4a 01  20 57 01 4c f7 00 49 ff  |.&... J. W.L..I.|
+// 00000060  aa 48 e8 c8 b1 58 8d 29  01 a5 26 38 e9 00 85 28  |.H...X.)..&8...(|
+// 00000070  a5 27 e9 00 85 29 a0 00  b1 28 91 26 c8 ca 10 f8  |.'...)...(.&....|
+// 00000080  68 aa e8 20 57 01 a2 02  20 4a 01 4c f7 00 8a 18  |h.. W... J.L....|
+// 00000090  65 58 85 58 a5 59 69 00  85 59 60 8a 18 65 26 85  |eX.X.Yi..Y`..e&.|
+// 000000a0  26 a5 27 69 00 85 27 60                           |&.'i..'`|
+// 000000a8
+
   const int POS_OF_JMP = 0x44;
   const int POS_OF_END_OF_CDATA = 0x34;
   //const int POS_OF_BEGIN_OF_CDATA = 0x39;
@@ -164,7 +166,7 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
 #endif
     for(cmpj = max_look_back; cmpj > 0; --cmpj) {
       // Inner loop for comparison.
-      for(cmpi = 0; cmpi < (cmpj < MAX_LEN ? cmpj : MAX_LEN); ++cmpi) {
+      for(cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
 	if(pos + cmpi >= datasize) {
 	  // End of data reached.
 	  break;

@@ -60,6 +60,7 @@ litcop:	lda	(SRCPTR),y
 backref:
 	eor	#$ff		; Negate A, see below
 	tax			; Keep run length safe.
+	pha			; Put run length - 1 (!) onto stack.
 	inx			; see above, negate is eor #$ff, then +1
 	iny
 	lda	(SRCPTR),y	; How far to go back?
@@ -72,12 +73,16 @@ backref:
 	lda	DSTPTR+1
 	sbc	#0
 	sta	AUXPTR+1
-	txa
-	tay			; Y=X, run length
+	;; Copy upward as we can have longer runs even if data is only partial. E.g. first byte is literal then set AUXPTR to DSTPTR-1 and copy for 100 or so bytes. This is essentially a run-length encoding for free.
+	ldy	#0		; Clear index Y, X has number of bytes.
 bckcop:	lda	(AUXPTR),y
 	sta	(DSTPTR),y
-	dey
+	iny			; Now go to next byte.
+	dex			; Decrement the counter.
 	bpl	bckcop
+	pla			; run length - 1
+	tax
+	inx
 	jsr	incdst		; Adjust destination.
 	ldx	#2
 	jsr	incsrc		; Skip two bytes
