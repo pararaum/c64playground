@@ -1,36 +1,33 @@
 #! /usr/bin/make -f
 
-CFLAGS=-Wall -O2 -DNDEBUG
-LDFLAGS=-lm
-CC65FLAGS=-O
+CC=cl65
+CFLAGS=-O
+AS=ca65
 TARGET=mugwump
-OBJS=$(TARGET).o xorshiftprng.o
+TARGETSYSTEM=c64
+OBJS=$(TARGET).o c64asmcode.o mugwump-muzak.o mugwump-font.o mugwump-titlescreen.o mugwump-credits.o
 
-.PHONY:	all c64 cc65intern sim bin clean distclean check doc
+.PHONY:	all clean distclean doc
 
-all:	bin c64 sim
+all:	$(TARGET).prg astrorescue.prg
 
-sim:
-	mkdir -p sim
-	cp -al *.c Makefile sim
-	make -C sim cc65intern TARGETSYSTEM=sim6502
+$(TARGET): $(OBJS)
+	cl65 -C memorymap.cfg -t $(TARGETSYSTEM) -m $(TARGET).map -Ln $(TARGET).label $(CC65FLAGS) $(OBJS) libT7D.lib
 
-c64:
-	mkdir -p c64
-	cp -al *.c Makefile c64
-	make -C c64 cc65intern TARGETSYSTEM=c64
+%.prg: %
+	#pucrunch -x828 $^ $@
+	dali -o $@ --sfx 828 $^
 
-cc65intern:
-	cl65 -t $(TARGETSYSTEM) -m $(TARGET).map -Ln $(TARGET).label $(CC65FLAGS) $(TARGET).c
+%.o: %.c
+	$(CC) -c $(CFLAGS) -t $(TARGETSYSTEM) -o $@ $^
 
-
-bin:	$(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $+ $(LDFLAGS)
+%.o: %.s
+	$(AS) $(AFLAGS) -t $(TARGETSYSTEM) -o $@ $^
 
 clean:
 	rm -f *.o *.map *.label $(TARGET)
-	rm -rf c64
-	rm -rf sim
+	rm -rf $(TARGET).prg $(TARGET) $(OBJS)
+	rm -rf astrorescue astrorescue.prg
 	rm -rf html
 	rm -rf 🖬
 
@@ -38,9 +35,8 @@ distclean:
 	$(MAKE) clean
 	rm -f *~
 
-check:	xorshiftprng.o tests.o
-	gcc -o 🖬 $+ -l cunit
-	./🖬
-
 doc:
 	doxygen
+
+astrorescue: astrorescue.o c64asmcode.o astrorescue-muzak.o astrorescue-font.o astrorescue-titlescreen.o astrorescue-credits.o
+	cl65 -C memorymap.cfg -t $(TARGETSYSTEM) -m $@.map -Ln $@.label $(CC65FLAGS) $^ libT7D.lib

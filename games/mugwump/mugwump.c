@@ -1,9 +1,8 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef __CC65__
-#include <math.h>
-#endif
+#include <peekpoke.h>
+#include <conio.h>
 
 /*! \file
  *
@@ -76,12 +75,7 @@ static void display_distances(uint8_t x, uint8_t y, Mugwumps_t *mw) {
       int dx = x - mw->pos[i][0];
       int dy = y - mw->pos[i][1];
       distance = dx * dx + dy * dy;
-#ifdef __CC65__
-      printf("(%d, %d) is %d units^2 from mugwump %d.\n", x, y, distance, i);
-#else
-      distance = sqrt(distance);
-      printf("(%d, %d) is %d units from mugwump %d.\n", x, y, distance, i);
-#endif
+      printf("(%d, %d) is %d units^2 from mugwump %d.\n", x, y, distance, i+1);
     }
   }
 }
@@ -114,6 +108,27 @@ int8_t check_mugwump_find(Mugwumps_t *mw, uint8_t x, uint8_t y) {
   return -1;
 }
 
+uint8_t read_numb(uint8_t from, uint8_t to)
+{
+  unsigned char c;
+  cursor(1);
+  do 
+  {
+    c = cgetc();
+  } while (c<from+48 || c>to+48);
+  cputc(c);
+  cursor(0);
+  return c-48;  
+}
+
+int read_two_ints2(int *x, int *y) {
+  *x = read_numb(0,9);
+  cputc(' ');
+  *y = read_numb(0,9);
+  puts("");
+  return 2;
+}
+
 /*! \brief Single game run
  */
 void game(void) {
@@ -133,10 +148,10 @@ void game(void) {
     }
 #endif
   }
-  for(turn = 0; (mw->alive > 0) && (turn < MAXTURNS); ++turn) {
+  for(turn = 1; (mw->alive > 0) && (turn <= MAXTURNS); ++turn) {
     printf("Turn #%d -- What is your guess?\n", turn);
-    if(scanf("%d %d", &x, &y) < 2) {
-      puts("Please enter two numbers separated by whitespaces!");
+    if(read_two_ints2(&x, &y) < 2) {
+      puts("Please enter two numbers!");
       --turn;
       continue;
     }
@@ -144,12 +159,13 @@ void game(void) {
     if(i < 0) {
       puts("There was no mugwump there!");
     } else {
-      printf("You have found mugwump %d.\n", (int) i);
+      printf("You have found mugwump %d.\n", (int) i+1);
     }
     display_distances(x, y, mw);
+    puts("");
   }
   if(mw->alive > 0) {
-    puts("You lost! There are still mugwumps hiding out!");
+    puts("You lost! There are still mugwumps\nhiding out!");
   } else {
     puts("Congratulation! You found all mugwumps.");
   }
@@ -167,14 +183,19 @@ void gameloop(void) {
   do {
     game();
     puts("Do you like to play again?");
-    scanf(" %c", &ch);
+    cursor(1);
+    ch = cgetc();
+    cputc(ch);
+    puts("\n");
+    cursor(0);
   } while((ch != 'n') && (ch != 'N') && (ch != EOF));
 }
 
 int main(int argc, char **argv) {
-  puts("Mugwump\n");
-  puts("The objective of this game is to find four mugwumps hidden on a configurable grid. The homebase is at position (0,0).\n");
-  puts("You get 10 tries. After each try, you will be informed how far you are from each mugwump.\n");
+  srand((PEEK(0xdc04) << 8) | PEEK(0xd012));
+  puts("\fMugwump\n");
+  puts("The objective of this game is to find\nfour mugwumps hidden on a 10 times 10\ngrid. The homebase is at position (0,0).\n");
+  puts("You get 10 tries. After each try, you\nwill be informed how far you are from\neach mugwump.\n");
   gameloop();
   return 0;
 }
