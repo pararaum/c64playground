@@ -35,5 +35,5 @@ fsvscroll.skeleton_using_asm.prg: fsvscroll.skeleton_using_asm.o fsvscroll.examp
 
 memory_copy_routine.prg: memory_copy_routine.s
 	cl65 --asm-include-dir ../library -t c64 $^ ../library/libT7D.lib
-	xipz -a qadz -j 2061 -p 0x90 $^
+	xipz -a qadz -j 2061 -p 0x90 memory_copy_routine
 
