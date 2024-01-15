@@ -198,6 +198,46 @@
 	.import	memcpy_up
 
 
+;;; Function to copy the memory downwards
+;;; Input: ptr1=pointer to src, ptr2=destination pointer, A/X=size
+;;; Output: -
+;;; Modifies: ptr1, ptr2, A,X,Y
+	.import	memcpy_down
+
+
+
+;;; Function to copy the memory downwards with inline parameters
+;;; Input: two words after JSR
+;;;	- destination
+;;;	- size in bytes
+;;; Output: -
+;;; Modifies: ptr1, ptr2, ptr3, tmp1, A,X,Y
+	.import	copy_memory_downwards_ip
+
+
+;;; Helper Macro to easily use the copy memory function with in-place parameters with files.
+;;; Input:
+;;;	- destination: destination address to copy data to
+;;;	- fname: file name to read data from
+;;;	- skip(optional): how many bytes to skip at the beginning of the file
+;;;	- length(optional): how many bytes to include from the file
+.macro	CopyFileIntoMemoryDown destination, fname, skip, length
+	.local	data, dataend
+	jsr	copy_memory_downwards_ip
+	.word	destination
+	.word	dataend-data
+data:
+	.if .paramcount = 4
+	 .incbin	fname, skip, length
+	.elseif .paramcount = 3
+	 .incbin	fname, skip
+	.else
+	 .incbin	fname
+	.endif
+dataend:
+.endmacro
+
+
 ;;; Clear a memory area macro.
 ;;; The memory is cleared with zeros. Warning! Only usable once.
 ;;; Modifies: A/X/Y

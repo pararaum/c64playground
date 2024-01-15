@@ -20,7 +20,7 @@
 	GONE = $A7E4		; Read and Execute the Next Statement.
 	;;  Using -t c64 does define some constants.
 	.ifndef STROUT
-	STROUT = $AB1E		; Output a string pointed to by A/Y, see L. Englisch, The Advanced Machine Language Book for the Commodore-C64, Abacus Software, 1984, p. 21.
+	STROUT = $AB1E		; Output a string pointed to by A/Y, see L. Englisch, The Advanced Machine Language Book for the Commodore-C64, Abacus Software, 1984, p. 21. Warning! String size must be less than 256 bytes!
 	;; See also https://www.pagetable.com/c64ref/c64disasm/.
 	.endif
 	;; Convert floating number to a string stored at $100.
