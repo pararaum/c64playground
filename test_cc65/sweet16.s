@@ -148,7 +148,7 @@ BNM1:	ASL                 ;DOUBLE RESULT-REG INDEX
         EOR  $FF
         BNE  BR1            ;BRANCH IF NOT MINUS 1
 NUL:	RTS
-RS:	LDX  $18            ;12*2 FOR R12 AS STACK POINTER
+RS:	LDX  #$18           ;12*2 FOR R12 AS STACK POINTER
         JSR  DCR            ;DECR STACK POINTER
         LDA  (R0L,X)        ;POP HIGH RETURN ADDRESS TO PC
         STA  R15H
