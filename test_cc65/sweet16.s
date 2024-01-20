@@ -1,110 +1,28 @@
 ;;; http://www.6502.org/source/interpreters/sweet16.htm
 ;;; https://en.wikipedia.org/wiki/SWEET16
 
-	.code
-	
-R0L     =  $80 + $0
-R0H     =  $80 + $1
-R14H    =  $80 + $1D
-R15L    =  $80 + $1E
-R15H    =  $80 + $1F
-SAVE    =  $FF4A
-RESTORE =  $FF3F
+R0L     =  $39 + $0
+R0H     =  $39 + $1
+R14H    =  $39 + $1D
+R15L    =  $39 + $1E
+R15H    =  $39 + $1F
 
+	.code
+	jsr	sweet16
+	.pushcpu
+	.setcpu	"sweet16"
+	set	r1, $a000
+	set	r2, $400
+	set	r3, $200
+l16:	ld	@r1
+	st	@r2
+	dcr	r3
+	bnz	l16
+	rtn
+	.popcpu
 	rts
 
-	
-        .ORG  $ce89
-
-        JSR  SAVE           ;PRESERVE 6502 REG CONTENTS
-        PLA
-        STA  R15L           ;INIT SWEET16 PC
-        PLA                 ;FROM RETURN
-        STA  R15H           ;ADDRESS
-SW16B:	JSR  SW16C          ;INTERPRET AND EXECUTE
-        JMP  SW16B          ;ONE SWEET16 INSTR.
-SW16C:	INC  R15L
-        BNE  SW16D          ;INCR SWEET16 PC FOR FETCH
-        INC  R15H
-SW16D:	LDA  #>SET          ;COMMON HIGH BYTE FOR ALL ROUTINES
-        PHA                 ;PUSH ON STACK FOR RTS
-        LDY  #$0
-        LDA  (R15L),Y       ;FETCH INSTR
-        AND  $F             ;MASK REG SPECIFICATION
-        ASL                 ;DOUBLE FOR TWO BYTE REGISTERS
-        TAX                 ;TO X REG FOR INDEXING
-        LSR
-        EOR  (R15L),Y       ;NOW HAVE OPCODE
-        BEQ  TOBR           ;IF ZERO THEN NON-REG OP
-        STX  R14H           ;INDICATE "PRIOR RESULT REG"
-        LSR
-        LSR                 ;OPCODE*2 TO LSB'S
-        LSR
-        TAY                 ;TO Y REG FOR INDEXING
-        LDA  OPTBL-2,Y      ;LOW ORDER ADR BYTE
-        PHA                 ;ONTO STACK
-        RTS                 ;GOTO REG-OP ROUTINE
-TOBR:	INC  R15L
-        BNE  TOBR2          ;INCR PC
-        INC  R15H
-TOBR2:	LDA  BRTBL,X        ;LOW ORDER ADR BYTE
-        PHA                 ;ONTO STACK FOR NON-REG OP
-        LDA  R14H           ;"PRIOR RESULT REG" INDEX
-        LSR                 ;PREPARE CARRY FOR BC, BNC.
-        RTS                 ;GOTO NON-REG OP ROUTINE
-RTNZ:	PLA                 ;POP RETURN ADDRESS
-        PLA
-        JSR  RESTORE        ;RESTORE 6502 REG CONTENTS
-        JMP  (R15L)         ;RETURN TO 6502 CODE VIA PC
-SETZ:	LDA  (R15L),Y       ;HIGH ORDER BYTE OF CONSTANT
-        STA  R0H,X
-        DEY
-        LDA  (R15L),Y       ;LOW ORDER BYTE OF CONSTANT
-        STA  R0L,X
-        TYA                 ;Y REG CONTAINS 1
-        SEC
-        ADC  R15L           ;ADD 2 TO PC
-        STA  R15L
-        BCC  SET2
-        INC  R15H
-SET2:	RTS
-OPTBL:	.lobytes  SET-1          ;1X
-BRTBL:	.lobytes  RTN-1          ;0
-        .lobytes  LD-1           ;2X
-        .lobytes  BR-1           ;1
-        .lobytes  ST-1           ;3X
-        .lobytes  BNC-1          ;2
-        .lobytes  LDAT-1         ;4X
-        .lobytes  BC-1           ;3
-        .lobytes  STAT-1         ;5X
-        .lobytes  BP-1           ;4
-        .lobytes  LDDAT-1        ;6X
-        .lobytes  BM-1           ;5
-        .lobytes  STDAT-1        ;7X
-        .lobytes  BZ-1           ;6
-        .lobytes  POP-1          ;8X
-        .lobytes  BNZ-1          ;7
-        .lobytes  STPAT-1        ;9X
-        .lobytes  BM1-1          ;8
-        .lobytes  ADD-1          ;AX
-        .lobytes  BNM1-1         ;9
-        .lobytes  SUB-1          ;BX
-        .lobytes  BK-1-1           ;A
-        .lobytes  POPD-1         ;CX
-        .lobytes  RS-1           ;B
-        .lobytes  CPR-1          ;DX
-        .lobytes  BS-1           ;C
-        .lobytes  INR-1          ;EX
-        .lobytes  NUL-1          ;D
-        .lobytes  DCR-1          ;FX
-        .lobytes  NUL-1          ;E
-        .lobytes  NUL-1          ;UNUSED
-        .lobytes  NUL-1          ;F
-
-	;; * FOLLOWING CODE MUST BE
-	;; * CONTAINED ON A SINGLE PAGE!
-
-SET:	BPL  SETZ           ;ALWAYS TAKEN
+SET:	jmp	SETZ           ;ALWAYS TAKEN
 LD:	LDA  R0L,X
 BK:
         STA  R0L
@@ -239,3 +157,123 @@ RS:	LDX  $18            ;12*2 FOR R12 AS STACK POINTER
         STA  R15L
         RTS
 RTN:	JMP  RTNZ
+	;; * End of single page code.
+
+sweet16:
+        PLA
+        STA  R15L           ;INIT SWEET16 PC
+        PLA                 ;FROM RETURN
+        STA  R15H           ;ADDRESS
+SW16B:	JSR  SW16C          ;INTERPRET AND EXECUTE
+        JMP  SW16B          ;ONE SWEET16 INSTR.
+SW16C:	INC  R15L
+        BNE  SW16D          ;INCR SWEET16 PC FOR FETCH
+        INC  R15H
+SW16D:	LDY  #$0
+        LDA  (R15L),Y       ;FETCH INSTR
+        AND  #$F            ;MASK REG SPECIFICATION
+        ASL                 ;DOUBLE FOR TWO BYTE REGISTERS
+        TAX                 ;TO X REG FOR INDEXING
+        LSR
+        EOR  (R15L),Y       ;NOW HAVE OPCODE
+        BEQ  TOBR           ;IF ZERO THEN NON-REG OP
+        STX  R14H           ;INDICATE "PRIOR RESULT REG"
+        LSR
+        LSR                 ;OPCODE*2 TO LSB'S
+        LSR
+        TAY                 ;TO Y REG FOR INDEXING
+	lda  optbhi-2,y	    ; high order adr bytes
+	pha
+        LDA  OPTBL-2,Y      ;LOW ORDER ADR BYTE
+        PHA                 ;ONTO STACK
+        RTS                 ;GOTO REG-OP ROUTINE
+TOBR:	INC  R15L
+        BNE  TOBR2          ;INCR PC
+        INC  R15H
+TOBR2:	lda  brtbhi,x
+	pha
+	LDA  BRTBL,X        ;LOW ORDER ADR BYTE
+        PHA                 ;ONTO STACK FOR NON-REG OP
+        LDA  R14H           ;"PRIOR RESULT REG" INDEX
+        LSR                 ;PREPARE CARRY FOR BC, BNC.
+        RTS                 ;GOTO NON-REG OP ROUTINE
+RTNZ:	PLA                 ;POP RETURN ADDRESS
+        PLA
+        JMP  (R15L)         ;RETURN TO 6502 CODE VIA PC
+SETZ:	LDA  (R15L),Y       ;HIGH ORDER BYTE OF CONSTANT
+        STA  R0H,X
+        DEY
+        LDA  (R15L),Y       ;LOW ORDER BYTE OF CONSTANT
+        STA  R0L,X
+        TYA                 ;Y REG CONTAINS 1
+        SEC
+        ADC  R15L           ;ADD 2 TO PC
+        STA  R15L
+        BCC  SET2
+        INC  R15H
+SET2:	RTS
+OPTBL:	.lobytes  SET-1          ;1X
+BRTBL:	.lobytes  RTN-1          ;0
+        .lobytes  LD-1           ;2X
+        .lobytes  BR-1           ;1
+        .lobytes  ST-1           ;3X
+        .lobytes  BNC-1          ;2
+        .lobytes  LDAT-1         ;4X
+        .lobytes  BC-1           ;3
+        .lobytes  STAT-1         ;5X
+        .lobytes  BP-1           ;4
+        .lobytes  LDDAT-1        ;6X
+        .lobytes  BM-1           ;5
+        .lobytes  STDAT-1        ;7X
+        .lobytes  BZ-1           ;6
+        .lobytes  POP-1          ;8X
+        .lobytes  BNZ-1          ;7
+        .lobytes  STPAT-1        ;9X
+        .lobytes  BM1-1          ;8
+        .lobytes  ADD-1          ;AX
+        .lobytes  BNM1-1         ;9
+        .lobytes  SUB-1          ;BX
+        .lobytes  BK-1-1           ;A
+        .lobytes  POPD-1         ;CX
+        .lobytes  RS-1           ;B
+        .lobytes  CPR-1          ;DX
+        .lobytes  BS-1           ;C
+        .lobytes  INR-1          ;EX
+        .lobytes  NUL-1          ;D
+        .lobytes  DCR-1          ;FX
+        .lobytes  NUL-1          ;E
+        .lobytes  NUL-1          ;UNUSED
+        .lobytes  NUL-1          ;F
+
+optbhi:	.hibytes  SET-1          ;1X
+brtbhi:	.hibytes  RTN-1          ;0
+        .hibytes  LD-1           ;2X
+        .hibytes  BR-1           ;1
+        .hibytes  ST-1           ;3X
+        .hibytes  BNC-1          ;2
+        .hibytes  LDAT-1         ;4X
+        .hibytes  BC-1           ;3
+        .hibytes  STAT-1         ;5X
+        .hibytes  BP-1           ;4
+        .hibytes  LDDAT-1        ;6X
+        .hibytes  BM-1           ;5
+        .hibytes  STDAT-1        ;7X
+        .hibytes  BZ-1           ;6
+        .hibytes  POP-1          ;8X
+        .hibytes  BNZ-1          ;7
+        .hibytes  STPAT-1        ;9X
+        .hibytes  BM1-1          ;8
+        .hibytes  ADD-1          ;AX
+        .hibytes  BNM1-1         ;9
+        .hibytes  SUB-1          ;BX
+        .hibytes  BK-1-1           ;A
+        .hibytes  POPD-1         ;CX
+        .hibytes  RS-1           ;B
+        .hibytes  CPR-1          ;DX
+        .hibytes  BS-1           ;C
+        .hibytes  INR-1          ;EX
+        .hibytes  NUL-1          ;D
+        .hibytes  DCR-1          ;FX
+        .hibytes  NUL-1          ;E
+        .hibytes  NUL-1          ;UNUSED
+        .hibytes  NUL-1          ;F
