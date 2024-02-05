@@ -1,5 +1,5 @@
 
-	.include	"kernal.i"
+	.include	"t7d/kernal.i"
 	;; https://wiki.cc65.org/doku.php?id=cc65:using_runtime_zeropage_locations_in_assembly_language&s[]=ptr1
 	;; https://github.com/cc65/wiki/wiki/Using-runtime-zeropage-locations-in-assembly-language
 	.include	"zeropage.inc"

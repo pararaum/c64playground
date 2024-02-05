@@ -1,5 +1,5 @@
-	.include	"libt7d.i"
-	.include	"vicmacros.i"
+	.include	"t7d/libt7d.i"
+	.include	"t7d/vic/vicmacros.i"
 	.import __MUZAK_RUN__
 	.import	font
 	.import	screen0,screen1
