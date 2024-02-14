@@ -119,9 +119,14 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
     std::vector<uint8_t> out;
 
     Outclass() {}
-    ~Outclass() {
-      putc(0);
+    /*! finalise date and return output reference
+     *
+     */
+    std::vector<uint8_t> &finalize() {
       flush();
+      // Zero marks the end!
+      out.push_back(0);
+      return out;
     }
     void flush() { 
       if(!buf.empty()) {
@@ -189,6 +194,5 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
       pos += match - 1;
     }
   }
-  outclass.flush();
-  return outclass.out;
+  return outclass.finalize();
 }
