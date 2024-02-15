@@ -16,7 +16,7 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
        run_function_list.o \
        spritepad-copy_spad_data.o \
 	t7d/takeover_effects/dissolve_left2right.o t7d/takeover_effects/curtain_left2right.o t7d/takeover_effects/water_rising.o t7d/takeover_effects/bullets_to_right_bottom.o \
-	pudecrunch.o \
+	pudecrunch.o zx02decrunch.o \
 	output_long_string.o \
 	clear_memory.o clear_memory_progmem.o \
 	copy_memory_downwards_ip.o memcpy_down.o
