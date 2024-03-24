@@ -1,4 +1,5 @@
 	.import	tmp1
+	.export	set_screen_memory
 
 ;;; Input: A=HI of screen memory address
 	.proc	set_screen_memory

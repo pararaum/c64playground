@@ -1,4 +1,6 @@
 	.import	tmp1
+	.export	set_chargen_memory
+
 ;;; Input: A=HI of screen memory address
 .proc	set_chargen_memory
 	lsr
