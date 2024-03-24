@@ -11,6 +11,7 @@
 	.export	screen0, screen1
 	.export	spriteptr0, spriteptr1
 	.export	font
+	.export	_main
 
 	.segment	"MUZAK"
 	.incbin	"../anichar/Back_to_Basics.sid",$7c+2
