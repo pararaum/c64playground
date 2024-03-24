@@ -1,4 +1,4 @@
-	.import	tmp1
+	.importzp	tmp1
 	.export	set_chargen_memory
 
 ;;; Input: A=HI of screen memory address
