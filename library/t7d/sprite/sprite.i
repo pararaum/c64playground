@@ -21,7 +21,7 @@
 	sta	$d010
 	.else
 	lda	SPRITE_HIGH_BITS+num
-	and	#~(1<<num)
+	and	#<(~(1<<num))
 	sta	$d010
 	.endif
 .endmacro
