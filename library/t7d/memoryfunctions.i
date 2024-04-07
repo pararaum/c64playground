@@ -308,7 +308,7 @@ dataend:
 	.endmacro
 
 ;;; Clear a memory block.
-;;; Input: ptr1=source address, A/X=size in bytes
+;;; Input: ptr1=destination address, A/X=size in bytes
 ;;; Output: A=0, X=0
 ;;; Modifies: A,X,Y,ptr1
 	.global	clear_memory

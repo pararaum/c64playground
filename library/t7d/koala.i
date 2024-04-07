@@ -3,7 +3,7 @@
 ;;; Convenience functions for handling Koala Painter pictures.
 
 ;;; Copy Koala picture image-data to destination area.
-;;; Input: A/X=image size, remaining pointers are expected behind the JSR.
+;;; Input: pointers are expected behind the JSR.
 ;;; 	- source pointer (koala picture without load address)
 ;;; 	- destination bitmap data
 ;;; 	- destination chars (colour information)
