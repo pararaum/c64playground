@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_VERSION "0.4.1"
+#define CMDLINE_PARSER_VERSION "0.5.0"
 #endif
 
 enum enum_algorithm { algorithm__NULL = -1, algorithm_arg_xipz = 0, algorithm_arg_qadz };
@@ -52,6 +52,8 @@ struct gengetopt_args_info
   int page_arg;	/**< @brief maximum page to use +1 (default='0xA0').  */
   char * page_orig;	/**< @brief maximum page to use +1 original value given at command line.  */
   const char *page_help; /**< @brief maximum page to use +1 help description.  */
+  int data_flag;	/**< @brief input is raw data without a load address (default=off).  */
+  const char *data_help; /**< @brief input is raw data without a load address help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
@@ -59,6 +61,7 @@ struct gengetopt_args_info
   unsigned int algorithm_given ;	/**< @brief Whether algorithm was given.  */
   unsigned int jump_given ;	/**< @brief Whether jump was given.  */
   unsigned int page_given ;	/**< @brief Whether page was given.  */
+  unsigned int data_given ;	/**< @brief Whether data was given.  */
 
   char **inputs ; /**< @brief unnamed options (options without names) */
   unsigned inputs_num ; /**< @brief unnamed options number */
