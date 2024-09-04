@@ -9,6 +9,7 @@
 ;			223 bytes
 
 	.export	pudecrunch_default
+	.export	_pudecrunch_default=pudecrunch_default
 
 SHORT = 0	;1	; assume file is ok
 
