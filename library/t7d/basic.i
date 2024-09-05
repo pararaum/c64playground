@@ -28,7 +28,7 @@
 	;; see: Dan Heeb, Compute!'s VIC-20 and Commodore C64 Tool Kit: BASIC, Compute!Publications, 1984, p. 233.
 	;; Input: FAC1
 	;; Output: A=0, Y=$1, String at $100.
-	;; Modifies: ?
+	;; Modifies: A/X/Y, FAC1(!)
 	BASIC_FLOAT_OUT = $BDDD
 
 	;; D. Heeb, Compute!'s VIC-20 and Commodore 64 Tool Kit: BASIC, Compute!'s Publication, 1984, p 89.
@@ -60,3 +60,21 @@
 	 jsr	BASIC_FAC1_WITH_UINT8
 	.endif
 	.endmacro
+
+	;; Load ARG (FAC2) from memory pointed to by A=LO, Y=HI
+	;; Input: A/Y = pointer to variable
+	;; Output: A=FAC exponent(?), ARG
+	;; Modifies: A, Y
+	;; see: Lothar Englisch, Das Maschinensprachbuche Buch für Fortgeschrittene zum C64&PC128, Data Becker, 1985, p. 67.
+	;; see: D. Heeb, Compute!'s VIC-20 and Commodore 64 Tool Kit: BASIC, 1984, p. 20.
+	BASIC_MEMARG = $BA8C
+
+	;; Load FAC1 from memory pointed to by A=LO, Y=HI
+	;; Input: A/Y = pointer to variable
+	;; Output: A=FAC exponent(?), FAC1
+	;; Modifies: A, Y
+	;; see: Lothar Englisch, Das Maschinensprachbuche Buch für Fortgeschrittene zum C64&PC128, Data Becker, 1985, p. 67.
+	;; see: D. Heeb, Compute!'s VIC-20 and Commodore 64 Tool Kit: BASIC, 1984, p. 20.
+	;; see: https://github.com/mrdudz/cc65-floatlib/blob/master/float-c64.inc
+	;; see: https://pagetable.com/c64ref/c64disasm/#BBA2
+	BASIC_MEMFAC = $BBA2
