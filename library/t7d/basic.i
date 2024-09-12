@@ -3,9 +3,20 @@
 ;;; See http://unusedino.de/ec64/technical/project64/mapping_c64.html
 ;;; A list can be found in Brückmann et al, 64 Intern, Data Becker, 1988, p 45. Or [https://www.c64-wiki.com/wiki/BASIC-ROM].
 
+	;; Basic pointers
+	;; ══════════════
+
+	;; Pointer to the start of BASIC program text
+	;; https://pagetable.com/c64ref/c64mem/#002B
+	TXTTAB = $2b
+	;; Pointer to the start of BASIC variable storage
+	;; https://pagetable.com/c64ref/c64mem/#002D
+	VARTAB = $2d
+
 	;; Basic vectors
 	;; ═════════════
 
+	;; https://pagetable.com/c64ref/c64mem/#0300
 	IERROR = $0300
 	;; http://unusedino.de/ec64/technical/project64/mapping_c64.html calls this IGONE
 	IGONE	= $0308
@@ -15,7 +26,17 @@
 	;; ══════════════
 	CHRGET	= $0073
 	CHRGOT	= $0079
-	;;
+
+	;; Relink BASIC code
+	;; Brückmann, et al., 64 Intern, Data Becker, 1983, p. 46.
+	;; https://pagetable.com/c64ref/c64disasm/#A533
+	BASIC_RELINK = $A533
+	;; BASIC CLR
+	;; https://pagetable.com/c64ref/c64disasm/#A659
+	BASIC_CLR = $A659
+	;; Execute Basic RUN.
+	;; https://pagetable.com/c64ref/c64disasm/#A7AE
+	BASIC_RUN = $A7AE
 	NEWSTT = $a7ae		; Set Up Next Statement for Execution.
 	GONE = $A7E4		; Read and Execute the Next Statement.
 	;;  Using -t c64 does define some constants.
