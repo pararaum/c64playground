@@ -13,15 +13,12 @@ irq:	asl	$d019
 	lda	$d020
 	pha
 	inc	$d020
-
 	jsr	spritecanvas3X4_irq
-
-	
 	pla
 	sta	$d020
 	jmp	$EA31
 
-	
+
 	.code
 fill:	ldx	#0
 l2:	txa
@@ -32,14 +29,12 @@ l2:	txa
 	bne	l2
 	rts
 
+
 main:	sei
 	jsr	_disable_cia_irq
 	jsr	busywait_frame_pm
 	SetIRQ314Pointer	irq
 	EnableIRQatRasterline	50
-	lda	#$ff
-	sta	$d017
-	sta	$d01d
 	jsr	fill
 	jsr	spritecanvas3X4_init
 	.word	36		; X-position
