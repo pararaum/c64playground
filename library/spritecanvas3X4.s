@@ -116,7 +116,7 @@ nohix3:
 	sec
 	adc	#MAXDELAY
 	sta	set_y_position::DELAY
-	PointerAdjustedToStack		ptr1, 6
+	PointerAdjustedToStack		ptr1, 8
 	rts
 .endproc
 
