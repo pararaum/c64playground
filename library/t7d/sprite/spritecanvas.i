@@ -4,10 +4,21 @@
 ;;; Initialise the canvas engine for 3 sprites horizontally and four
 ;	sprites vertically. The parameters are passed in the code just
 ;	behind the JSR.
+;
+;	The sprites are positoned as follows
+;	+---+----+----+
+;	| 0 |  1 |  2 |
+;	+---+----+----+
+;	| 3 |  4 |  5 |
+;	+---+----+----+
+;	| 6 |  7 |  8 |
+;	+---+----+----+
+;	| 9 | 10 | 11 |
+;	+---+----+----+
 ;;; Input: Parameters after the JSR:
 ;;;	.word	x-position of the canvas
 ;;; 	.byte	y-position of the canvas
-;;; 	.byte	number of the sprite buffer of the top-left sprite
+;;; 	.byte	number of the first sprite buffer for the top-left sprite
 ;;; 	.word	address of the sprite pointer for the 0-th sprite, $400+1024-8 in the default configuration
 ;;; 	.byte	colour of the sprite canvas
 ;;; 	.byte	delay time before the sprite parameters are written to the VIC, adjust this if you see a flicker, 8 cycles should be fine if the sprite canvas start in the left part of the screen

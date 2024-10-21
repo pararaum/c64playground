@@ -43,5 +43,5 @@ memory_copy_routine.prg: memory_copy_routine.s
 	xipz -a qadz -j 2061 -p 0x90 memory_copy_routine
 
 spritecanvas3X4.prg:	spritecanvas3X4.s
-	cl65 $^ $(CLFLAGS) $(LIBT7D)
+	cl65 $(CLFLAGS) $^ $(LIBT7D)
 	xipz -a qadz -j 2061 -p 0x90 spritecanvas3X4

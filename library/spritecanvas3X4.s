@@ -4,8 +4,8 @@
 
 	.importzp	ptr1
 
-	.export	spritecanvas_init
-	.export	spritecanvas_irq
+	.export	spritecanvas3X4_init
+	.export	spritecanvas3X4_irq
 
 MAXDELAY=31			; Must be 2^n-1!
 
@@ -54,7 +54,7 @@ l1:
 
 
 	.code
-.proc	spritecanvas_init
+.proc	spritecanvas3X4_init
 	GetReturnAddrIntoPointer	ptr1
 	lda	#0
 	sta	xposmsb		; Clear all sprite MSBs.
@@ -121,7 +121,7 @@ nohix3:
 .endproc
 
 
-.proc	spritecanvas_irq
+.proc	spritecanvas3X4_irq
 	lda	#$07
 	sta	$d015
 	ldx	colour

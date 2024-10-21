@@ -1,8 +1,6 @@
 	.include	"t7d/libt7d.i"
 	.include	"t7d/vic/vicmacros.i"
-
-	.import	spritecanvas_irq
-	.import spritecanvas_init
+	.include	"t7d/sprite/spritecanvas.i"
 
 	.segment	"INIT"
 	.segment	"ONCE"
@@ -16,7 +14,7 @@ irq:	asl	$d019
 	pha
 	inc	$d020
 
-	jsr	spritecanvas_irq
+	jsr	spritecanvas3X4_irq
 
 	
 	pla
@@ -43,7 +41,7 @@ main:	sei
 	sta	$d017
 	sta	$d01d
 	jsr	fill
-	jsr	spritecanvas_init
+	jsr	spritecanvas3X4_init
 	.word	36		; X-position
 	.byte	56		; Y-position
 	.byte	$f0		; sprite pointer to top-left square
