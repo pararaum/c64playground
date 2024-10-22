@@ -122,10 +122,15 @@ nohix3:
 
 
 .proc	spritecanvas3X4_irq
-	lda	#$07
-	sta	$d015		; Enable sprite
-	sta	$d017		; Enable double width
-	sta	$d01d		; Enable double height
+	lda	$d015		; Enable sprite
+	ora	#$07
+	sta	$d015
+	lda	$d017		; Enable double width
+	ora	#$07
+	sta	$d017
+	lda	$d01d		; Enable double height
+	ora	#$07
+	sta	$d01d
 	ldx	colour
 	.repeat	3,I
 	lda	xpositions+I
