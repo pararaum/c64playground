@@ -26,7 +26,7 @@
 ;;; Output: -
 	.global	spritecanvas3X4_init
 
-;;; Routine to be called at each interrupt, this routine must be called at least ... rasterlines before the top position of the sprite canvas. The routine will set the sprite pointers, colours, double width and double height, and the positions of the sprite. Sprite number 1, 2, and 3 are used and multiplexed.
+;;; Routine to be called at each interrupt, this routine must be called at least three rasterlines before the top position of the sprite canvas. The routine will set the sprite pointers, colours, double width and double height, and the positions of the sprite. Sprite number 1, 2, and 3 are used and multiplexed.
 ;;; Input: -
 ;;; Modifies: *
 ;;; Output: -

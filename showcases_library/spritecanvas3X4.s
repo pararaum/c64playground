@@ -8,6 +8,7 @@
 	jmp	main
 
 SPRITECANVAS_SPRPTR=$400+1024-8
+CANVASYPOS=56
 
 irq:	asl	$d019
 	lda	$d020
@@ -34,11 +35,11 @@ main:	sei
 	jsr	_disable_cia_irq
 	jsr	busywait_frame_pm
 	SetIRQ314Pointer	irq
-	EnableIRQatRasterline	50
+	EnableIRQatRasterline	CANVASYPOS-3
 	jsr	fill
 	jsr	spritecanvas3X4_init
 	.word	36		; X-position
-	.byte	56		; Y-position
+	.byte	CANVASYPOS	; Y-position
 	.byte	$f0		; sprite pointer to top-left square
 	.word	SPRITECANVAS_SPRPTR ; Sprite pointer address of 0-th sprite.
 	.byte	7		; Colour
