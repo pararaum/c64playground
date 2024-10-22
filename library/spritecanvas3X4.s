@@ -137,11 +137,12 @@ nohix3:
 	sta	$d000+2*I
 	stx	$d027+I
 	.endrepeat
-	lda	xposmsb
+	lda	$d010
+	and	#%11111000
+	ora	xposmsb
 	sta	$d010
 	lda	yposition
 	ldx	first_sprptr
-	inc	$D020
 	jsr	set_y_position
 	jsr	set_y_position
 	jsr	set_y_position
