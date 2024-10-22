@@ -22,6 +22,7 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
 	output_long_string.o \
 	clear_memory.o clear_memory_progmem.o \
 	copy_memory_downwards_ip.o memcpy_down.o \
+	spritecanvas3X4.o \
 	vic-set_chargen_memory.o vic-set_screen_memory.o
 
 OBJS += $(patsubst %.s, %.o, $(wildcard fsvscroll.*.s))
