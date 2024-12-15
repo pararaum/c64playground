@@ -1,5 +1,5 @@
 
-	.include	"basic.i"
+	.include	"t7d/basic.i"
 	.import	mouse
 	.import mouse_init
 

@@ -45,11 +45,36 @@
 	.import busywait_frame_pm
 	.import busywait_frame_mp
 
+;;; Busy wait for a frame at rasterline 0.
+;;; This is achieved by polling $d011. This variant uses waiting for rasterline zero. Warning! If an iterrupt occurs and the test for equality fails because of this then this routine never returns.
+;;; Input: A=number of frames to wait
+;;; Output: A=0
+;;; Modifies: -
+	.import	busywait_frames_0
+
 ;;; Busy wait several frames, uses busywait_frame_mp.
 ;;; Input: number=number of frames to wait
 ;;; Output: Y=0
 ;;; Modifies: (X),Y
 	.macro BusywaitFramesMP number
+	.if number > 255
+	ldx	#>(number)
+	.endif
+	ldy	#<(number)
+	jsr	busywait_frame_mp
+	dey
+	bne	*-4
+	.if number > 255
+	dex
+	bne	*-7
+	.endif
+	.endmacro
+
+;;; Busy wait several frames, uses busywait_frame_pm.
+;;; Input: number=number of frames to wait
+;;; Output: Y=0
+;;; Modifies: (X),Y
+	.macro BusywaitFramesPM number
 	.if number > 255
 	ldx	#>(number)
 	.endif

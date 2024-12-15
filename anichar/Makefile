@@ -19,7 +19,7 @@ all:	$(TARGET),prg
 
 $(TARGET),prg:	$(TARGET)
 	#(cat ../coding/startup/copy_n_uncompress.stub; lz4 -BD -9 < $+) > $@
-	./pucrunch -x $(EXECADDR) $+ $@
+	pucrunch -x $(EXECADDR) $+ $@
 	#./exomizer sfx $(EXECADDR) -n -o $@ $+
 
 $(TARGET):	$(OBJS)

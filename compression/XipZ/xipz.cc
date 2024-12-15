@@ -126,9 +126,10 @@ typedef std::array<Bits, 256> CompressionBits;
  * opened.
  *
  * \param fname file name
+ * \param exloadaddr extract load address from data?
  * \return Data object with loaded binary data
  */
-Data read_data(const std::string &fname) {
+Data read_data(const std::string &fname, bool exloadaddr) {
   std::vector<uint8_t> rawdata;
   std::ifstream inp(fname, std::ios::binary);
   uint8_t tmp;
@@ -145,9 +146,13 @@ Data read_data(const std::string &fname) {
       rawdata.push_back(tmp);
     }
   } while(inp);
-  Data data(rawdata);
-  std::cout << "Bytes read (without load address): " << data.size() << std::endl;
-  std::cout << "Load address: " << data.get_loadaddr() << std::endl;
+  Data data(rawdata, exloadaddr);
+  if(exloadaddr) {
+    std::cout << "Bytes read (without load address): " << data.size() << std::endl;
+    std::cout << "Load address: " << data.get_loadaddr() << std::endl;
+  } else {
+    std::cout << "Bytes read: " << data.size() << std::endl;
+  }
   return data;
 }
 
@@ -432,9 +437,10 @@ int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
  * \param raw should the compressed data be written raw (without decompression stub)
  * \param jump jump address, -1 = equal to load address
  * \param pagehi maximum page to use +1
+ * \param exloadaddr extract load address from data?
  */
-int main_xipz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi) {
-  Data data(read_data(inputname));
+int main_xipz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi, bool exloadaddr) {
+  Data data(read_data(inputname, exloadaddr));
   HistorgramArray shisto(calc_histo(data));
   output_64_common(shisto);
   int n = choose_optimal_n(data, shisto);
@@ -465,11 +471,12 @@ int main_xipz(const std::string &inputname, const std::string &outputname, bool 
  * \param raw should the compressed data be written raw (without decompression stub)
  * \param jump jump address, -1 = equal to load address
  * \param pagehi maximum page to use +1
+ * \param exloadaddr extract load address from data?
  */
-int main_qadz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi) {
+int main_qadz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi, bool exloadaddr) {
   uint16_t jumpaddr;
 
-  Data data(read_data(inputname));
+  Data data(read_data(inputname, exloadaddr));
   std::vector<uint8_t> compressed(crunch_qadz(data));
   std::cout << "Compressed size: " << compressed.size() << std::endl;
   std::ofstream out(outputname);
@@ -520,10 +527,10 @@ int main(int argc, char **argv) {
       }
       switch(args.algorithm_arg) {
       case algorithm_arg_xipz:
-	ret = main_xipz(inpnam, outnam, args.raw_given, args.jump_arg, args.page_arg);
+	ret = main_xipz(inpnam, outnam, args.raw_flag, args.jump_arg, args.page_arg, !args.data_flag);
 	break;
       case algorithm_arg_qadz:
-	ret = main_qadz(inpnam, outnam, args.raw_given, args.jump_arg, args.page_arg);
+	ret = main_qadz(inpnam, outnam, args.raw_flag, args.jump_arg, args.page_arg, !args.data_flag);
 	break;
       case algorithm__NULL:
 	throw std::logic_error("algorithm vanished");

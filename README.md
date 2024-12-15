@@ -40,6 +40,7 @@ C64 programming playground. Examples, code fragments, etc.
 
 ## Compression ##
 
+ * https://github.com/dmsc/zx02
  * http://www.retrosoftware.co.uk/forum/viewtopic.php?f=73&t=999 (lz4, lzsa, and other)
  * https://github.com/emmanuel-marty/lzsa
  * http://forum.6502.org/viewtopic.php?f=2&t=4595 (another homebrew)

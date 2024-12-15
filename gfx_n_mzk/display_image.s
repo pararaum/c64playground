@@ -44,5 +44,5 @@ background:
 
 	SCREENPTR = __videomatrix_LOAD__
 	BITMAPPTR = __bitmap_LOAD__
-	.include	"bitmap_n_screen.inc"
+	.include	"t7d/vic/bitmap_n_screen.inc"
 

@@ -28,15 +28,25 @@ public:
    * Constructs the objects with the given binary data. The load
    * address is extracted immediately.
    *
+   * If exloadaddr is set to false the load address is *not* extracted
+   * but set to zero. This may be useful for raw binary data.
+   *
    * \param inp raw binary data, must be at least three bytes long
+   * \param exloadaddr extract load address from data?
    */
-  Data(const std::vector<uint8_t> &inp) {
+  Data(const std::vector<uint8_t> &inp, bool exloadaddr) {
     if(inp.size() < 3) {
       throw std::underflow_error("not enough bytes for Data");
     }
-    loadaddr = (static_cast<uint16_t>(inp.at(1)) << 8) | inp.at(0);
-    data.resize(inp.size() - 2);
-    std::copy(inp.begin() + 2, inp.end(), data.begin());
+    if(exloadaddr) {
+      loadaddr = (static_cast<uint16_t>(inp.at(1)) << 8) | inp.at(0);
+      data.resize(inp.size() - 2);
+      std::copy(inp.begin() + 2, inp.end(), data.begin());
+    } else {
+      loadaddr = 0;
+      data.resize(inp.size());
+      std::copy(inp.begin(), inp.end(), data.begin());
+    }
   }
   /*! \brief get load address of data
    *

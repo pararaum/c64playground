@@ -40,6 +40,7 @@ const char *gengetopt_args_info_help[] = {
   "  -a, --algorithm=ENUM  crunching algorithm to use  (possible values=\"xipz\",\n                          \"qadz\" default=`xipz')",
   "  -j, --jump=INT        address to jump to (-1 = load address)  (default=`-1')",
   "  -p, --page=INT        maximum page to use +1  (default=`0xA0')",
+  "  -d, --data            input is raw data without a load address  (default=off)",
     0
 };
 
@@ -73,6 +74,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->algorithm_given = 0 ;
   args_info->jump_given = 0 ;
   args_info->page_given = 0 ;
+  args_info->data_given = 0 ;
 }
 
 static
@@ -86,6 +88,7 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->jump_orig = NULL;
   args_info->page_arg = 0xA0;
   args_info->page_orig = NULL;
+  args_info->data_flag = 0;
   
 }
 
@@ -100,6 +103,7 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->algorithm_help = gengetopt_args_info_help[3] ;
   args_info->jump_help = gengetopt_args_info_help[4] ;
   args_info->page_help = gengetopt_args_info_help[5] ;
+  args_info->data_help = gengetopt_args_info_help[6] ;
   
 }
 
@@ -283,6 +287,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "jump", args_info->jump_orig, 0);
   if (args_info->page_given)
     write_into_file(outfile, "page", args_info->page_orig, 0);
+  if (args_info->data_given)
+    write_into_file(outfile, "data", 0, 0 );
   
 
   i = EXIT_SUCCESS;
@@ -554,10 +560,11 @@ cmdline_parser_internal (
         { "algorithm",	1, NULL, 'a' },
         { "jump",	1, NULL, 'j' },
         { "page",	1, NULL, 'p' },
+        { "data",	0, NULL, 'd' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVra:j:p:", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVra:j:p:d", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -615,6 +622,16 @@ cmdline_parser_internal (
               &(local_args_info.page_given), optarg, 0, "0xA0", ARG_INT,
               check_ambiguity, override, 0, 0,
               "page", 'p',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'd':	/* input is raw data without a load address.  */
+        
+        
+          if (update_arg((void *)&(args_info->data_flag), 0, &(args_info->data_given),
+              &(local_args_info.data_given), optarg, 0, 0, ARG_FLAG,
+              check_ambiguity, override, 1, 0, "data", 'd',
               additional_error))
             goto failure;
         

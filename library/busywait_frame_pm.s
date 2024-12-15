@@ -1,5 +1,6 @@
 
 	.export	busywait_frame_pm
+	.export	_busywait_frame_pm=busywait_frame_pm
 
 busywait_frame_pm:
 	bit	$d011

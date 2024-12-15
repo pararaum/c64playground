@@ -108,6 +108,8 @@ get_int_variable:	.(
 	txa
 	ora #$80		;Integer variables have the highes bit set.
 	sta $46
+	;; https://www.c64-wiki.com/wiki/BASIC-ROM
+	;; https://skoolkid.github.io/sk6502/c64rom/asm/B08B.html
 	jsr $B0E7		;Find variable
 	;; Remember that variables are stored HIGH then LOW!
 	ldy #$00
