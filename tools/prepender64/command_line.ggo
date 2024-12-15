@@ -11,7 +11,6 @@ section "available modes"
 defmode "copy eor"       modedesc="copy the file and eor it with a value, the code is at the top of the text screen"
 defmode "copy eor stack" modedesc="copy the file and eor it with a value, the code is in the stack"
 defmode "do not spread"  modedesc="outputs the message 'do not spread' and then run the original"
-defmode "scrambler"	 modedesc="scramble the code with a 8-bit LFSR-like algorithm"
 defmode "scrambler16"	 modedesc="scramble the code with a 16-bit LFSR"
 
 modeoption "copy-eor"       - "copy and eor mode" mode="copy eor" required
@@ -20,6 +19,4 @@ modeoption "copy-eor-stack" - "copy and eor mode in stack" mode="copy eor stack"
 
 modeoption "donotspread"    - "do not spread message-mode" mode="do not spread" required
 
-modeoption "scrambler"	    - "scramble the code with a 8-bit LFSR-like algorithm" mode="scrambler"
-
-modeoption "scrambler16"    - "scramble the code with a 16-bit LFSR" mode="scrambler16"
+modeoption "scrambler"      - "scramble the code with a 16-bit LFSR" mode="scrambler16"
