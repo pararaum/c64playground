@@ -1,5 +1,5 @@
 package "XipZ"
-version "0.5.0"
+version "0.5.1"
 args	"--unnamed-opts"
 option	"raw"	r "output raw crunched data without header" flag off
 option	"algorithm"	a "crunching algorithm to use" values="xipz","qadz" enum default="xipz" optional
