@@ -83,15 +83,22 @@ std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadadd
 // 00000080  68 aa e8 20 57 01 a2 02  20 4a 01 4c f7 00 8a 18  |h.. W... J.L....|
 // 00000090  65 58 85 58 a5 59 69 00  85 59 60 8a 18 65 26 85  |eX.X.Yi..Y`..e&.|
 // 000000a0  26 a5 27 69 00 85 27 60                           |&.'i..'`|
-// 000000a8
+
+// Remember to add 2 to accomodate for the load address.
+// al 000037 .stubbeginofcdata_offset
+// al 00002A .stubdestination_offsetHI
+// al 000026 .stubdestination_offsetLO
+// al 000032 .stubendofcdata_offset
+// al 000042 .stubjump_offset
+// al 000031 .stubpageHI
+// al 000030 .stubpageLO
+// al 000030 .stubparameters_offset
 
   const int POS_OF_JMP = 0x44;
   const int POS_OF_END_OF_CDATA = 0x34;
-  //const int POS_OF_BEGIN_OF_CDATA = 0x39;
   const int POS_OF_DEST_LOW = 0x28;
   const int POS_OF_DEST_HIGH = 0x2c;
   unsigned endptr = stub.at(POS_OF_END_OF_CDATA) | (stub.at(POS_OF_END_OF_CDATA + 1) << 8);
-  // unsigned beginptr = stub.at(POS_OF_BEGIN_OF_CDATA) | (stub.at(POS_OF_BEGIN_OF_CDATA + 1) << 8);
   const int POS_OF_PAGEHI = 0x33; //High page +1.
   
   // Assign new end of compressed data.
