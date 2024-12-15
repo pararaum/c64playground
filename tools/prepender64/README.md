@@ -35,6 +35,10 @@ available modes:
  Mode: do not spread
   outputs the message 'do not spread' and then run the original
       --donotspread     do not spread message-mode
+
+ Mode: scrambler16
+  scramble the code with a 16-bit LFSR
+      --scrambler       scramble the code with a 16-bit LFSR
 ```
 
 Prepend a debug version of a program with a stub which shows the text
@@ -57,6 +61,11 @@ stack.
 ### Do Not Spread ###
 
 Print a message "Do not spread!" and perform the copying operation.
+
+### Scrambler ###
+
+This mode uses a 16bit-LFSR to encode the program. Use it last as the
+resulting file will probably be uncompressible...
 
 # Building #
 
