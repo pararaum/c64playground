@@ -28,11 +28,16 @@ tocopy_end:
 
 	.rodata
 parameters:
+	.export	stubpageLO=*-$801
+	.export	stubpageHI=*+1-$801
 	.word	ENDADDRESS
+	.export stubendofcdata_offset=*-$801
 	.word	tocopy_end
 	.byte	"t7d"
+	.export stubbeginofcdata_offset=*-$801
 	.word	tocopy
 parameters_end:
+	.export	stubparameters_offset=parameters-$801
 
 ;;; Decrunch routine for the qadz cruncher.
 ;;; Input: SRCPTR, DSTPTR, Y=0
@@ -44,6 +49,7 @@ decrunchdata:
 	bmi	backref		; Back reference and copy.
 	bne	literal		; This is a literal run
 	jmp	DEFAULTDESTINATIONADDR
+	stubjump = *-2
 literal:
 	tax			; Keep number of bytes safe.
 	tay			; Put number of bytes into index register.
@@ -109,6 +115,8 @@ incdst:				; increment by X
 	.reloc
 decrunchdata_end:
 
+	.export	stubjump_offset = decrunch::stubjump-DECRUNCHTARGET+decrunchdata-$801
+
 	.code
 _main:				; Must be the first code so that SYS works.
 	;; Copy the copy parameters.
@@ -129,7 +137,9 @@ _main:				; Must be the first code so that SYS works.
 	;; Y=0 here!
 	inc	SRCPTR+1	; Adjust to beginning of compressed data.
 	lda	#<DEFAULTDESTINATIONADDR
+	.export	stubdestination_offsetLO=*-1-$801
 	sta	DSTPTR
 	lda	#>DEFAULTDESTINATIONADDR
+	.export	stubdestination_offsetHI=*-1-$801
 	sta	DSTPTR+1
 	jmp	decrunch
