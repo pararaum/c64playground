@@ -30,9 +30,9 @@
 literal:
 	tax			; Keep number of bytes safe.
 	tay			; Put number of bytes into index register.
-	inc	XIPZSRCPTR	; increment src
+	inc	z:XIPZSRCPTR	; increment src
 	bne	litcop
-	inc	XIPZSRCPTR+1
+	inc	z:XIPZSRCPTR+1
 litcop:	lda	(XIPZSRCPTR),y
 	sta	(XIPZDSTPTR),y
 	dey
@@ -48,14 +48,14 @@ backref:
 	iny
 	lda	(XIPZSRCPTR),y	; How far to go back?
 	sta	@sbc		; Self-modifying trick.
-	lda	XIPZDSTPTR	; Subtract from DSTPTR and put into AUXPTR
+	lda	z:XIPZDSTPTR	; Subtract from DSTPTR and put into AUXPTR
 	sec
 	sbc	#00
 	@sbc = *-1
-	sta	XIPZAUXPTR
-	lda	XIPZDSTPTR+1
+	sta	z:XIPZAUXPTR
+	lda	z:XIPZDSTPTR+1
 	sbc	#0
-	sta	XIPZAUXPTR+1
+	sta	z:XIPZAUXPTR+1
 	;; Copy upward as we can have longer runs even if data is only partial. E.g. first byte is literal then set AUXPTR to DSTPTR-1 and copy for 100 or so bytes. This is essentially a run-length encoding for free.
 	ldy	#0		; Clear index Y, X has number of bytes.
 bckcop:	lda	(XIPZAUXPTR),y
@@ -73,20 +73,20 @@ incsrc:				; increment by X
 	txa
 incsrcA:
 	clc
-	adc	XIPZSRCPTR
-	sta	XIPZSRCPTR
-	lda	XIPZSRCPTR+1
+	adc	z:XIPZSRCPTR
+	sta	z:XIPZSRCPTR
+	lda	z:XIPZSRCPTR+1
 	adc	#0
-	sta	XIPZSRCPTR+1
+	sta	z:XIPZSRCPTR+1
 	rts
 incdst:				; increment by X
 	txa
 incdstA:
 	clc
-	adc	XIPZDSTPTR
-	sta	XIPZDSTPTR
-	lda	XIPZDSTPTR+1
+	adc	z:XIPZDSTPTR
+	sta	z:XIPZDSTPTR
+	lda	z:XIPZDSTPTR+1
 	adc	#0
-	sta	XIPZDSTPTR+1
+	sta	z:XIPZDSTPTR+1
 	rts
 .endproc
