@@ -65,9 +65,9 @@ litcop:	lda	(SRCPTR),y
 	jmp	decrunch
 backref:
 	eor	#$ff		; Negate A, see below
-	tax			; Keep run length safe.
-	pha			; Put run length - 1 (!) onto stack.
+	tax			; Keep run length safe in X.
 	inx			; see above, negate is eor #$ff, then +1
+	stx	sm_runlen	; Put run length self-modifying in code.
 	iny
 	lda	(SRCPTR),y	; How far to go back?
 	sta	@sbc		; Self-modifying trick.
@@ -86,15 +86,15 @@ bckcop:	lda	(AUXPTR),y
 	iny			; Now go to next byte.
 	dex			; Decrement the counter.
 	bpl	bckcop
-	pla			; run length - 1
-	tax
-	inx
-	jsr	incdst		; Adjust destination.
-	ldx	#2
-	jsr	incsrc		; Skip two bytes
+	lda	#0		; Placeholder for run length.
+	sm_runlen = *-1
+	jsr	incdstA		; Adjust destination.
+	lda	#2
+	jsr	incsrcA		; Skip two bytes
 	jmp	decrunch
 incsrc:				; increment by X
 	txa
+incsrcA:
 	clc
 	adc	SRCPTR
 	sta	SRCPTR
@@ -104,6 +104,7 @@ incsrc:				; increment by X
 	rts
 incdst:				; increment by X
 	txa
+incdstA:
 	clc
 	adc	DSTPTR
 	sta	DSTPTR
