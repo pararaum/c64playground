@@ -20,7 +20,7 @@ TARGET = $(PACKAGENAME)
 
 .PHONY:	all bin clean install pkg
 
-all:	stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc $(TARGET)
+all:	stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc $(TARGET)
 
 bin:	$(TARGET)
 
@@ -48,15 +48,14 @@ cmdline.c: command_line.ggo
 	cl65 -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $<
 	xxd -i $(basename $<) | tee $@
 	cat $@.label | awk '/stub/ { sub(/^./, "STUB$(shell echo $<| sed 's/stub-\([a-zA-Z0-9]\+\).*/\1/'|tr [a-z] [A-Z])", $$3); printf("#define %s 0x%s\n", $$3, $$2);}' | tee -a $@
-	rm $(basename $<)
 
 %.inc:	%.asm
-	64tass -o $(basename $<) -l $@.label -L $@.lst $<
+	64tass -o $(basename $<) --vice-labels -l $@.label -L $@.lst $<
 	xxd -i $(basename $<) | tee $@
-	cat $@.label | awk '/stub.*offset/ { sub(/=$$/, "", $$1); printf("#define STUBDONOTCOPY%s 0x%X\n", $$1, strtonum($$2));}' | tee -a $@
-	rm $(basename $<)
+	cat $@.label | awk '/stub/ { sub(/^./, "STUB$(shell echo $<| sed 's/stub-\([a-zA-Z0-9]\+\).*/\1/'|tr [a-z] [A-Z])", $$3); printf("#define %s 0x%s\n", $$3, $$2);}' | tee -a $@
 
 clean:
+	rm -f $(basename $(wildcard *.inc))
 	rm -f *.lst *.map *.label *.o *.inc
 	rm -rf html
 	rm -f $(TARGET) cmdline.?
