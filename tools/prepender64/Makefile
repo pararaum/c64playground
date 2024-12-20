@@ -2,11 +2,11 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
-VERSION = 0.5.1
+VERSION = 0.0.0
 #
-OBJS = cmdline.o qadz.o xipz.o
+OBJS = prepender64.o
 #
-PACKAGENAME=xipz
+PACKAGENAME=prepender64
 prefix = $(DESTDIR)/usr/local
 INSTALL=/usr/bin/install
 TMP=/tmp
@@ -16,12 +16,13 @@ datadir = $(datarootdir)
 bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
+TARGET = $(PACKAGENAME)
 
 .PHONY:	all bin clean install pkg
 
-all:	decrunchxipzstub.inc xipz
+all:	stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc $(TARGET)
 
-bin:	xipz
+bin:	$(TARGET)
 
 install:	bin doc
 	mkdir -p $(bindir)
@@ -43,30 +44,28 @@ doc:
 cmdline.c: command_line.ggo
 	gengetopt -i $+
 
-decrunchxipzstub:	decrunchxipzstub.s
-	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+%.inc:	%.s
+	cl65 -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $<
+	xxd -i $(basename $<) | tee $@
+	cat $@.label | awk '/stub/ { sub(/^./, "STUB$(shell echo $<| sed 's/stub-\([a-zA-Z0-9]\+\).*/\1/'|tr [a-z] [A-Z])", $$3); printf("#define %s 0x%s\n", $$3, $$2);}' | tee -a $@
+	rm $(basename $<)
 
-decrunchxipzstub.inc:	decrunchxipzstub
-	xxd -i $+ > $@
-	hd $+
-
-decrunchqadzstub.inc:	decrunchqadzstub
-	xxd -i $+ > $@
-	hd $+
-
-decrunchqadzstub:	decrunchqadzstub.s
-	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+%.inc:	%.asm
+	64tass -o $(basename $<) -l $@.label -L $@.lst $<
+	xxd -i $(basename $<) | tee $@
+	cat $@.label | awk '/stub.*offset/ { sub(/=$$/, "", $$1); printf("#define STUBDONOTCOPY%s 0x%X\n", $$1, strtonum($$2));}' | tee -a $@
+	rm $(basename $<)
 
 clean:
 	rm -f *.lst *.map *.label *.o *.inc
-	rm -f decrunchqadzstub decrunchxipzstub
-	rm -f xipz
 	rm -rf html
+	rm -f $(TARGET) cmdline.?
+	rm -f stub-copyeor
 
 distclean:
 	$(MAKE) clean
-	rm -f xipz.tbz
+	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
-xipz:	decrunchxipzstub.inc decrunchqadzstub.inc $(OBJS)
-	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS)
+$(TARGET): cmdline.o $(OBJS)
+	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $^
