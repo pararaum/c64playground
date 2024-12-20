@@ -20,7 +20,7 @@ TARGET = $(PACKAGENAME)
 
 .PHONY:	all bin clean install pkg
 
-all:	stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc $(TARGET)
+all:	bin
 
 bin:	$(TARGET)
 
@@ -66,5 +66,5 @@ distclean:
 	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
-$(TARGET): cmdline.o $(OBJS)
-	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+$(TARGET): stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(OBJS)
+	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter %.o, $^)

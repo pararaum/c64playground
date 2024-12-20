@@ -12,6 +12,7 @@
 #include "stub-copyeorstack.inc"
 #include "stub-donotspread.inc"
 #include "stub-scrambler16.inc"
+#include "stub-autostart326.inc"
 
 /*! \brief Input data type.
  *
@@ -422,15 +423,15 @@ public:
 			     // are wrong!
     // Add the size of the file to the value in the stub. This has to
     // point to the byte after the file.
-    stub.pokew(STUBDONOTCOPYstubsptr_data_end_offset, stub.peekw(STUBDONOTCOPYstubsptr_data_end_offset) + data.size());
+    stub.pokew(STUBDONOTSPREADstubsptr_data_end_offset, stub.peekw(STUBDONOTSPREADstubsptr_data_end_offset) + data.size());
     // Negated size of the file, only the 16 lowest bits are used.
-    stub.pokew(STUBDONOTCOPYstub10000_minus_datalen_offset, -data.size());
+    stub.pokew(STUBDONOTSPREADstub10000_minus_datalen_offset, -data.size());
     // Fix the destination address.
-    stub.pokew(STUBDONOTCOPYstubdptrDATADEST_offset, data.get_loadaddr().value());
+    stub.pokew(STUBDONOTSPREADstubdptrDATADEST_offset, data.get_loadaddr().value());
     // Fix the JMP address.
-    stub.pokew(STUBDONOTCOPYstubjump_to_offset, jump);
+    stub.pokew(STUBDONOTSPREADstubjump_to_offset, jump);
     // Set the EOR value.
-    stub[STUBDONOTCOPYstubeorvalue_offset] = eor;
+    stub[STUBDONOTSPREADstubeorvalue_offset] = eor;
     return stub;
   }
 };
@@ -462,6 +463,21 @@ public:
     stub.pokew(STUBSCRAMBLER16stubdptrDATADEST_offset, data.get_loadaddr().value());
     // Fix the JMP address.
     stub.pokew(STUBSCRAMBLER16stubjmp_offset, jump);
+    return stub;
+  }
+};
+
+
+class PrependAutostart326 : public PrependerWithJump {
+public:
+  PrependAutostart326() { }
+  virtual Data customise_stub(uint16_t jump, const Data &data) {
+    Data stub(&stub_autostart326[0], &stub_autostart326[stub_autostart326_len]);
+    stub.extract_loadaddr();
+    stub.pokew(STUBAUTOSTART326stubMVDEST_offset, data.get_loadaddr().value());
+    stub.pokew(STUBAUTOSTART326stubMVELEN_offset, data.size());
+    // Fix the JMP address.
+    stub.pokew(STUBAUTOSTART326stubJUMPDEST_offset, jump);
     return stub;
   }
 };
@@ -521,6 +537,9 @@ int main(int argc, char **argv) {
       } else if(args.scrambler16_mode_counter) {
 	auto newprepender = new PrependScrambler16;
 	prepender = std::unique_ptr<PrependScrambler16>(newprepender);
+      } else if(args.autostart_$326_mode_counter) {
+	auto newprepender = new PrependAutostart326;
+	prepender = std::unique_ptr<PrependAutostart326>(newprepender);
       }
       if(args.jump_given) {
 	auto jmp = args.jump_arg & 0xFFFF;

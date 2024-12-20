@@ -1,7 +1,7 @@
 PAYLOAD_DESTINATION=$0801
 PAYLOAD_JUMP=$080d
 srcptr=$5C			; Source pointer in ZP
-destptr=$5d			; Destination pointer in ZP
+destptr=$5E			; Destination pointer in ZP
 STUBSTART=$326
 	*=STUBSTART
 
@@ -14,18 +14,19 @@ STUBSTART=$326
 	.word $f4a5	;$330 kernal load routine ($f4a5)
 	.word $f5ed	;$332 kernal save routine ($f5ed)
 
+JUMP:	.word	PAYLOAD_JUMP
+
 	;; Copy routine: L.A. Leventhal, W. Saville, "6502 Assembly Language Subroutines", Osborne/McGraw-Hill, 1982, p. 201.
 MVSRCE:	.word	payload_begin
 MVDEST:	.word	PAYLOAD_DESTINATION
 MVELEN:	.word	payload_end-payload_begin
-JUMP:	.word	PAYLOAD_JUMP
 boot:
 	;; Initialise pointers.
 	lda	MVSRCE
 	sta	srcptr
 	lda	MVDEST
 	sta	destptr
-	lda	MVSRCE+1
+	lda	MVELEN+1
 	pha
 	clc
 	adc	MVSRCE+1
@@ -48,8 +49,8 @@ only_full_pages:
 mr1:	dec	srcptr+1
 	dec	destptr+1
 mr2:	dey
-	lda	(srcptr)+1
-	sta	(destptr)+1
+	lda	(srcptr),y
+	sta	(destptr),y
 	cpy	#0
 	bne	mr2
 	sta	$d020
@@ -58,7 +59,7 @@ mr2:	dey
 mrexit:	jmp	(JUMP)
 
 payload_begin:
-	.fill	$80, $60
+	;; 	.fill	$80, $60
 payload_end:
 
 stubMVSRCE_offset = MVSRCE-STUBSTART
