@@ -4,7 +4,7 @@ CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
 VERSION = 0.0.0
 #
-OBJS = prepender64.o
+OBJS = cmdline.o prepender64.o
 #
 PACKAGENAME=prepender64
 prefix = $(DESTDIR)/usr/local
@@ -22,7 +22,7 @@ TARGET = $(PACKAGENAME)
 
 all:	bin
 
-bin:	$(TARGET)
+bin:	cmdline.c $(TARGET)
 
 install:	bin doc
 	mkdir -p $(bindir)
@@ -66,5 +66,7 @@ distclean:
 	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
-$(TARGET): stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(OBJS)
+$(TARGET).o: stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(TARGET).cc
+
+$(TARGET): $(OBJS)
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter %.o, $^)
