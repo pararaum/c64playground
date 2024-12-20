@@ -1,4 +1,5 @@
 ;;; Format a track, the track number is used for writing the information onto the disk, a SEEK should be performed first? See R. Immers, G.G. Neufeld, "Inside Commodore DOS", Datamost, 1984, p. 103.
+;;; Formatting code inspired by Gelfand, Felt, Strauch, Krsnik, "Das Anti-Crackerbuch", Data Becker, 1987, p. 248.
 	.include	"t7d/kernal.i"
 	.include	"LAMAlib-macros16.inc"
 
