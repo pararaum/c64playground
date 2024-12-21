@@ -199,6 +199,9 @@ public:
     ret |= operator[](addr); // Get LO byte.
     return ret;
   }
+  void poke(unsigned int addr, uint8_t val) {
+    data.at(addr) = val;
+  }
   void pokew(unsigned int addr, uint16_t val) {
     data[addr] = val;
     data[addr  + 1] = val >> 8;
@@ -493,7 +496,9 @@ public:
     stub.pokew(STUBVCCLOGOstubMVDEST_offset, data.get_loadaddr().value());
     stub.pokew(STUBVCCLOGOstubMVELEN_offset, data.size());
     // Fix the JMP address. This time, we use the return via RTS trick!
-    stub.pokew(STUBVCCLOGOstubJUMPVIARTS_offset, jump - 1);
+    auto jumpviarts = jump - 1;
+    stub.poke(STUBVCCLOGOstubJUMPVIARTSHI_offset, jumpviarts >> 8);
+    stub.poke(STUBVCCLOGOstubJUMPVIARTSLO_offset, jumpviarts & 0xFF);
     return stub;
   }
 };

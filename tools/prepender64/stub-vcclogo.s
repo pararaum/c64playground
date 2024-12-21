@@ -1,5 +1,6 @@
 
-	.export	stubJUMPVIARTS_offset = JUMPVIARTS-$0801
+	.export	stubJUMPVIARTSLO_offset = JUMPVIARTSLO-$0801
+	.export	stubJUMPVIARTSHI_offset = JUMPVIARTSHI-$0801
 	.export	stubMVDEST_offset = MVDEST-$0801
 	.export	stubMVELEN_offset = MVELEN-$0801
 
@@ -22,7 +23,6 @@ data_end:
 MVSRCE:	.word	data_begin
 MVDEST:	.word	$0801
 MVELEN:	.word	data_end-data_begin
-JUMPVIARTS:	.word	64738-1
 
 	.rodata
 stackstub:
@@ -70,9 +70,11 @@ stackstub_len=stackstub_end-stackstub
 	.code
 main:	sei
 	;; Prepare stack for RTS
-	lda	JUMPVIARTS+1
+	lda	#>(64738-1)
+	JUMPVIARTSHI=*-1
 	pha
-	lda	JUMPVIARTS
+	lda	#<(64738-1)
+	JUMPVIARTSLO=*-1
 	pha
 	;; Get old memory configuration.
 	lda	1
