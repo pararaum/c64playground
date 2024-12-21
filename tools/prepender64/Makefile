@@ -22,7 +22,7 @@ TARGET = $(PACKAGENAME)
 
 all:	bin
 
-bin:	cmdline.c $(TARGET)
+bin:	vcclogo.prg cmdline.c $(TARGET)
 
 install:	bin doc
 	mkdir -p $(bindir)
@@ -44,6 +44,9 @@ doc:
 cmdline.c: command_line.ggo
 	gengetopt -i $+
 
+%.prg:	vcclogo.petscii.c
+	petscii2x.py -f LIST -s -o $@ $^
+
 %.inc:	%.s
 	cl65 -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $<
 	xxd -i $(basename $<) | tee $@
@@ -56,17 +59,16 @@ cmdline.c: command_line.ggo
 
 clean:
 	rm -f $(basename $(wildcard *.inc))
-	rm -f *.lst *.map *.label *.o *.inc
+	rm -f *.lst *.map *.label *.o *.inc *.prg
 	rm -rf html
 	rm -f $(TARGET) cmdline.?
-	rm -f stub-copyeor
 
 distclean:
 	$(MAKE) clean
 	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
-$(TARGET).o: stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(TARGET).cc
+$(TARGET).o: stub-vcclogo.inc stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(TARGET).cc
 
 $(TARGET): $(OBJS)
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter %.o, $^)

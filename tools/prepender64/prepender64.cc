@@ -13,6 +13,7 @@
 #include "stub-donotspread.inc"
 #include "stub-scrambler16.inc"
 #include "stub-autostart326.inc"
+#include "stub-vcclogo.inc"
 
 /*! \brief Input data type.
  *
@@ -483,6 +484,21 @@ public:
 };
 
 
+class PrependVCCLogo : public PrependerWithJump {
+public:
+  PrependVCCLogo() { }
+  virtual Data customise_stub(uint16_t jump, const Data &data) {
+    Data stub(&stub_vcclogo[0], &stub_vcclogo[stub_vcclogo_len]);
+    stub.extract_loadaddr();
+    stub.pokew(STUBVCCLOGOstubMVDEST_offset, data.get_loadaddr().value());
+    stub.pokew(STUBVCCLOGOstubMVELEN_offset, data.size());
+    // Fix the JMP address. This time, we use the return via RTS trick!
+    stub.pokew(STUBVCCLOGOstubJUMPVIARTS_offset, jump - 1);
+    return stub;
+  }
+};
+
+
 int main(int argc, char **argv) {
   gengetopt_args_info args;
   int ret = -1;
@@ -540,6 +556,9 @@ int main(int argc, char **argv) {
       } else if(args.autostart_$326_mode_counter) {
 	auto newprepender = new PrependAutostart326;
 	prepender = std::unique_ptr<PrependAutostart326>(newprepender);
+      } else if(args.vcclogo_mode_counter) {
+	auto newprepender = new PrependVCCLogo;
+	prepender = std::unique_ptr<PrependVCCLogo>(newprepender);
       }
       if(args.jump_given) {
 	auto jmp = args.jump_arg & 0xFFFF;
