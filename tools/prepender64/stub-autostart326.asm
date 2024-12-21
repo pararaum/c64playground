@@ -20,7 +20,11 @@ JUMP:	.word	PAYLOAD_JUMP
 MVSRCE:	.word	payload_begin
 MVDEST:	.word	PAYLOAD_DESTINATION
 MVELEN:	.word	payload_end-payload_begin
-boot:
+boot:	sei
+	lda	1
+	pha
+	lda	#$34
+	sta	1
 	;; Initialise pointers.
 	lda	MVSRCE
 	sta	srcptr
@@ -56,6 +60,9 @@ mr2:	dey
 	sta	$d020
 	dex
 	bne	mr1
+	pla
+	sta	1
+	cli
 mrexit:	jmp	(JUMP)
 
 payload_begin:
