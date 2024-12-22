@@ -1,5 +1,7 @@
 ;;; Format a track, the track number is used for writing the information onto the disk, a SEEK should be performed first? See R. Immers, G.G. Neufeld, "Inside Commodore DOS", Datamost, 1984, p. 103.
 ;;; Formatting code inspired by Gelfand, Felt, Strauch, Krsnik, "Das Anti-Crackerbuch", Data Becker, 1987, p. 248.
+;;; 
+;;; Run: x64 -drive8extend 2  -drivesound -drive8truedrive formattrack.01
 	.include	"t7d/kernal.i"
 	.include	"LAMAlib-macros16.inc"
 
@@ -108,7 +110,15 @@ drivecode:
 	sta	$601
 	lda	#>format
 	sta	$602
-	lda	#1		; Track number.
+	lda	#37		; Track number.
+	sta	$c
+	lda	#1
+	sta	$d		; Sector 1?
+	lda	#$b0		; SEEK, R. Immers et al, "Inside Commdore DOS", Datamost, 1984, p. 103.
+	sta	$3		; Job for Buffer #3.
+@job:	lda	$3
+	bmi	@job
+	lda	#37		; Track number.
 	sta	$c
 	lda	#$e0		; Execute Program.
 	sta	$03
