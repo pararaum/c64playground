@@ -1,6 +1,7 @@
 ;;; Format a track, the track number is used for writing the information onto the disk, a SEEK should be performed first? See R. Immers, G.G. Neufeld, "Inside Commodore DOS", Datamost, 1984, p. 103.
 ;;; Formatting code inspired by Gelfand, Felt, Strauch, Krsnik, "Das Anti-Crackerbuch", Data Becker, 1987, p. 248.
 ;;; 
+;;; Build: docker run -u 1000:uucp --rm -it -v $PWD:/host -w /host vintagecomputingcarinthia/c64build cl65 -tc64 -C c64-asm.cfg -l /dev/stdout formattrack.02.s
 ;;; Run: x64 -drive8extend 2  -drivesound -drive8truedrive formattrack.01
 	.include	"t7d/kernal.i"
 	.include	"LAMAlib-macros16.inc"
