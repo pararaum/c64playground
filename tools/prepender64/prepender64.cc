@@ -577,6 +577,7 @@ int main(int argc, char **argv) {
       if(prepender) {
 	prepender->prepend(outnam, data);
 	std::cout << "🎵I am the great prepender🎶...\n";
+	ret = 0;
       } else {
 	std::cerr << "Error! A mode must be selected!\n";
       }
