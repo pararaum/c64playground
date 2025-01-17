@@ -39,6 +39,14 @@ available modes:
  Mode: scrambler16
   scramble the code with a 16-bit LFSR
       --scrambler       scramble the code with a 16-bit LFSR
+
+ Mode: autostart $326
+  autostart with code in the cassette buffer
+      --autostart326    autostart at $326
+
+ Mode: vcclogo
+  prepend a VCC logo
+      --vcclogo         prepend VCC logo
 ```
 
 Prepend a debug version of a program with a stub which shows the text

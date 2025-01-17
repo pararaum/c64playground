@@ -23,6 +23,6 @@ modeoption "donotspread"    - "do not spread message-mode" mode="do not spread" 
 
 modeoption "scrambler"      - "scramble the code with a 16-bit LFSR" mode="scrambler16"
 
-modeoption "autostart326"   - "autostart at $316" mode="autostart $326"
+modeoption "autostart326"   - "autostart at $326" mode="autostart $326"
 
 modeoption "vcclogo"	    - "prepend VCC logo" mode="vcclogo"
