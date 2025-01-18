@@ -4,7 +4,7 @@ CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
 VERSION = 0.0.0
 #
-OBJS = prepender64.o
+OBJS = cmdline.o prepender64.o
 #
 PACKAGENAME=prepender64
 prefix = $(DESTDIR)/usr/local
@@ -20,52 +20,55 @@ TARGET = $(PACKAGENAME)
 
 .PHONY:	all bin clean install pkg
 
-all:	stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc $(TARGET)
+all:	bin
 
-bin:	$(TARGET)
+bin:	vcclogo.prg cmdline.c $(TARGET)
 
 install:	bin doc
 	mkdir -p $(bindir)
 	mkdir -p $(docdir)
-	$(INSTALL) -p -s xipz $(bindir)
+	$(INSTALL) -p -s $(TARGET) $(bindir)
 	cp -r README.md html $(docdir)
 
 pkg:	bin doc
-	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' command_line.ggo
-	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
-	mkdir $(PKGTMP)/xipz-$(VERSION)
-	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
-	cp -r html $(PKGTMP)/xipz-$(VERSION)
-	tar -C $(PKGTMP) -cjf xipz.tbz xipz-$(VERSION)
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $(PACKAGENAME).ggo
+	$(eval PKGTMP := $(shell mktemp -d /tmp/$(PACKAGENAME)-🖬-XXXXXXX))
+	mkdir $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	$(INSTALL) -p -s $(PACKAGENAME) $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	cp -r html $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	tar -C $(PKGTMP) -cjf $(PACKAGENAME).tbz $(PACKAGENAME)-$(VERSION)
 
 doc:
 	doxygen
 
-cmdline.c: command_line.ggo
+cmdline.c: prepender64.ggo
 	gengetopt -i $+
+
+%.prg:	vcclogo.petscii.c
+	petscii2x.py -f LIST -s -o $@ $^
 
 %.inc:	%.s
 	cl65 -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $<
 	xxd -i $(basename $<) | tee $@
 	cat $@.label | awk '/stub/ { sub(/^./, "STUB$(shell echo $<| sed 's/stub-\([a-zA-Z0-9]\+\).*/\1/'|tr [a-z] [A-Z])", $$3); printf("#define %s 0x%s\n", $$3, $$2);}' | tee -a $@
-	rm $(basename $<)
 
 %.inc:	%.asm
-	64tass -o $(basename $<) -l $@.label -L $@.lst $<
+	64tass -o $(basename $<) --vice-labels-numeric -l $@.label -L $@.lst $<
 	xxd -i $(basename $<) | tee $@
-	cat $@.label | awk '/stub.*offset/ { sub(/=$$/, "", $$1); printf("#define STUBDONOTCOPY%s 0x%X\n", $$1, strtonum($$2));}' | tee -a $@
-	rm $(basename $<)
+	cat $@.label | awk '/stub.*offset/ { sub(/^./, "STUB$(shell echo $<| sed 's/stub-\([a-zA-Z0-9]\+\).*/\1/'|tr [a-z] [A-Z])", $$3); printf("#define %s 0x%s\n", $$3, $$2);}' | tee -a $@
 
 clean:
-	rm -f *.lst *.map *.label *.o *.inc
+	rm -f $(basename $(wildcard *.inc))
+	rm -f *.lst *.map *.label *.o *.inc *.prg
 	rm -rf html
 	rm -f $(TARGET) cmdline.?
-	rm -f stub-copyeor
+	rm -f $(PACKAGENAME).tbz
 
 distclean:
 	$(MAKE) clean
-	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
-$(TARGET): cmdline.o $(OBJS)
-	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+$(TARGET).o: stub-vcclogo.inc stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(TARGET).cc
+
+$(TARGET): $(OBJS)
+	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter %.o, $^)
