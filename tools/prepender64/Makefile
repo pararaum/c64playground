@@ -62,10 +62,10 @@ clean:
 	rm -f *.lst *.map *.label *.o *.inc *.prg
 	rm -rf html
 	rm -f $(TARGET) cmdline.?
+	rm -f $(PACKAGENAME).tbz
 
 distclean:
 	$(MAKE) clean
-	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
 $(TARGET).o: stub-vcclogo.inc stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(TARGET).cc
