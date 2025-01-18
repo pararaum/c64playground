@@ -15,6 +15,11 @@
 #include "stub-autostart326.inc"
 #include "stub-vcclogo.inc"
 
+/*! \file
+ *
+ * Prepend a stub to C64 .prg-files. See README.md for description.
+ */
+
 /*! \brief Input data type.
  *
  * This class stores the loaded data and extracts the optional
@@ -22,13 +27,13 @@
  */
 class Data {
 public:
-  typedef std::deque<uint8_t> container_type;
-  typedef container_type::const_iterator const_iterator;
-  typedef container_type::iterator iterator;
-  typedef container_type::size_type size_type;
+  typedef std::deque<uint8_t> container_type; //!< Container type for the data, a std::deque is used in order to handle prepending and appending smoothly.
+  typedef container_type::const_iterator const_iterator; //!< Constant interator taken from conatainer_type.
+  typedef container_type::iterator iterator; //!< Interator taken from conatainer_type.
+  typedef container_type::size_type size_type; //!< Size type taken from conatainer_type.
 protected:
-  std::optional<uint16_t> loadaddr; //!< original load address if given
-  container_type data; //!< binary data without the load address
+  std::optional<uint16_t> loadaddr; //!< Original load address if given.
+  container_type data; //!< Binary data without the load address.
 
 public:
   /*! \brief Default Constructor
@@ -41,6 +46,13 @@ public:
    * \param inp raw binary data
    */
   Data(const std::vector<uint8_t> &inp) : data(inp.begin(), inp.end()) { }
+  /*! \brief Constructor with raw binary data as input.
+   *
+   * Constructs the objects with the given binary data.
+   *
+   * \param beginitr pointer to the first byte
+   * \param enditr pointer after the last byte
+   */
   Data(const unsigned char *beginitr, const unsigned char *enditr) : data(enditr - beginitr) {
     std::copy(beginitr, enditr, data.begin());
   }
@@ -84,7 +96,7 @@ public:
     }
     return load(inp);
   }
-  /*! join data with other data block
+  /*! \brief Join data with other data block.
    *
    * Extends the self data block to fit both myself and the other data
    * block. Then the data is copied from the other block into the self
@@ -193,6 +205,12 @@ public:
   uint8_t operator[](unsigned int i) const { return data.at(i); }
   uint8_t &operator[](unsigned int i) { return data.at(i); }
   uint8_t &back() { return data.back(); }
+  /*! Peek a 16 bit value
+   *
+   * The data is peeked as a little endian value.
+   *
+   * \param addr offset into the data
+   */
   uint16_t peekw(unsigned int addr) const {
     uint16_t ret = operator[](addr + 1); // Get HI byte.
     ret <<= 8; // Move to the right bit position.
@@ -227,7 +245,6 @@ public:
     return out;
   }
 };
-
 
 
 /*! \brief Base function with interface for the prepender
@@ -314,6 +331,11 @@ public:
 };
 
 
+/*! \brief Base class for Prependers which extract their jump address.
+ *
+ * This prepender will extract a jump adddress from the BASIC SYS-line
+ * and will use this address to jump to after copying.
+ */
 class PrependerWithJump : public PrependerBase {
 protected:
   std::optional<uint16_t> jmp; //!< Jump address. If not set it is deduced from the SYS line.
@@ -324,8 +346,11 @@ public:
    */
   void set_jump(uint16_t x) { jmp = x; }
 
-  /*!
+  /*! \brief Get the jump address from SYS.
    *
+   * \throws std::runtime_error if the SYS line could not be parsed or found
+   * \param data binary data to parse
+   * \return jump address 
    */
   virtual uint16_t get_jump_address(const Data &data) {
     if(!jmp && (data.get_loadaddr() == 0x0801)) {
@@ -504,6 +529,13 @@ public:
 };
 
 
+/*! main entry point
+ *
+ * Parse the command-line parameters, see \ref cmdline.h, initialise
+ * the corresponding prepender object and link together all files
+ * given on the commandline. Then prepend the stub and write the
+ * output.
+ */
 int main(int argc, char **argv) {
   gengetopt_args_info args;
   int ret = -1;

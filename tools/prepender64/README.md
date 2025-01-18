@@ -19,7 +19,8 @@ Usage: Prepender64 [OPTION]... [FILE]...
                           .prep suffix
   -j, --jump=INT        address to jump to (-1 = SYS address)  (default=`-1')
   -J, --loadjump        jump to the load address  (default=off)
-  -e, --eor=INT         eor value to obfuscate  (default=`0')
+  -e, --eor=INT         eor value used to obfuscate, if applicable
+                          (default=`0')
 
 available modes:
 
@@ -39,6 +40,14 @@ available modes:
  Mode: scrambler16
   scramble the code with a 16-bit LFSR
       --scrambler       scramble the code with a 16-bit LFSR
+
+ Mode: autostart $326
+  autostart with code in the cassette buffer
+      --autostart326    autostart at $326
+
+ Mode: vcclogo
+  prepend a VCC logo
+      --vcclogo         prepend VCC logo
 ```
 
 Prepend a debug version of a program with a stub which shows the text
@@ -62,11 +71,49 @@ stack.
 
 Print a message "Do not spread!" and perform the copying operation.
 
-### Scrambler ###
+### Scrambler16 ###
 
 This mode uses a 16bit-LFSR to encode the program. Use it last as the
 resulting file will probably be uncompressible...
 
+### Autostart $326 ###
+
+Autostart a programm via the CHROUT vector.
+
+### VCC Logo ###
+
+Prepend a VCC logo as a LIST-Art.
+
+# Docker Image #
+
+In the VCC C64 build-tools Docker image the current version of the
+`Prepender64` is available for convenience usage. The Docker image is
+available as "vintagecomputingcarinthia/c64build", see
+https://hub.docker.com/r/vintagecomputingcarinthia/c64build. Just use
+`docker pull docker pull vintagecomputingcarinthia/c64build:latest`
+for the latest image.
+
+In order to get the help use the following command line:
+
+```
+docker run --rm -it vintagecomputingcarinthia/c64build prepender64 -h
+```
+
+As an example we will prepend a simple copy-eor-stub to our ["Hand Watch You"](https://csdb.dk/release/?id=226332 "https://csdb.dk/release/?id=226332") demo:
+
+```
+docker run -u 1000:uucp --rm -it -v $PWD:/host -w /host vintagecomputingcarinthia/c64build prepender64 --copy-eor hands_watch_you.prg
+```
+
+This will give the following output:
+
+	Prepender64 Version 0.0.0
+	24871 bytes have been read.
+	Load address is $0801.
+	Data is from $0801 to $6925 (24869 $6125 bytes).
+	Determined a value of $080D (2061) for JMP from SYS line.
+	🎵I am the great prepender🎶...
+
 # Building #
 
-A C++ compiler is needed, build with `make`.
+A C++ compiler, `gengetopt` are needed, build with `make`.

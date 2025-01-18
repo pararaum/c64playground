@@ -4,7 +4,7 @@ args	"--unnamed-opts"
 option 	"output"	 o "output file name, defaults to first input filename with .prep suffix" string	optional
 option	"jump"		 j "address to jump to (-1 = SYS address)" int default="-1" optional
 option	"loadjump"	 J "jump to the load address" flag off
-option	"eor"		 e "eor value to obfuscate" int default="0" optional
+option	"eor"		 e "eor value used to obfuscate, if applicable" int default="0" optional
 
 section "available modes"
 
@@ -23,6 +23,6 @@ modeoption "donotspread"    - "do not spread message-mode" mode="do not spread" 
 
 modeoption "scrambler"      - "scramble the code with a 16-bit LFSR" mode="scrambler16"
 
-modeoption "autostart326"   - "autostart at $316" mode="autostart $326"
+modeoption "autostart326"   - "autostart at $326" mode="autostart $326"
 
 modeoption "vcclogo"	    - "prepend VCC logo" mode="vcclogo"

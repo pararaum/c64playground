@@ -27,21 +27,21 @@ bin:	vcclogo.prg cmdline.c $(TARGET)
 install:	bin doc
 	mkdir -p $(bindir)
 	mkdir -p $(docdir)
-	$(INSTALL) -p -s xipz $(bindir)
+	$(INSTALL) -p -s $(TARGET) $(bindir)
 	cp -r README.md html $(docdir)
 
 pkg:	bin doc
-	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' command_line.ggo
-	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
-	mkdir $(PKGTMP)/xipz-$(VERSION)
-	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
-	cp -r html $(PKGTMP)/xipz-$(VERSION)
-	tar -C $(PKGTMP) -cjf xipz.tbz xipz-$(VERSION)
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $(PACKAGENAME).ggo
+	$(eval PKGTMP := $(shell mktemp -d /tmp/$(PACKAGENAME)-🖬-XXXXXXX))
+	mkdir $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	$(INSTALL) -p -s $(PACKAGENAME) $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	cp -r html $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	tar -C $(PKGTMP) -cjf $(PACKAGENAME).tbz $(PACKAGENAME)-$(VERSION)
 
 doc:
 	doxygen
 
-cmdline.c: command_line.ggo
+cmdline.c: prepender64.ggo
 	gengetopt -i $+
 
 %.prg:	vcclogo.petscii.c
@@ -62,10 +62,10 @@ clean:
 	rm -f *.lst *.map *.label *.o *.inc *.prg
 	rm -rf html
 	rm -f $(TARGET) cmdline.?
+	rm -f $(PACKAGENAME).tbz
 
 distclean:
 	$(MAKE) clean
-	rm -f $(PACKAGENAME).tbz
 	rm -f cmdline.*
 
 $(TARGET).o: stub-vcclogo.inc stub-autostart326.inc stub-scrambler16.inc stub-copyeor.inc stub-copyeorstack.inc stub-donotspread.inc cmdline.o $(TARGET).cc
