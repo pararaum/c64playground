@@ -19,7 +19,8 @@ Usage: Prepender64 [OPTION]... [FILE]...
                           .prep suffix
   -j, --jump=INT        address to jump to (-1 = SYS address)  (default=`-1')
   -J, --loadjump        jump to the load address  (default=off)
-  -e, --eor=INT         eor value to obfuscate  (default=`0')
+  -e, --eor=INT         eor value used to obfuscate, if applicable
+                          (default=`0')
 
 available modes:
 
@@ -70,10 +71,18 @@ stack.
 
 Print a message "Do not spread!" and perform the copying operation.
 
-### Scrambler ###
+### Scrambler16 ###
 
 This mode uses a 16bit-LFSR to encode the program. Use it last as the
 resulting file will probably be uncompressible...
+
+### Autostart $326 ###
+
+Autostart a programm via the CHROUT vector.
+
+### VCC Logo ###
+
+Prepend a VCC logo as a LIST-Art.
 
 # Building #
 
