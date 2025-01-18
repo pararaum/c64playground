@@ -62,6 +62,7 @@ mr2:	dey
 	bne	mr1
 	pla
 	sta	1
+	jsr	$FF8A		; RESTOR, restore vector table.
 	cli
 mrexit:	jmp	(JUMP)
 
