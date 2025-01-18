@@ -41,7 +41,7 @@ pkg:	bin doc
 doc:
 	doxygen
 
-cmdline.c: command_line.ggo
+cmdline.c: prepender64.ggo
 	gengetopt -i $+
 
 %.prg:	vcclogo.petscii.c
