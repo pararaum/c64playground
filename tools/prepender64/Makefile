@@ -27,16 +27,16 @@ bin:	vcclogo.prg cmdline.c $(TARGET)
 install:	bin doc
 	mkdir -p $(bindir)
 	mkdir -p $(docdir)
-	$(INSTALL) -p -s xipz $(bindir)
+	$(INSTALL) -p -s $(TARGET) $(bindir)
 	cp -r README.md html $(docdir)
 
 pkg:	bin doc
-	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' command_line.ggo
-	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
-	mkdir $(PKGTMP)/xipz-$(VERSION)
-	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
-	cp -r html $(PKGTMP)/xipz-$(VERSION)
-	tar -C $(PKGTMP) -cjf xipz.tbz xipz-$(VERSION)
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $(PACKAGENAME).ggo
+	$(eval PKGTMP := $(shell mktemp -d /tmp/$(PACKAGENAME)-🖬-XXXXXXX))
+	mkdir $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	$(INSTALL) -p -s $(PACKAGENAME) $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	cp -r html $(PKGTMP)/$(PACKAGENAME)-$(VERSION)
+	tar -C $(PKGTMP) -cjf $(PACKAGENAME).tbz $(PACKAGENAME)-$(VERSION)
 
 doc:
 	doxygen
