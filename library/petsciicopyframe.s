@@ -1,6 +1,8 @@
 	.include	"t7d/petsciicopy.i"
 	.include	"LAMAlib-macros16.inc"
 
+;;; TODO: check and compare with theatre.copy_petscii_frame.s and theatre.theatre_copy_compressed_frame.s.
+
 	.import	ptr1
 
 petsciicopyframe:
