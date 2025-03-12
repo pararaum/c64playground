@@ -28,5 +28,5 @@
 ;;; Update the sprite positions with the known velocities.
 ;;; Input: -
 ;;; Output: -
-;;; Modifies:
+;;; Modifies: A,X
 	.global sprX2E_update_sprites

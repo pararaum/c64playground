@@ -54,6 +54,24 @@
 	.endmacro
 
 
+;;; Memory fill macro for up to 255 bytes.
+;;;
+;;; Input:
+;;;	srcaddr=pointer to the source,
+;;;	size=Number of bytes to copy -- Warning! Only low byte used!
+;;;	value=value to "poke" into memory,
+;;; Modifies: A, X
+;;; Output: value
+	.macro	SmallMemSet	value,size,dstaddr
+	.local	@loop
+	ldx	#<(size)
+	lda	#value
+@loop:	sta	0+(dstaddr)-1,x
+	dex
+	bne	@loop
+	.endmacro
+
+
 ;;; Memory copy macro for up to 256 bytes with pointer initialisation.
 ;;; The source and destination pointers are not changed and can be reused.
 ;;;
