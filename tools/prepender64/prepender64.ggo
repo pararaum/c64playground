@@ -1,5 +1,5 @@
 package "Prepender64"
-version "0.0.0"
+version "0.1.0"
 args	"--unnamed-opts"
 option 	"output"	 o "output file name, defaults to first input filename with .prep suffix" string	optional
 option	"jump"		 j "address to jump to (-1 = SYS address)" int default="-1" optional
