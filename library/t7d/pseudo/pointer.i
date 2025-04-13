@@ -20,3 +20,31 @@
 	jmp	*+6		;3
 	jmp	(ptr)		;3
 	.endmacro
+
+	.macro	IncrementAndLoad ptr
+	.local	@skip
+	inc	0+(ptr)
+	bne	@skip
+	inc	1+(ptr)
+	@skip:
+	lda	(ptr),y
+	.endmacro
+
+	.macro	IncrementAndYLoad ptr
+	ldy	#0
+	IncrementAndLoad ptr
+	.endmacro
+
+
+;;; Increment a pointer and load a value, Y register is leaved unchanged.
+;;; Input: ptr1
+;;; Modifies: A, ptr1
+;;; Output: ptr1=increment by 1, A=byte pointed to by ptr1
+	.global	increment_and_load_ptr1
+
+
+;;; Increment a pointer and load a value, Y is set to zero.
+;;; Input: ptr1
+;;; Modifies: A, Y, ptr1
+;;; Output: ptr1=increment by 1, A=byte pointed to by ptr1, Y=0
+	.global increment_and_y_load_ptr1

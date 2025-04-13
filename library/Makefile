@@ -21,7 +21,10 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
 	theatre.until_frame.o theatre.o theatre.copy_petscii_frame.o theatre.sprite_animation.o theatre.textfunctions.o theatre.wait_frames.o draw_frame.o window_chrout.o window_parameters.o theatre.theatre_copy_compressed_frame.o theatre.theatre_switch_to_windowed.o \
 	pudecrunch.o zx02decrunch.o \
 	output_long_string.o \
+	output_string_deluxe.o \
+	increment_and_load_ptr1.o \
 	clear_memory.o clear_memory_progmem.o \
+	memsetAX.o \
 	copy_memory_downwards_ip.o memcpy_down.o \
 	spritecanvas3X4.o \
 	petsciicopyframe.o \

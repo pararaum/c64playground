@@ -27,3 +27,23 @@
 ;;; Modifies: A
 ;;; Output: -
 	.import	output_long_string
+
+
+
+;;; Output a string usr CHROUT, deluxe variant.
+;;;	Control characters are just passed to CHROUT, but Return ($0D)
+;	moves the cursor to the next line within the preselected
+;	window. Warning! Clear screen $93 will clear the whole screen!
+;;; 
+;;; An special code is the PETSCII code $01, other wise unused, this
+;;; will reread the window parameters in the next four bytes.
+;;; 
+;;; Input: Parameters are passed via program memory (bytes after the JSR)
+;;;	- X-position
+;;;	- Y-position
+;;;	- width
+;;;	- height
+;;; 	- text, ends with a null byte ($0)
+;;; Modifies: A, X, Y, ptr1
+;;; Output: -
+	.import output_string_deluxe

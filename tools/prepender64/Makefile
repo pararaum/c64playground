@@ -1,8 +1,8 @@
 #! /usr/bin/make -f
 
-CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
+CXXFLAGS = -std=c++20 -DNDEBUG -Wall -O2 -Wextra
 
-VERSION = 0.0.0
+VERSION = 0.1.0
 #
 OBJS = cmdline.o prepender64.o
 #

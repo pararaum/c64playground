@@ -50,6 +50,23 @@ available modes:
       --vcclogo         prepend VCC logo
 ```
 
+The filename has a special format it can be one of:
+
+   * filename,addr,offset,length
+   * filename,,offset,length
+   * filename,addr,offset
+   * filename,,offset
+   * filename,addr
+   * filename@addr,offset,length
+   * filename@addr,offset
+   * filename@addr
+
+If given then addr will override the load address of the file, if
+address is given with "@" then the file is considered a raw file
+without a loadadress and the given load address is used. Offset is
+used to skip bytes starting from the beginning and length can be used
+to only load the first length bytes.
+
 Prepend a debug version of a program with a stub which shows the text
 "Do not spread!": `prepender64 --donotspread input.prg`.
 

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include <iterator>
+#include <regex>
 #include <boost/format.hpp>
 #include "cmdline.h"
 #include "stub-copyeor.inc"
@@ -243,6 +244,23 @@ public:
     }
     std::copy(data.begin(), data.end(), std::ostream_iterator<unsigned char>(out));
     return out;
+  }
+  void drop_front(unsigned int skip) {
+    if(skip >= size()) {
+      throw std::invalid_argument(str(boost::format("trying to skip %u bytes of %u") % skip % size()));
+    }
+    if(skip > 0) {
+      data.erase(data.begin(), data.begin() + skip);
+    }
+  }
+  void resize(unsigned int newsize) {
+    if(newsize == 0) {
+      throw std::invalid_argument("can not shrink to zero size");
+    }
+    if(newsize > size()) {
+      throw std::invalid_argument("shrinking to a size which is bigger than the amount of bytes available");
+    }
+    data.resize(newsize);
   }
 };
 
@@ -529,6 +547,103 @@ public:
 };
 
 
+unsigned long string2ul(const std::string &text) {
+  try {
+    if(text.starts_with("0x")) {
+      return std::stoul(text, nullptr, 16);
+    } else if(text.starts_with("$")) {
+      return std::stoul(text.substr(1), nullptr, 16);
+    }
+    return std::stoul(text);
+  }
+  catch(const std::invalid_argument &) {
+    std::ostringstream out;
+    throw std::invalid_argument(str(boost::format("invalid argument when converting '%s' to unsigned long") % text));
+  }
+}
+
+
+/*! load a file with linker features
+ *
+ * The `cld` manual has the following option, we will copy them.
+ * ```
+ * Loading: (file -> memory buffer)
+ *   <file>[,,[<offs>][,<len>]]        - normal
+ *   <file>,<addr>[,[<offs>][,<len>]]  - override load address
+ *   <file>@<addr>[,[<offs>][,<len>]]  - raw file
+ * ```
+ *
+ * The filename is passed by value as we may need to modify the file
+ * name string when load address, etc. are given.
+ *
+ * \param fname file name to load from
+ * \return load data
+ */
+Data load_with_linking_option(std::string fname) {
+  std::regex pattern_addr_offs_len("(.*)(,|@)([0-9a-fA-Fx]*),([0-9a-fA-Fx]+),([0-9a-fA-Fx]+)");
+  std::regex pattern_addr_offs("(.*)(,|@)([0-9a-fA-Fx]*),([0-9a-fA-Fx]+)");
+  std::regex pattern_addr("(.*)(,|@)([0-9a-fA-Fx]*)");
+  std::smatch match;
+  std::optional<uint16_t> override_loadaddr;
+  std::optional<unsigned long> offset;
+  std::optional<uint16_t> length;
+  char addresschar = '\0';
+
+  if(std::regex_match(fname, match, pattern_addr_offs_len)) {
+    std::cerr << "full match\n";
+    addresschar = match[2].str()[0];
+    // for(std::size_t i = 0; i < match.size(); ++i) {
+    //   std::cout << i << '\t' << match[i].str() << std::endl;
+    // }
+    fname = match[1].str();
+    if(!(match[3].str().empty())) {
+      override_loadaddr = string2ul(match[3].str());
+    }
+    offset = string2ul(match[4].str());
+    length = string2ul(match[5].str());
+  } else if (std::regex_match(fname, match, pattern_addr_offs)) {
+    std::cerr << "addr offs match\n";
+    addresschar = match[2].str()[0];
+    fname = match[1];
+    if(!(match[3].str().empty())) {
+      override_loadaddr = string2ul(match[3].str());
+    }
+    offset = string2ul(match[4].str());
+  } else if (std::regex_match(fname, match, pattern_addr)) {
+    std::cerr << "addr match\n";
+    addresschar = match[2].str()[0];
+    fname = match[1];
+    if(!(match[3].str().empty())) {
+      override_loadaddr = string2ul(match[3].str());
+    }
+  }
+  auto data = Data::load(fname);
+  if(override_loadaddr) {
+    switch(addresschar) {
+    case '@':
+      data.assign_loadaddr(override_loadaddr.value());
+      break;
+    case ',':
+      data.extract_loadaddr();
+      data.assign_loadaddr(override_loadaddr.value(), true);
+      break;
+    default:
+      throw std::logic_error(std::string("unknown address character: ") + addresschar);
+    }
+  } else {
+    // File name does not contain the special characters, just read whole.
+    data.extract_loadaddr();
+  }
+  if(offset) {
+    data.drop_front(offset.value());
+  }
+  if(length) {
+    data.resize(length.value());
+  }
+  std::cout << boost::format("Load address is $%04X.\n") % data.extract_loadaddr();
+  return data;
+}
+
 /*! main entry point
  *
  * Parse the command-line parameters, see \ref cmdline.h, initialise
@@ -549,16 +664,19 @@ int main(int argc, char **argv) {
     }
     std::cout << "Prepender64 Version " << CMDLINE_PARSER_VERSION << std::endl;
     try {
-      std::string inpnam(args.inputs[0]);
+      std::string inpnam(args.inputs[0]); // First input name, this one is used to generate the output name.
+      // If there are special characters in the name used for linking then cut them off.
+      inpnam = inpnam.substr(0, inpnam.find_first_of("@,"));
       std::string outnam(inpnam + ".prep");
       Data data;
       if(args.output_given) {
 	outnam = args.output_arg;
       }
       for(unsigned int idx = 0; idx < args.inputs_num; ++idx) {
-	auto currdata = Data::load(args.inputs[idx]);
-	std::cout << currdata.size() << " bytes have been read.\n";
-	std::cout << boost::format("Load address is $%04X.\n") % currdata.extract_loadaddr();
+	// auto currdata = Data::load(args.inputs[idx]);
+	// std::cout << currdata.size() << " bytes have been read.\n";
+	// std::cout << boost::format("Load address is $%04X.\n") % currdata.extract_loadaddr();
+	auto currdata = load_with_linking_option(args.inputs[idx]);
 	data.join(currdata);
 	auto [first, last] = data.get_firstlast();
 	auto size = last - first + 1;

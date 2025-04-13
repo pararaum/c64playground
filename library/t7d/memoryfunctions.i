@@ -54,6 +54,17 @@
 	.endmacro
 
 
+;;; Memory fill subroutine
+;;;
+;;; Input:
+;;;	AX=start addr
+;;;	Y=value
+;;;	two bytes on stack=size in bytes (first push LOW, then push HIGH)
+;;; Modifies: A, X, Y, ptr1
+;;; Output: X=0
+	.import	memsetAX
+
+
 ;;; Memory fill macro for up to 255 bytes.
 ;;;
 ;;; Input:

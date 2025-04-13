@@ -149,13 +149,20 @@
 ;;; Warning, remember to use one-based access!
 ;;; see L.A. Leventhal, W. Saville, "6502 Assembly Language Subroutines", Osborne/McGraw-Hill, 1982, p. 44.
 ;;; Input: (Stack)
-;;; Output: retaddr
+;;; Output: -
 ;;; Modifies: A
-	.macro	GetReturnAddrIntoPointer retaddr
+	.macro	GetReturnAddrIntoPointer destptr
 	PLA			; LSB
-	STA	0+(retaddr)
+	STA	0+(destptr)
 	PLA			; MSB
-	STA	1+(retaddr)
+	STA	1+(destptr)
+	.endmacro
+
+	.macro	PointerToStack	ptr
+	lda	1+(ptr)
+	pha
+	lda	0+(ptr)
+	pha
 	.endmacro
 
 ;;; If using the above macro to get the return address minus one into a pointer then this macro will put the return address back on the stack. It can be adjusted so that following parameters will be skipped.
