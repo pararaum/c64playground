@@ -45,7 +45,7 @@ cmdline.c: prepender64.ggo
 	gengetopt -i $+
 
 %.prg:	vcclogo.petscii.c
-	petscii2x.py -f LIST -s -o $@ $^
+	petscii2x.py -f LISTSYS -s -o $@ $^
 
 %.inc:	%.s
 	cl65 -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $<
