@@ -5,55 +5,65 @@
 	.include	"t7d/memoryfunctions.i"
 	.include "LAMAlib-macros16.inc"
 
-	.import	Start
-	.import __HIMEM__, __STACKSIZE__
 	.import	__FONT_START__
-	.import	initlib, zerobss, callmain
 	.import	BSOUT
 	.importzp	sp, ptr1, ptr2, tmp1, tmp2
-	.import	_xorshift_internal_state
 	.import muzak_init, muzak_play
-	.import	screen_color_data
 	.import	credits_screen
+	.import	title_font, credits_font, game_font
+	.import	SCREEN_AND_BORDER_COL
 
-	SCREENNBORDER = 0
 	FGCONTROL = $9F		; $9c for purple, $df for cyan
-	
-	.segment	"EXEHDR"
+
+	.export	_init_assets
+	.export	_init_music_1
+
+	.code
+_init_music_1:
+	lda	#1
+	sei
+	jsr	muzak_init
+	cli
+	rts
+
+	.code
+_init_assets:
 	cld
-        lda     #<(__HIMEM__)
-        sta     sp
-        lda     #>(__HIMEM__)
-        sta     sp+1
+	lda	$d011		; Screen off
+	and	#%11101111
+	sta	$d011
 	lda	#0
 	jsr	muzak_init
 	jsr	setup_irq
 	jsr	setup_vic
-	memoryconfig_kernal
-	jsr	initlib
-	jsr	zerobss
-	jsr	callmain
-	jmp	64738
-
-.proc	setup_vic
-	lda	#SCREENNBORDER
-	sta	$d020
-	sta	$d021
-	lda	#FGCONTROL
-	jsr	BSOUT
-	lda	#<(screen_color_data)
-	sta	ptr1
-	lda	#>(screen_color_data)
-	sta	ptr1+1
-	lda	#<($d800)
-	sta	ptr2
-	lda	#>($d800)
-	sta	ptr2+1
-	lda	#<1000
-	ldx	#>1000
-	jsr	memcpy_up
+	jsr	display_title
+	lda	$d011		; Screen on
+	ora	#%00010000
+	sta	$d011
 	ldax	#511
 	jsr	wait_frames
+	jsr	display_credits
+	ldax	#373
+	jsr	wait_frames
+	ldax	#game_font
+	stax	ptr1
+	ldax	#__FONT_START__
+	stax	ptr2
+	ldax	#$800
+	jsr	memcpy_up
+	rts
+
+.proc	display_title
+	ldax	#title_font
+	stax	ptr1
+	ldax	#__FONT_START__
+	stax	ptr2
+	ldax	#$800
+	jsr	memcpy_up
+	rts
+.endproc
+
+.proc	display_credits
 	lda	$d011
 	and	#$7f
 	pha
@@ -61,7 +71,12 @@
 	sta	$d011
 	lda	#$93		; Clear
 	jsr	BSOUT
-	SetChargenAddress	__FONT_START__
+	ldax	#credits_font
+	stax	ptr1
+	ldax	#__FONT_START__
+	stax	ptr2
+	ldax	#$800
+	jsr	memcpy_up
 	lda	#<(credits_screen)
 	sta	ptr1
 	lda	#>(credits_screen)
@@ -75,12 +90,18 @@
 	jsr	memcpy_up
 	pla
 	sta	$d011
-	ldax	#373
-	jsr	wait_frames
 	rts
 .endproc
-
-	.segment	"LOWCODE"
+	
+.proc	setup_vic
+	lda	SCREEN_AND_BORDER_COL
+	sta	$d020
+	sta	$d021
+	SetChargenAddress	__FONT_START__
+	lda	#FGCONTROL
+	jsr	BSOUT
+	rts
+.endproc
 
 .proc	wait_frames
 	sta	tmp1
