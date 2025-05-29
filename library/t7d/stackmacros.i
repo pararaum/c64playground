@@ -8,6 +8,52 @@
 	.endif
 
 ;;; ------------------------------------------------------------------
+;;; Macros to push/pop values (words) onto the stack.
+
+;;; Macro to push a word, first LO then HI, onto the stack.
+;;; Input: value, load value from this address
+;;;	  #value, push immediate value
+;;; Modifies: A
+;;; Attention, this is the reverse as the CPU push a value onto the stack when executing JSR.
+.macro	PushWordLH value
+	;;  Value starts with '#'? → immediate value
+        .if(.match(.left(1, {value}), #))
+        lda	#<(.right(.tcount({value})-1, {value}))
+	pha
+        lda	#>(.right(.tcount({value})-1, {value}))
+	pha
+        .else
+	lda	value
+	pha
+	lda	value+1
+	pha
+        .endif
+.endmacro
+
+;;; Macro to push a word, first LO then HI, onto the stack.
+;;; Input: value, load value from this address
+;;;	  #value, push immediate value
+;;; Modifies: A
+;;; Attention, this is the order as the CPU push a value onto the stack when executing JSR.
+.macro	PushWordHL value
+	;;  Value starts with '#'? → immediate value
+        .if(.match(.left(1, {value}), #))
+        lda	#>(.right(.tcount({value})-1, {value}))
+	pha
+        lda	#<(.right(.tcount({value})-1, {value}))
+	pha
+        .else
+	lda	value+1
+	pha
+	lda	value
+	pha
+        .endif
+.endmacro
+.macro	PushWordJSR value
+	PushWordHL value
+.endmacro
+
+;;; ------------------------------------------------------------------
 ;;; Macros to move memory to the stack and back. The CPU stack is used, so be careful as not much space is available.
 
 ;;; Push some memory to the stack

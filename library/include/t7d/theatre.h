@@ -29,7 +29,7 @@
 #define THEATRE_TEXT (unsigned char*)0xC000
 #define THEATRE_COLR (unsigned char*)0xC400
 #define THEATRE_SPRT (unsigned char*)0xC800
-#define THEATRE_ASPR (unsigned char*)0xC800
+#define THEATRE_ASPR (unsigned char*)0xD000
 #define THEATRE_FONT (unsigned char*)0xD800
 #define THEATRE_GPHX (unsigned char*)0xE000
 

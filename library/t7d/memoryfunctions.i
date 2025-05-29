@@ -118,12 +118,14 @@
 ;;; Modifies: A, Y
 ;;; Output: -
 	.macro	smallmemcpy_macro	srcptr, dstptr, size
-	.local	@l1
-;	.if (.not .match (.left (1, {arg}), #))
+	.local	@l1, @sizeptr
+	.if (.not .match (.left (1, {arg}), #))
+	lda	size
+	sta	@sizeptr
 ;	 .if size > 256
 ;	  .error	More than 256 Bytes to copy!
 ;	 .endif
-;	.endif
+	.endif
 	ldy	#0		; Set up index register.
 @l1:	lda	(srcptr),y
 	sta	(dstptr),y
@@ -133,8 +135,9 @@
 	;; Reached the end? For 256 Bytes this waits for the overflow.
 	 cpy	#(.right (.tcount ({size})-1, {size}))
 	.else
-	;; Get from memory
-	 cpy	size
+	;; Self-modifying code!
+	 cpy	#00
+	 @sizeptr=*-1
 	.endif
 	bne	@l1
 	.endmacro
@@ -352,6 +355,7 @@ dataend:
 ;;; Copy memory with strides, this function needs several variables. Use this function to copy e.g. a block of PETSCII chars from one frame into another.
 ;;; memcpy_strided_srcwidth, memcpy_strided_srcheight, memcpy_strided_srcstride, memcpy_strided_dststride
 ;;; Input: memcpy_strided_srcwidth, memcpy_strided_srcheight, memcpy_strided_srcstride, memcpy_strided_dststride
+;;;	ptr1=source pointer, ptr2=destination pointer
 ;;; Modifies: A,X,Y,ptr1,ptr2
 	.global	memcpy_strided	; Function.
 	.global	memcpy_strided_srcwidth ; Width of the rectangle.
