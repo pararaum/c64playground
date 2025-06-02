@@ -68,11 +68,12 @@ $(OUTPUT_PRG): $(MAIN_PRG) scrolltext.prg $(DAUMENKINO_PRG) $(PART3)
 release: $(OUTPUT_PRG)
 	cld vcc32.prg birthday-song.prg scrolltext.prg $(DAUMENKINO_PRG) $(PART3) -o tmp.prg
 	$(PYTHON) petscii2x.py -f listsys -y 16 --append-prg tmp.prg -o $@.prg listart.c
+	$(RM) tmp.prg
 
 run: $(OUTPUT_PRG)
 	$(X64) $(OUTPUT_PRG)
 
 clean:
 	$(RM) $(PETSCII_ASM) $(PETSCII_VCC_ASM) $(SCROLLTEXT_PRG) $(MAIN_PRG) $(DAUMENKINO_PRG) $(OUTPUT_PRG) *labels.txt
-	$(RM) rocknroll.prg
+	$(RM) $(PART3)
 	$(RM) *.o *.tmp
