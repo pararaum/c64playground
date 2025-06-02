@@ -15,6 +15,7 @@
 #include "stub-scrambler16.inc"
 #include "stub-autostart326.inc"
 #include "stub-vcclogo.inc"
+#include "stub-t7dlogo.inc"
 
 /*! \file
  *
@@ -388,6 +389,34 @@ public:
   }
 };
 
+
+/*! \brief Prepend a T7D logo
+ *
+ * Prepend a monochrome T7D Logo.
+ */
+class PrependT7DLogo : public PrependerWithJump {
+public:
+  PrependT7DLogo() { }
+
+  virtual void transmogrify_data(Data &data) {
+  }
+  virtual Data customise_stub(uint16_t jump, const Data &data) {
+    Data stub(&stub_t7dlogo[0], &stub_t7dlogo[stub_t7dlogo_len]); //!< The stub itself.
+    stub.extract_loadaddr();
+    // Add the size of the file to the value in the stub. This has to
+    // point to the byte after the file.
+    stub.pokew(STUBT7DLOGOstubsptr_dataend_offset, stub.peekw(STUBT7DLOGOstubsptr_dataend_offset) + data.size());
+    // Negated size of the file, only the 16 lowest bits are used.
+    stub.pokew(STUBT7DLOGOstub10000_minus_datalen_offset, -data.size());
+    // Fix the destination address.
+    stub.pokew(STUBT7DLOGOstubdptrDATADEST_offset, data.get_loadaddr().value());
+    // Fix the JMP address.
+    stub.pokew(STUBT7DLOGOstubjmp_offset, jump);
+    return stub;
+  }
+};
+
+
 class PrependCopyXor : public PrependerWithJump {
 protected:
   uint8_t eor; //!< EOR value, if zero then nothing is done.
@@ -714,6 +743,9 @@ int main(int argc, char **argv) {
       } else if(args.vcclogo_mode_counter) {
 	auto newprepender = new PrependVCCLogo;
 	prepender = std::unique_ptr<PrependVCCLogo>(newprepender);
+      } else if(args.t7dlogo_mode_counter) {
+	auto newprepender = new PrependT7DLogo;
+	prepender = std::unique_ptr<PrependT7DLogo>(newprepender);
       }
       if(args.jump_given) {
 	auto jmp = args.jump_arg & 0xFFFF;

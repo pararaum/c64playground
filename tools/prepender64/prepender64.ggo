@@ -1,5 +1,5 @@
 package "Prepender64"
-version "0.1.0"
+version "0.2.0"
 args	"--unnamed-opts"
 option 	"output"	 o "output file name, defaults to first input filename with .prep suffix" string	optional
 option	"jump"		 j "address to jump to (-1 = SYS address)" int default="-1" optional
@@ -14,6 +14,7 @@ defmode "do not spread"  modedesc="outputs the message 'do not spread' and then 
 defmode "scrambler16"	 modedesc="scramble the code with a 16-bit LFSR"
 defmode "autostart $326" modedesc="autostart with code in the cassette buffer"
 defmode	"vcclogo"  	 modedesc="prepend a VCC logo"
+defmode	"t7dlogo"  	 modedesc="prepend a T7D logo"
 
 modeoption "copy-eor"       - "copy and eor mode" mode="copy eor" required
 
@@ -26,3 +27,5 @@ modeoption "scrambler"      - "scramble the code with a 16-bit LFSR" mode="scram
 modeoption "autostart326"   - "autostart at $326" mode="autostart $326"
 
 modeoption "vcclogo"	    - "prepend VCC logo" mode="vcclogo"
+
+modeoption "t7dlogo"	    - "prepend T7D logo" mode="t7dlogo"
