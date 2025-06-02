@@ -22,7 +22,7 @@ TARGET = $(PACKAGENAME)
 
 all:	bin
 
-bin:	vcclogo.prg cmdline.c $(TARGET)
+bin:	logo.80x50.raw vcclogo.prg cmdline.c $(TARGET)
 
 install:	bin doc
 	mkdir -p $(bindir)
@@ -43,6 +43,10 @@ doc:
 
 cmdline.c: prepender64.ggo
 	gengetopt -i $+
+
+
+logo.80x50.raw: logo.80x50.png
+	petscii80x50 $^ > $@
 
 %.prg:	%.petscii.c
 	petscii2x.py -f LISTSYS -o $@ $^
