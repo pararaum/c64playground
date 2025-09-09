@@ -40,6 +40,8 @@ available modes:
  Mode: scrambler16
   scramble the code with a 16-bit LFSR
       --scrambler       scramble the code with a 16-bit LFSR
+      --scrambler-feedback=LONG feedback term for the LFSR  (default=`0x8117')
+      --scrambler-start=LONG    start term for the LFSR  (default=`0xF77D')
 
  Mode: autostart $326
   autostart with code in the cassette buffer
@@ -92,6 +94,11 @@ Print a message "Do not spread!" and perform the copying operation.
 
 This mode uses a 16bit-LFSR to encode the program. Use it last as the
 resulting file will probably be uncompressible...
+
+The feedback and the start term can be set for the scrambler. The
+start term must be not equal to zero. Warning, chose the terms
+carefully to get the maximum length LFSR run. For a list LFSR terms
+see <https://users.ece.cmu.edu/~koopman/lfsr/index.html>.
 
 ### Autostart $326 ###
 

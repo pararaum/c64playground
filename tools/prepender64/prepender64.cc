@@ -541,6 +541,8 @@ public:
     stub.pokew(STUBSCRAMBLER16stubjmp_offset, jump);
     return stub;
   }
+  void set_feedback(uint16_t x) { lfsrfeedback = x; }
+  void set_startterm(uint16_t x) { lfsrregister = x; }
 };
 
 
@@ -619,7 +621,6 @@ Data load_with_linking_option(std::string fname) {
   char addresschar = '\0';
 
   if(std::regex_match(fname, match, pattern_addr_offs_len)) {
-    std::cerr << "full match\n";
     addresschar = match[2].str()[0];
     // for(std::size_t i = 0; i < match.size(); ++i) {
     //   std::cout << i << '\t' << match[i].str() << std::endl;
@@ -631,7 +632,6 @@ Data load_with_linking_option(std::string fname) {
     offset = string2ul(match[4].str());
     length = string2ul(match[5].str());
   } else if (std::regex_match(fname, match, pattern_addr_offs)) {
-    std::cerr << "addr offs match\n";
     addresschar = match[2].str()[0];
     fname = match[1];
     if(!(match[3].str().empty())) {
@@ -639,7 +639,6 @@ Data load_with_linking_option(std::string fname) {
     }
     offset = string2ul(match[4].str());
   } else if (std::regex_match(fname, match, pattern_addr)) {
-    std::cerr << "addr match\n";
     addresschar = match[2].str()[0];
     fname = match[1];
     if(!(match[3].str().empty())) {
@@ -736,6 +735,8 @@ int main(int argc, char **argv) {
 	prepender = std::unique_ptr<PrependerWithJump>(newprepender);
       } else if(args.scrambler16_mode_counter) {
 	auto newprepender = new PrependScrambler16;
+	newprepender->set_feedback(args.scrambler_feedback_arg);
+	newprepender->set_startterm(args.scrambler_start_arg);
 	prepender = std::unique_ptr<PrependScrambler16>(newprepender);
       } else if(args.autostart_$326_mode_counter) {
 	auto newprepender = new PrependAutostart326;

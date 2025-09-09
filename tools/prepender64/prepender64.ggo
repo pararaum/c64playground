@@ -1,5 +1,5 @@
 package "Prepender64"
-version "0.2.0"
+version "0.2.1"
 args	"--unnamed-opts"
 option 	"output"	 o "output file name, defaults to first input filename with .prep suffix" string	optional
 option	"jump"		 j "address to jump to (-1 = SYS address)" int default="-1" optional
@@ -23,6 +23,8 @@ modeoption "copy-eor-stack" - "copy and eor mode in stack" mode="copy eor stack"
 modeoption "donotspread"    - "do not spread message-mode" mode="do not spread" required
 
 modeoption "scrambler"      - "scramble the code with a 16-bit LFSR" mode="scrambler16"
+modeoption "scrambler-feedback" - "feedback term for the LFSR" mode="scrambler16" long default="0x8117" optional
+modeoption "scrambler-start"    - "start term for the LFSR" mode="scrambler16" long default="0xF77D" optional
 
 modeoption "autostart326"   - "autostart at $326" mode="autostart $326"
 
