@@ -31,6 +31,7 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
 	spritecanvas3X4.o \
 	petsciicopyframe.o \
 	spritescroller-rol.o \
+	vic_screen_mask_turn_off.o vic_screen_mask_turn_on.o vic_screen_mask_msb_turn_onoff.o vic_screen_turn_on.o vic_screen_turn_on.o\
 	vic-set_chargen_memory.o vic-set_screen_memory.o
 
 OBJS += $(patsubst %.s, %.o, $(wildcard fsvscroll.*.s))
