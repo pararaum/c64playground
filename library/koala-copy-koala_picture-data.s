@@ -60,14 +60,14 @@ copy_koala_picture_data:
 	jsr	set_source_adjusted
 	ldy	#5		; Get destination bitmap into ptr2
 	jsr	setup_destination
-	jsr	memcpy1K_via_ptr
+	jsr	memcpy1000_via_ptr
 	;; Cols
 	lda	#<9000		; Get koala chars pointer into ptr1
 	ldx	#>9000
 	jsr	set_source_adjusted
 	ldy	#7		; Get destination bitmap into ptr2
 	jsr	setup_destination
-	jsr	memcpy1K_via_ptr
+	jsr	memcpy1000_via_ptr
 	RetrievePushStackptrAdjLOCAL 8
 	rts
 

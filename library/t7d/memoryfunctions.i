@@ -17,11 +17,39 @@
 	bne	@loop
 	.endmacro
 
+;;; Copy exactly 1000 of memory in an inlined function.
+;;; Input: source, destination
+;;; Output: -
+;;; Modifies: A,X
+	.macro	Memcpy1000Inline	source,destination
+	.local	 @loop,@loop2
+	ldx	#0
+@loop:
+	.repeat	3,I
+	  lda	source+I*$100,x
+	  sta	destination+I*$100,x
+	.endrepeat
+	dex
+	bne	@loop
+	ldx	#232		; 1000-3*256
+@loop2:
+	lda	source+3*$100-1,x
+	sta	destination+3*$100-1,x
+	dex
+	bne	@loop2
+	.endmacro
+
 ;;; Copy exactly 1K of memory from ptr1 to ptr2
 ;;; Input: ptr1, ptr2
 ;;; Modifies: A,Y
 ;;; Output: ptr1+=$0400, ptr2+=$0400
 	.import	memcpy1K_via_ptr
+
+;;; Copy exactly 1000 bytey of memory from ptr1 to ptr2
+;;; Input: ptr1, ptr2
+;;; Modifies: A,Y
+;;; Output: ptr1+=$0300, ptr2+=$0300
+	.import	memcpy1000_via_ptr
 
 ;;; Copy exactly 1K of memory (see above) as a macro.
 	.macro	Memcpy1KViaPtr	source, destination

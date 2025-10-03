@@ -25,3 +25,16 @@
 	sta	$d010
 	.endif
 .endmacro
+
+;;; Macro to set the spritebuffers to consecutive addresses (each 64 bytes apart).
+;;;
+;;; Input: buffer=address of first sprite buffer
+;;;	sprtptr=address of first sprite pointer ($7F8 for the default screen)
+;;; Output: -
+;;; Modifies: A
+.macro	SetConsecutiveSpriteBufs	buffer, sprptr
+	.repeat	8,I
+	lda	#<(((I*64+buffer)&$3FFF)/64)
+	sta	sprptr+I
+	.endrepeat
+.endmacro
