@@ -5,6 +5,7 @@
 	.importzp	ptr1, ptr2, ptr3
 
 	.export	copy_koala_picture_data
+	.export	copy_koala_picture_data_bg
 
 	.code
 ;;; Copy Koala picture image-data to destination area.
@@ -39,12 +40,7 @@
 	rts
 	.endproc
 
-copy_koala_picture_data:
-	PullStoreStackptrLOCAL
-	lda	@tempstackptrLO	; Get pointer to return addres -1 into ptr3
-	sta	ptr3
-	lda	@tempstackptrHI
-	sta	ptr3+1
+.proc	main_copy_routine
 	;; Bitmap
 	lda	#0		; Get koala source pointer into ptr1
 	tax
@@ -67,7 +63,33 @@ copy_koala_picture_data:
 	jsr	set_source_adjusted
 	ldy	#7		; Get destination bitmap into ptr2
 	jsr	setup_destination
-	jsr	memcpy1000_via_ptr
+	jmp	memcpy1000_via_ptr
+.endproc
+
+copy_koala_picture_data_bg:
+	PullStoreStackptrLOCAL
+	lda	@tempstackptrLO	; Get pointer to return addres -1 into ptr3
+	sta	ptr3
+	lda	@tempstackptrHI
+	sta	ptr3+1
+	jsr	main_copy_routine
+	;; Background
+	lda	#<10000		; Get koala BG pointer into ptr1
+	ldx	#>10000
+	jsr	set_source_adjusted
+	ldy	#0
+	lda	(ptr1),y
+	sta	$d021
+	RetrievePushStackptrAdjLOCAL 8
+	rts
+
+copy_koala_picture_data:
+	PullStoreStackptrLOCAL
+	lda	@tempstackptrLO	; Get pointer to return addres -1 into ptr3
+	sta	ptr3
+	lda	@tempstackptrHI
+	sta	ptr3+1
+	jsr	main_copy_routine
 	RetrievePushStackptrAdjLOCAL 8
 	rts
 
