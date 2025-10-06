@@ -53,6 +53,26 @@
 	PushWordHL value
 .endmacro
 
+;;; Macro to pull a word from the stack in the order in which the CPU pushes return values on the stack.
+;;; Input: -
+;;; Output: AX=address which was on stack
+.macro	PullWordHLAX
+	pla
+	tax
+	pla
+.endmacro
+
+;;; Macro to pull a word from the stack in the order in which the CPU pushes return values on the stack. Put the value directly into memory.
+;;; Input: address where to store the pointer
+;;; Output: address which was on stack
+;;; Modifies: A
+.macro	PullWordHL	address
+	pla
+	sta	address
+	pla
+	sta	1+(address)
+.endmacro
+
 ;;; ------------------------------------------------------------------
 ;;; Macros to move memory to the stack and back. The CPU stack is used, so be careful as not much space is available.
 

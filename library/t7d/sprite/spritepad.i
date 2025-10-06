@@ -50,3 +50,25 @@
 .macro  getSPadMCColour2   sprdataptr
         lda     sprdataptr+8
 .endmacro
+
+;;; Pointer to the destination spritebuffer (sprite 0). Used in spritepad functions.
+	.global	spritepad_destination_sprbuf
+
+;;; Initialise spritepad handling routine pointers, only one pointer at a time.
+;;;
+;;; Input: AX=pointer to the spritepad data
+;;; Output: A=number of sprites - 1
+;;; Modifies: A,X,Y,ptr1
+	.global	spritepad_initialise_spritepad
+
+;;; Initialise the VIC registers from current spritepad
+;;;
+;;; Input: -
+;;; Output: background colour in the spritepad
+;;; Modifies: A,Y,ptr1
+	.global	spritepad_setup_vic
+
+;;; Copy the spritedata for the eight sprites.
+;;; Input: AX=pointer to a list of eight sprite numbers
+;;; Modifies: A,X,Y,ptr1,ptr2
+	.global	spritepad_copy8_spritedata
