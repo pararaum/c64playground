@@ -7,6 +7,24 @@
 	LOCALLABELCOUNTER .set	0
 	.endif
 
+;;; Push all registers to the Stack in the same order as the KERNAL does.
+.macro	PushRegs
+	pha
+	txa
+	pha
+	tya
+	pha
+.endmacro
+
+;;; Pull all registers to the Stack in the same order as the KERNAL does.
+.macro	PullRegs
+	pla
+	tay
+	pla
+	tax
+	pla
+.endmacro
+
 ;;; ------------------------------------------------------------------
 ;;; Macros to push/pop values (words) onto the stack.
 
