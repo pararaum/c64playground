@@ -1,0 +1,15 @@
+*~
+*.o
+*.map
+*.label
+temporary.*
+*.tmp
+*.Z
+*.pu
+*.prg
+globals.*
+*.zx02
+resident
+boot
+dload*.inc
+*.d64

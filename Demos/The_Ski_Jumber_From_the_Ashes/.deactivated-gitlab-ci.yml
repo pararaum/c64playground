@@ -1,0 +1,22 @@
+image:
+  name: vintagecomputingcarinthia/c64build:r202510
+
+stages:
+  - build
+
+build_prg:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /-⚙-/
+    - if: $CI_COMMIT_BRANCH =~ /build-/
+  script:
+    - make
+  artifacts:
+    when: on_success
+    expire_in: 33 days
+    paths:
+      - tsjfta.d64
+      - "*.prg"
+      - "*.label"
+      - "*.map"
