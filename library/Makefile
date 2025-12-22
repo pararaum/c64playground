@@ -33,6 +33,7 @@ OBJS = disable_cia_irq.o fill_colour_ram.o crc8.o stackfunctions.o prng.xorshift
 	copy_memory_downwards_ip.o memcpy_down.o \
 	spritecanvas3X4.o \
 	petsciicopyframe.o \
+	frameengine.5q.o \
 	vic_screen_mask_msb_turn_onoff.o vic_screen_mask_turn_off.o vic_screen_mask_turn_on.o vic_screen_turn_off.o vic_screen_turn_on.o \
 	vic-set_chargen_memory.o vic-set_screen_memory.o
 
