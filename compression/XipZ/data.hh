@@ -1,6 +1,7 @@
 #ifndef __DATA_HH_2W020__
 #define __DATA_HH_2W020__
 #include <vector>
+#include <stdexcept>
 #include <inttypes.h>
 
 /*! \file

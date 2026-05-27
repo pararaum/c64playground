@@ -4,7 +4,7 @@ CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
 
 VERSION = 0.5.1
 #
-OBJS = cmdline.o qadz.o xipz.o
+OBJS = cmdline.o qadz.o xipz.o lzp.o
 #
 PACKAGENAME=xipz
 prefix = $(DESTDIR)/usr/local
