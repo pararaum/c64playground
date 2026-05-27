@@ -1,6 +1,6 @@
 #! /usr/bin/make -f
 
-CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
+CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra -std=c++23
 
 VERSION = 0.5.1
 #

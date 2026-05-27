@@ -121,6 +121,17 @@ handle nibbles.
 
 Have a look at the main_qadz() function.
 
+## LZP ##
+
+A variant of the LZ77 algorithm where the prediction buffer is a hash
+buffer which doubles as storage for the hash and the matches, [see
+e.g. Wikibooks](https://en.wikibooks.org/wiki/Data_Compression/Dictionary_compression#LZ77_algorithms).
+
+A mask byte is written to specify for the next eight bytes if they are
+literals or back references.
+
+See main_lzp() function.
+
 # Maximizing compression #
 
 ## XipZ Algorithm ##
