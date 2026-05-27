@@ -10,6 +10,7 @@
 #include "cmdline.h"
 #include "data.hh"
 #include "qadz.hh"
+#include "lzp.hh"
 
 /*! \file xipz.cc
  *
@@ -493,6 +494,37 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
 }
 
 
+/*!\brief main function using lzp
+ *
+ * Main function for compression using the lzp (LZ77-like) algorithm.
+ *
+ * \param inputname input filename
+ * \param outputname outout filename
+ * \param raw should the compressed data be written raw (without decompression stub)
+ * \param jump jump address, -1 = equal to load address
+ * \param exloadaddr extract load address from data?
+ */
+int main_lzp(const std::string &inputname, const std::string &outputname, bool raw, int jump, bool exloadaddr) {
+  uint16_t jumpaddr;
+
+  Data data(read_data(inputname, exloadaddr));
+  std::vector<uint8_t> compressed(crunch_lzp(data));
+  std::cout << "Compressed size: " << compressed.size() << std::endl;
+  std::ofstream out(outputname);
+  if(!raw) {
+    if(jump >= 0) {
+      jumpaddr = jump;
+    } else {
+      jumpaddr = data.get_loadaddr();
+    }
+    std::cout << "Writing decrunching stub...\n";
+    write_lzp_stub(out, compressed.size(), data.get_loadaddr(), jumpaddr);
+  }
+  write_compressed_data(out, compressed);
+  return 0;
+}
+
+
 /*!\brief main function using xip
  *
  * Main function which takes a single file name as an argument.
@@ -533,6 +565,14 @@ int main(int argc, char **argv) {
 	break;
       case algorithm__NULL:
 	throw std::logic_error("algorithm vanished");
+      case algorithm_arg_lzp:
+	if(args.page_given) {
+	  std::cerr << "Warning! Page is ignored by LZP.\n";
+	}
+	ret = main_lzp(inpnam, outnam, args.raw_flag, args.jump_arg, !args.data_flag);
+	break;
+      default:
+	throw std::logic_error("mismatch between command line and code");
       }
     }
     catch(const std::exception &e) {
