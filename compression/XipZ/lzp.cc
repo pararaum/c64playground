@@ -99,17 +99,17 @@ std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
 
       // Replay 'length' bytes from the model
       for(unsigned int i = 0; i < length; ++i) {
-	hashfun(model[hash]); // advance hash first, same as compressor
 	uint8_t byte = model[hash];
 	output.push_back(byte);
+	hashfun(model[hash]); // advance hash second, same as compressor
 	// model is not updated during runs, same as compressor
       }
     } else {
       // Literal byte
       uint8_t byte = length; // the "length" field carries the literal
-      hashfun(byte);
       output.push_back(byte);
       model[hash] = byte;
+      hashfun(byte);
     }
   }
 
@@ -149,15 +149,13 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
     while(runlength < MAX_RUNLENGTH) {
       if(pos + runlength < data.size()) {
 	uint8_t byte = data[pos + runlength];
-	auto oldhash = hash;
-	hashfun(byte);
 	if(byte != model[hash]) { // Still a match?
-	  hash = oldhash; // Restore speculative hash on mismatch.
 	  break; // No go to next step.
 	}
       } else {
 	break;
       }
+      hashfun(data[pos + runlength]);
       ++runlength;
     }
     if(runlength > 0) {
@@ -178,8 +176,9 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
   // Not supported by my compiler version: return output | std::ranges::to<std::vector>();
   // Use range constructor instead:
   auto outputvec = std::vector<uint8_t>(output.begin(), output.end());
-  if(outputvec != data.get_dataref()) {
-    hexdump_side_by_side(data.get_dataref(), outputvec);
+  auto decompressed = decrunch_lzp(outputvec);
+  if(decompressed != data.get_dataref()) {
+    hexdump_side_by_side(data.get_dataref(), decompressed);
     throw std::logic_error("wrong data after decompression");
   }
   return outputvec;
