@@ -4,9 +4,117 @@
 #include <array>
 #include <ranges>
 #include <list>
+#include <algorithm>
 
 #define MODELSIZE 8
 #define MAX_RUNLENGTH 255
+
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <string>
+#include <cstdint>
+#include <algorithm>
+
+void hexdump_side_by_side(
+    const std::vector<uint8_t>& original,
+    const std::vector<uint8_t>& decompressed,
+    size_t bytes_per_row = 16)
+{
+    size_t rows = (std::max(original.size(), decompressed.size()) + bytes_per_row - 1) / bytes_per_row;
+
+    // Header
+    std::cout << std::string(8,' ') << "  Original"
+              << std::string(bytes_per_row*3 - 7, ' ')
+              << "  Decompressed\n";
+    std::cout << std::string(8+2+bytes_per_row*3+2+bytes_per_row*3, '-') << "\n";
+
+    for (size_t row = 0; row < rows; ++row) {
+        size_t offset = row * bytes_per_row;
+
+        // Print offset
+        std::cout << std::hex << std::setw(6) << std::setfill('0') << offset << ":  ";
+
+        // Helper to print one row of hex bytes, padding with spaces if past end
+        auto print_row = [&](const std::vector<uint8_t>& data) {
+            for (size_t i = 0; i < bytes_per_row; ++i) {
+                if (offset + i < data.size())
+                    std::cout << std::hex << std::setw(2) << std::setfill('0')
+                              << static_cast<int>(data[offset + i]) << " ";
+                else
+                    std::cout << "   "; // padding for short buffers
+            }
+        };
+
+        print_row(original);
+        std::cout << "  ";
+        print_row(decompressed);
+
+        // Mark rows that differ with '<'
+        bool row_differs = false;
+        for (size_t i = 0; i < bytes_per_row; ++i) {
+            size_t idx = offset + i;
+            uint8_t a = idx < original.size()     ? original[idx]     : 0xFF;
+            uint8_t b = idx < decompressed.size() ? decompressed[idx] : 0xFF;
+            if (a != b) { row_differs = true; break; }
+        }
+        if (row_differs) std::cout << " <";
+
+        std::cout << "\n";
+    }
+
+    std::cout << std::dec; // restore decimal output
+}
+
+std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
+  std::array<uint8_t, 1 << MODELSIZE> model;
+  std::vector<uint8_t> output;
+  unsigned long hash = 0;
+  unsigned int maskidx = 0;
+  size_t pos = 0;
+
+  model.fill(0);
+
+  auto hashfun = [&hash](uint8_t x) {
+    hash = ((hash << 3) ^ x) % (1 << MODELSIZE);
+  };
+
+  // Read the first mask byte
+  if(pos >= compressed.size()) return output;
+  uint8_t mask = compressed[pos++];
+
+  while(pos < compressed.size()) {
+    bool is_run = (mask >> maskidx) & 1;
+
+    if(++maskidx >= 8) {
+      if(pos >= compressed.size()) break;
+      mask = compressed[pos++];
+      maskidx = 0;
+    }
+
+    uint8_t length = compressed[pos++];
+
+    if(is_run) {
+      if(length == 0) break; // EOF marker
+
+      // Replay 'length' bytes from the model
+      for(unsigned int i = 0; i < length; ++i) {
+	hashfun(model[hash]); // advance hash first, same as compressor
+	uint8_t byte = model[hash];
+	output.push_back(byte);
+	// model is not updated during runs, same as compressor
+      }
+    } else {
+      // Literal byte
+      uint8_t byte = length; // the "length" field carries the literal
+      hashfun(byte);
+      output.push_back(byte);
+      model[hash] = byte;
+    }
+  }
+
+  return output;
+}
 
 std::vector<uint8_t> crunch_lzp(const Data &data) {
   std::array<uint8_t,1<<MODELSIZE> model; // This is the buffer and the hash table aka the model.
@@ -41,8 +149,10 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
     while(runlength < MAX_RUNLENGTH) {
       if(pos + runlength < data.size()) {
 	uint8_t byte = data[pos + runlength];
+	auto oldhash = hash;
 	hashfun(byte);
 	if(byte != model[hash]) { // Still a match?
+	  hash = oldhash; // Restore speculative hash on mismatch.
 	  break; // No go to next step.
 	}
       } else {
@@ -67,7 +177,12 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
   // Use C++23 feature to return a vector instead of the list.
   // Not supported by my compiler version: return output | std::ranges::to<std::vector>();
   // Use range constructor instead:
-  return std::vector<uint8_t>(output.begin(), output.end());
+  auto outputvec = std::vector<uint8_t>(output.begin(), output.end());
+  if(outputvec != data.get_dataref()) {
+    hexdump_side_by_side(data.get_dataref(), outputvec);
+    throw std::logic_error("wrong data after decompression");
+  }
+  return outputvec;
 }
 
 
