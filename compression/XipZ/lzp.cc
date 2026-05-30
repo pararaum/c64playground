@@ -6,6 +6,12 @@
 #include <list>
 #include <algorithm>
 
+/*
+ * When testing a little it seemed (but only a single testfile, needs
+ * more investigation) that 12 Bits could be used for better
+ * compression. Restarting the hash before checking for each run
+ * actually worsened the compression ratio.
+ */
 #define MODELSIZE 8
 #define MAX_RUNLENGTH 255
 
@@ -177,6 +183,7 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
   auto decompressed = decrunch_lzp(outputvec);
   if(decompressed != data.get_dataref()) {
     hexdump_side_by_side(data.get_dataref(), decompressed);
+    std::cerr << "Compressed data was " << output.size() << " bytes long.\n";
     throw std::logic_error("wrong data after decompression");
   }
   return outputvec;
