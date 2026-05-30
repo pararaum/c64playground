@@ -84,14 +84,12 @@ std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
   uint8_t mask = compressed[pos++];
 
   while(pos < compressed.size()) {
-    bool is_run = (mask >> maskidx) & 1;
-
-    if(++maskidx >= 8) {
+    if(maskidx >= 8) {
       if(pos >= compressed.size()) break;
       mask = compressed[pos++];
       maskidx = 0;
     }
-
+    bool is_run = (mask >> maskidx++) & 1;
     uint8_t length = compressed[pos++];
 
     if(is_run) {
