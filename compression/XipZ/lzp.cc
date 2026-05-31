@@ -12,7 +12,7 @@
  * compression. Restarting the hash before checking for each run
  * actually worsened the compression ratio.
  */
-#define MODELSIZE 8
+#define LZPMODELSIZE 8
 #define MAX_RUNLENGTH 255
 
 #include <iostream>
@@ -21,6 +21,36 @@
 #include <string>
 #include <cstdint>
 #include <algorithm>
+
+template<unsigned int MODELSIZE>
+class LZPModel {
+public:
+    LZPModel() : hash_(0) { model_.fill(0); }
+
+    // Advance the hash with the given byte and update the model.
+    // Call this for confirmed literals.
+    void update(uint8_t byte) {
+        model_[hash_] = byte;
+        advance(byte);
+    }
+
+    // Predict the next expected byte at the current hash position.
+    uint8_t predict() const { return model_[hash_]; }
+
+    // Advance the hash only, without updating the model.
+    // Call this for bytes that were part of a confirmed run.
+    void advance(uint8_t byte) {
+        hash_ = ((hash_ << 3) ^ byte) % (1 << MODELSIZE);
+    }
+
+    // Current hash value, useful for debugging.
+    unsigned long hash() const { return hash_; }
+
+private:
+    std::array<uint8_t, 1 << MODELSIZE> model_;
+    unsigned long hash_;
+};
+
 
 void hexdump_side_by_side(
     const std::vector<uint8_t>& original,
@@ -73,17 +103,10 @@ void hexdump_side_by_side(
 }
 
 std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
-  std::array<uint8_t, 1 << MODELSIZE> model;
+  LZPModel<LZPMODELSIZE> model;
   std::vector<uint8_t> output;
-  unsigned long hash = 0;
   unsigned int maskidx = 0;
   size_t pos = 0;
-
-  model.fill(0);
-
-  auto hashfun = [&hash](uint8_t x) {
-    hash = ((hash << 3) ^ x) % (1 << MODELSIZE);
-  };
 
   // Read the first mask byte
   if(pos >= compressed.size()) return output;
@@ -103,17 +126,16 @@ std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
 
       // Replay 'length' bytes from the model
       for(unsigned int i = 0; i < length; ++i) {
-	uint8_t byte = model[hash];
+	uint8_t byte = model.predict();
 	output.push_back(byte);
-	hashfun(model[hash]); // advance hash second, same as compressor
+	model.advance(byte); // advance hash second, same as compressor
 	// model is not updated during runs, same as compressor
       }
     } else {
       // Literal byte
       uint8_t byte = length; // the "length" field carries the literal
       output.push_back(byte);
-      model[hash] = byte;
-      hashfun(byte);
+      model.update(byte);
     }
   }
 
@@ -121,9 +143,8 @@ std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
 }
 
 std::vector<uint8_t> crunch_lzp(const Data &data) {
-  std::array<uint8_t,1<<MODELSIZE> model; // This is the buffer and the hash table aka the model.
+  LZPModel<LZPMODELSIZE> model;
   std::list<uint8_t> output; // A list of output elements, a list is needed for the following trick to work: see mask.
-  unsigned long hash = 0;
   unsigned int maskidx = 0;
   // Pushing the zero and getting a pointer to the value is a nice
   // trick as we can modify the mask when elements are later on added
@@ -132,9 +153,6 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
   // pointers when the capacity is exhausted.
   output.push_back(0); // Add a mask, preinitialised with zeroes.
   uint8_t *mask = &output.back(); // And get a reference to our mask.
-  auto hashfun = [&hash](uint8_t x) {
-    hash = ((hash << 3) ^ x) % (1 << MODELSIZE);
-  };
   auto nextmask = [&mask, &maskidx, &output](bool set1) {
     if(set1) {
       *mask |= 1 << maskidx;
@@ -146,20 +164,19 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
     }
   };
 
-  model.fill(0);
   for(unsigned long pos = 0; pos < data.size(); ) {
     unsigned int runlength = 0;
 
     while(runlength < MAX_RUNLENGTH) {
       if(pos + runlength < data.size()) {
 	uint8_t byte = data[pos + runlength];
-	if(byte != model[hash]) { // Still a match?
+	if(byte != model.predict()) { // Still a match?
 	  break; // No go to next step.
 	}
       } else {
 	break;
       }
-      hashfun(data[pos + runlength]);
+      model.advance(data[pos + runlength]);
       ++runlength;
     }
     if(runlength > 0) {
@@ -169,8 +186,7 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
     } else if(pos < data.size()) {
       output.push_back(data[pos]);
       nextmask(0);
-      model[hash] = data[pos];
-      hashfun(data[pos]);
+      model.update(data[pos]);
       ++pos;
     }
   }
