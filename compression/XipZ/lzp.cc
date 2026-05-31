@@ -25,30 +25,35 @@
 template<unsigned int MODELSIZE>
 class LZPModel {
 public:
-    LZPModel() : hash_(0) { model_.fill(0); }
+  LZPModel() : hash_(0) { model_.fill(0); }
 
-    // Advance the hash with the given byte and update the model.
-    // Call this for confirmed literals.
-    void update(uint8_t byte) {
-        model_[hash_] = byte;
-        advance(byte);
-    }
+  // Advance the hash with the given byte and update the model.
+  // Call this for confirmed literals.
+  void update(uint8_t byte) {
+    model_[hash_] = byte;
+    advance(byte);
+  }
 
-    // Predict the next expected byte at the current hash position.
-    uint8_t predict() const { return model_[hash_]; }
+  // Predict the next expected byte at the current hash position.
+  uint8_t predict() const { return model_[hash_]; }
 
-    // Advance the hash only, without updating the model.
-    // Call this for bytes that were part of a confirmed run.
-    void advance(uint8_t byte) {
-        hash_ = ((hash_ << 3) ^ byte) % (1 << MODELSIZE);
-    }
+  // Advance the hash only, without updating the model.
+  // Call this for bytes that were part of a confirmed run.
+  void advance(uint8_t byte) {
+    //best?
+    hash_ = ((hash_ << 3) ^ byte) % (1 << MODELSIZE);
+    //good? hash_ = ((hash_ << 5) ^ byte) % (1 << MODELSIZE);
+    //very bad: hash_ = (((hash_ << 5) | (hash_ >> 3)) ^ byte) % (1 << MODELSIZE);
+    //good: hash_ = ((hash_ << 3) + byte) % (1 << MODELSIZE);
+    //very bad: hash_ = (hash_ + byte) % (1 << MODELSIZE);
+  }
 
-    // Current hash value, useful for debugging.
-    unsigned long hash() const { return hash_; }
+  // Current hash value, useful for debugging.
+  unsigned long hash() const { return hash_; }
 
 private:
-    std::array<uint8_t, 1 << MODELSIZE> model_;
-    unsigned long hash_;
+  std::array<uint8_t, 1 << MODELSIZE> model_;
+  unsigned long hash_;
 };
 
 
