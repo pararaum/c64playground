@@ -19,7 +19,7 @@ mandir = $(datarootdir)/man
 
 .PHONY:	all bin clean install pkg
 
-all:	decrunchxipzstub.inc xipz
+all:	decrunchlzpstub decrunchxipzstub.inc xipz
 
 bin:	xipz
 
@@ -42,6 +42,9 @@ doc:
 
 cmdline.c: command_line.ggo
 	gengetopt -i $+
+
+decrunchlzpstub:	decrunchlzpstub.s
+	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
