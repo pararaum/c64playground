@@ -19,7 +19,7 @@ mandir = $(datarootdir)/man
 
 .PHONY:	all bin clean install pkg
 
-all:	decrunchlzpstub decrunchxipzstub.inc xipz
+all:	decrunchlzpstub.inc decrunchxipzstub.inc xipz
 
 bin:	xipz
 
@@ -49,13 +49,9 @@ decrunchlzpstub:	decrunchlzpstub.s
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
-decrunchxipzstub.inc:	decrunchxipzstub
-	xxd -i $+ > $@
-	hd $+
-
-decrunchqadzstub.inc:	decrunchqadzstub
-	xxd -i $+ > $@
-	hd $+
+%.inc:	%
+	xxd -i $< > $@
+	hd $<
 
 decrunchqadzstub:	decrunchqadzstub.s
 	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+

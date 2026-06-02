@@ -2,6 +2,9 @@
 	.export	tocopy
 	.export	tocopy_end
 	.export	tocopy_len
+	.export	jump_to
+	.export STUBCODEPOS
+	.export	stubcode
 
 STUBCODEPOS = $400
 ;;; Current hash value.
@@ -20,7 +23,7 @@ MASK = $A9
 	.segment	"EXEHDR"
 	.word	thebrk
 minuslen:
-	.word	$10000-tocopy_len
+	.word	0 ;$10000-tocopy_len
 	.byte	$9e,"2061"
 thebrk:	brk
 	brk
@@ -28,7 +31,6 @@ thebrk:	brk
 
 	.data
 tocopy:
-	.incbin	"lzp.hh.prg"
 	;; 	.byte	"copy"
 tocopy_end:
 tocopy_len=tocopy_end-tocopy
@@ -120,6 +122,7 @@ finished:
 	lda	#$37
 	sta	1
 	jmp	*
+	jump_to=*-2
 update:
 	ldx	HASH
 	sta	model,x

@@ -5,6 +5,7 @@
 #include <ranges>
 #include <list>
 #include <algorithm>
+#include "decrunchlzpstub.inc"
 
 /*
  * When testing a little it seemed (but only a single testfile, needs
@@ -212,5 +213,10 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
 
 
 std::ostream &write_lzp_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
+  // Create a local copy.
+  std::vector<uint8_t> stub(decrunchlzpstub, decrunchlzpstub + decrunchlzpstub_len);
+
+  // Now copy the modified stub.
+  std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
   return out;
 }
