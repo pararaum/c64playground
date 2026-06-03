@@ -58,7 +58,8 @@ decrunchqadzstub:	decrunchqadzstub.s
 
 clean:
 	rm -f *.lst *.map *.label *.o *.inc
-	rm -f decrunchqadzstub decrunchxipzstub
+	rm -f cmdline.?
+	rm -f decrunch*stub
 	rm -f xipz
 	rm -rf html
 
