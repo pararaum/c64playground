@@ -2,7 +2,7 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra -std=c++23
 
-VERSION = 0.5.1
+VERSION = 0.6.0
 #
 OBJS = cmdline.o qadz.o xipz.o lzp.o
 #
