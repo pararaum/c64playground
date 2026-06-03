@@ -79,7 +79,16 @@ UPCPYDST = *-2
 	;; Get Mask. Y=0 from loop above.
 	sty	MASKIDX
 decrunchloop:
-	jsr	next_mask
+next_mask:			; Get the next mask bit.
+	asl	MASKIDX
+	bne	nm_stillgoing
+	lda	#1
+	sta	MASKIDX
+	jsr	next_byte
+	sta	MASK
+nm_stillgoing:
+	lda	MASKIDX
+	and	MASK
 	beq	literal
 	jsr	next_byte	; Get run length.
 	cmp	#0
@@ -106,17 +115,6 @@ next_byte:
 	bne	nb_out
 	inc	SRCDATAPTR+1
 nb_out:	rts
-next_mask:
-	asl	MASKIDX
-	bne	nm_stillgoing
-	lda	#1
-	sta	MASKIDX
-	jsr	next_byte
-	sta	MASK
-nm_stillgoing:
-	lda	MASKIDX
-	and	MASK
-	rts
 finished:
 	lda	#$37
 	sta	1
