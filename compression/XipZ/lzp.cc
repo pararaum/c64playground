@@ -213,9 +213,26 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
 
 
 std::ostream &write_lzp_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
+  const int POS_OF_JUMP_TO = 0x94 + 2;
+  const int POS_OF_MINUSLEN = 2 + 2;
+  const int POS_OF_DSTDATAPTR = 0xAD + 2;
+  const int POS_OF_UPCOPYSTC = 0x3B + 2;
+  const long minuslen = -static_cast<long>(size);
+
   // Create a local copy.
   std::vector<uint8_t> stub(decrunchlzpstub, decrunchlzpstub + decrunchlzpstub_len);
 
+  stub.at(POS_OF_JUMP_TO) = jmp & 0xFF;
+  stub.at(POS_OF_JUMP_TO + 1) = (jmp >> 8) & 0xFF;
+  stub.at(POS_OF_MINUSLEN) = minuslen & 0xFF;
+  stub.at(POS_OF_MINUSLEN + 1) = (minuslen >> 8) & 0xFF;
+  stub.at(POS_OF_DSTDATAPTR) = loadaddr & 0xFF;
+  stub.at(POS_OF_DSTDATAPTR + 1) = (loadaddr >> 8) & 0xFF;
+  long upcopystc = stub.at(POS_OF_UPCOPYSTC) | (stub.at(POS_OF_UPCOPYSTC + 1) << 8);
+  upcopystc += size; // Add size of data.
+  stub.at(POS_OF_UPCOPYSTC) = upcopystc & 0xFF;
+  stub.at(POS_OF_UPCOPYSTC + 1) = (upcopystc >> 8) & 0xFF;
+  
   // Now copy the modified stub.
   std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
   return out;

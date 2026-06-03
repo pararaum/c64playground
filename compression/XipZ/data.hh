@@ -71,6 +71,7 @@ public:
    */
   const std::vector<uint8_t> &get_dataref() const { return data; }
   uint8_t operator[](unsigned int i) const { return data.at(i); }
+  uint16_t word(unsigned int i) const { return data.at(i) | (data.at(i + 1) << 8); }
   std::vector<uint8_t>::const_iterator begin() const { return data.begin(); }
   std::vector<uint8_t>::const_iterator end() const { return data.end(); }
 };

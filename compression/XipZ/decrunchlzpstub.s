@@ -5,6 +5,7 @@
 	.export	jump_to
 	.export STUBCODEPOS
 	.export	stubcode
+	.import	__LOADADDR__
 
 STUBCODEPOS = $400
 ;;; Current hash value.
@@ -21,7 +22,7 @@ MASK = $A9
 	DEFAULT_DESTINATION=$800
 
 	.segment	"EXEHDR"
-	.word	thebrk
+START:	.word	thebrk
 minuslen:
 	.word	0 ;$10000-tocopy_len
 	.byte	$9e,"2061"
@@ -48,10 +49,6 @@ stubcopyloop:
 	sta	SRCDATAPTR
 	lda	minuslen+1
 	sta	SRCDATAPTR+1
-	lda	#<DEFAULT_DESTINATION
-	sta	DSTDATAPTR
-	lda	#>DEFAULT_DESTINATION
-	sta	DSTDATAPTR+1
 	jmp	STUBCODEPOS
 
 stubcode:
@@ -138,7 +135,7 @@ predict:
 	lda	model,x
 	rts
 output:
-	sta	*
+	sta	64738
 DSTDATAPTR = *-2
 	inc	DSTDATAPTR
 	bne	op_out
@@ -148,3 +145,8 @@ op_out:	rts
 model:	.res	0
 stubcodelen = *-realstubcode
 
+	.export minuslen_offset=minuslen-START
+
+	.export	jump_to_offset=jump_to-realstubcode+stubcode-START
+	.export	dstdataptr_offset=DSTDATAPTR-realstubcode+stubcode-START
+	.export upcopystc_offset=UPCPYSRC-realstubcode+stubcode-START
