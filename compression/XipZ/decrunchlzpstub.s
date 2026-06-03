@@ -45,9 +45,11 @@ stubcopyloop:
 	sta	STUBCODEPOS-1,x
 	dex
 	bne	stubcopyloop
-	lda	minuslen
+	lda	#0
+	MINUSLENLO = *-1
 	sta	SRCDATAPTR
-	lda	minuslen+1
+	lda	#0
+	MINUSLENHI = *-1
 	sta	SRCDATAPTR+1
 	jmp	STUBCODEPOS
 
@@ -145,7 +147,8 @@ op_out:	rts
 model:	.res	0
 stubcodelen = *-realstubcode
 
-	.export minuslen_offset=minuslen-START
+	.export minuslenlo_offset=MINUSLENLO-START
+	.export minuslenhi_offset=MINUSLENHI-START
 
 	.export	jump_to_offset=jump_to-realstubcode+stubcode-START
 	.export	dstdataptr_offset=DSTDATAPTR-realstubcode+stubcode-START
