@@ -6,7 +6,7 @@ design goal was to have a small stub with a decent compression ration
 while meeting the competition rules.
 
 It is another special purpose decruncher for very small games, demos,
-etc. It is based on the ideas of XIP by S. Judd and has a cruncher
+etc. It is based on the ideas of XIP by S. Judd and has two crunchers
 which uses an algorithm similar to LZ77 compressors.
 
 The program has to be runnable vir `RUN` therefore we needed a basic
@@ -121,7 +121,7 @@ handle nibbles.
 
 Have a look at the main_qadz() function.
 
-## LZP ##
+## lzp ##
 
 A variant of the LZ77 algorithm where the prediction buffer is a hash
 buffer which doubles as storage for the hash and the matches, [see
@@ -202,6 +202,12 @@ and combined locations like $204c or whatever.
 It seems that using xipz on a data compressed with qadz still shaves
 some bytes of. Remember to set the jump address to 2061 (0x80d) so the
 the previous decompression stub is called.
+
+## lzp ##
+
+As this algorithm is mediocre at detecting backreferences (it was
+designed to be used in modem hardware) precompressing with RLE will
+make the result worse. But your mileage may vary.
 
 # Links #
 
