@@ -44,15 +44,17 @@ call the executable with the "-h" option switch, like this `xipz -h`.
 
 Here is an excerpt from the command-line help:
 
-	Usage: XipZ [OPTION]...  <filename> [<outputfilename>]
+	Usage: XipZ [OPTION]... <filename> [<outputfilename>]
 
-	-h, --help			  Print help and exit
-	-V, --version		  Print version and exit
-	-r, --raw			  output raw crunched data without header  (default=off)
-	-a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz",
-							"qadz" default=`xipz')
-	-j, --jump=INT		  address to jump to (-1 = load address)  (default=`-1')
-	-p, --page=INT        maximum page to use +1  (default=`0x10')
+	  -h, --help            Print help and exit
+	  -V, --version         Print version and exit
+	  -r, --raw             output raw crunched data without header  (default=off)
+	  -a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz",
+	                          "qadz", "lzp" default=`xipz')
+	  -j, --jump=INT        address to jump to (-1 = load address)  (default=`-1')
+	  -p, --page=INT        maximum page to use +1  (default=`0xA0')
+	  -d, --data            input is raw data without a load address  (default=off)
+
 
 Remember that the KERNAL and the BASIC ROMs are still memory
 mapped. So using a page above 0xA1 makes no sense.
