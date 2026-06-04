@@ -6,7 +6,7 @@ design goal was to have a small stub with a decent compression ration
 while meeting the competition rules.
 
 It is another special purpose decruncher for very small games, demos,
-etc. It is based on the ideas of XIP by S. Judd and has a cruncher
+etc. It is based on the ideas of XIP by S. Judd and has two crunchers
 which uses an algorithm similar to LZ77 compressors.
 
 The program has to be runnable vir `RUN` therefore we needed a basic
@@ -44,15 +44,17 @@ call the executable with the "-h" option switch, like this `xipz -h`.
 
 Here is an excerpt from the command-line help:
 
-	Usage: XipZ [OPTION]...  <filename> [<outputfilename>]
+	Usage: XipZ [OPTION]... <filename> [<outputfilename>]
 
-	-h, --help			  Print help and exit
-	-V, --version		  Print version and exit
-	-r, --raw			  output raw crunched data without header  (default=off)
-	-a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz",
-							"qadz" default=`xipz')
-	-j, --jump=INT		  address to jump to (-1 = load address)  (default=`-1')
-	-p, --page=INT        maximum page to use +1  (default=`0x10')
+	  -h, --help            Print help and exit
+	  -V, --version         Print version and exit
+	  -r, --raw             output raw crunched data without header  (default=off)
+	  -a, --algorithm=ENUM  crunching algorithm to use  (possible values="xipz",
+	                          "qadz", "lzp" default=`xipz')
+	  -j, --jump=INT        address to jump to (-1 = load address)  (default=`-1')
+	  -p, --page=INT        maximum page to use +1  (default=`0xA0')
+	  -d, --data            input is raw data without a load address  (default=off)
+
 
 Remember that the KERNAL and the BASIC ROMs are still memory
 mapped. So using a page above 0xA1 makes no sense.
@@ -120,6 +122,17 @@ nibbles we use whole bytes as the 6502 architecture is ill equipped to
 handle nibbles.
 
 Have a look at the main_qadz() function.
+
+## lzp ##
+
+A variant of the LZ77 algorithm where the prediction buffer is a hash
+buffer which doubles as storage for the hash and the matches, [see
+e.g. Wikibooks](https://en.wikibooks.org/wiki/Data_Compression/Dictionary_compression#LZ77_algorithms).
+
+A mask byte is written to specify for the next eight bytes if they are
+literals or back references.
+
+See main_lzp() function.
 
 # Maximizing compression #
 
@@ -191,6 +204,12 @@ and combined locations like $204c or whatever.
 It seems that using xipz on a data compressed with qadz still shaves
 some bytes of. Remember to set the jump address to 2061 (0x80d) so the
 the previous decompression stub is called.
+
+## lzp ##
+
+As this algorithm is mediocre at detecting backreferences (it was
+designed to be used in modem hardware) precompressing with RLE will
+make the result worse. But your mileage may vary.
 
 # Links #
 

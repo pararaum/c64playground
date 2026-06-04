@@ -1,10 +1,10 @@
 #! /usr/bin/make -f
 
-CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra
+CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra -std=c++23
 
-VERSION = 0.5.1
+VERSION = 0.6.0
 #
-OBJS = cmdline.o qadz.o xipz.o
+OBJS = cmdline.o qadz.o xipz.o lzp.o
 #
 PACKAGENAME=xipz
 prefix = $(DESTDIR)/usr/local
@@ -19,7 +19,7 @@ mandir = $(datarootdir)/man
 
 .PHONY:	all bin clean install pkg
 
-all:	decrunchxipzstub.inc xipz
+all:	decrunchlzpstub.inc decrunchxipzstub.inc xipz
 
 bin:	xipz
 
@@ -43,23 +43,23 @@ doc:
 cmdline.c: command_line.ggo
 	gengetopt -i $+
 
+decrunchlzpstub:	decrunchlzpstub.s
+	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+
 decrunchxipzstub:	decrunchxipzstub.s
 	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
-decrunchxipzstub.inc:	decrunchxipzstub
-	xxd -i $+ > $@
-	hd $+
-
-decrunchqadzstub.inc:	decrunchqadzstub
-	xxd -i $+ > $@
-	hd $+
+%.inc:	%
+	xxd -i $< > $@
+	hd $<
 
 decrunchqadzstub:	decrunchqadzstub.s
 	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
 clean:
 	rm -f *.lst *.map *.label *.o *.inc
-	rm -f decrunchqadzstub decrunchxipzstub
+	rm -f cmdline.?
+	rm -f decrunch*stub
 	rm -f xipz
 	rm -rf html
 

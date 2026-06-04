@@ -1,6 +1,7 @@
 #ifndef __DATA_HH_2W020__
 #define __DATA_HH_2W020__
 #include <vector>
+#include <stdexcept>
 #include <inttypes.h>
 
 /*! \file
@@ -62,7 +63,15 @@ public:
    * \return number of bytes
    */
   std::vector<uint8_t>::size_type size() const { return data.size(); }
+  /*! \brief get data reference
+   *
+   * Return a const reference to the data. This is needed to use views, etc.
+   *
+   * \return const data reference
+   */
+  const std::vector<uint8_t> &get_dataref() const { return data; }
   uint8_t operator[](unsigned int i) const { return data.at(i); }
+  uint16_t word(unsigned int i) const { return data.at(i) | (data.at(i + 1) << 8); }
   std::vector<uint8_t>::const_iterator begin() const { return data.begin(); }
   std::vector<uint8_t>::const_iterator end() const { return data.end(); }
 };
