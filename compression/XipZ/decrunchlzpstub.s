@@ -24,7 +24,7 @@ MASK = $A9
 	.segment	"EXEHDR"
 START:	.word	thebrk
 minuslen:
-	.word	0 ;$10000-tocopy_len
+	.word	tocopy
 	.byte	$9e,"2061"
 thebrk:	brk
 	brk
@@ -127,7 +127,8 @@ advance:
 	asl	HASH
 	asl	HASH
 	asl	HASH
-	eor	HASH
+	clc
+	adc	HASH
 	sta	HASH
 	rts
 predict:

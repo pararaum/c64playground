@@ -42,7 +42,9 @@ public:
   // Call this for bytes that were part of a confirmed run.
   void advance(uint8_t byte) {
     //best?
-    hash_ = ((hash_ << 3) ^ byte) % (1 << MODELSIZE);
+    //hash_ = ((hash_ << 3) ^ byte) % (1 << MODELSIZE);
+    //sometimes better, sometimes worse:
+    hash_ = ((hash_ << 3) + byte) % (1 << MODELSIZE);
     //good? hash_ = ((hash_ << 5) ^ byte) % (1 << MODELSIZE);
     //very bad: hash_ = (((hash_ << 5) | (hash_ >> 3)) ^ byte) % (1 << MODELSIZE);
     //good: hash_ = ((hash_ << 3) + byte) % (1 << MODELSIZE);
@@ -216,7 +218,7 @@ std::ostream &write_lzp_stub(std::ostream &out, uint16_t size, uint16_t loadaddr
   const int POS_OF_JUMP_TO = 0x8e + 2;
   const int POS_OF_MINUSLENLO = 0x1B + 2;
   const int POS_OF_MINUSLENHI = 0x1F + 2;
-  const int POS_OF_DSTDATAPTR = 0xA7 + 2;
+  const int POS_OF_DSTDATAPTR = 0xA8 + 2;
   const int POS_OF_UPCOPYSTC = 0x39 + 2;
   const long minuslen = -static_cast<long>(size);
 
