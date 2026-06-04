@@ -215,10 +215,10 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
 
 
 std::ostream &write_lzp_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp) {
-  const int POS_OF_JUMP_TO = 0x8e + 2;
+  const int POS_OF_JUMP_TO = 0x90 + 2;
   const int POS_OF_MINUSLENLO = 0x1B + 2;
   const int POS_OF_MINUSLENHI = 0x1F + 2;
-  const int POS_OF_DSTDATAPTR = 0xA8 + 2;
+  const int POS_OF_DSTDATAPTR = 0xA4 + 2;
   const int POS_OF_UPCOPYSTC = 0x39 + 2;
   const long minuslen = -static_cast<long>(size);
 

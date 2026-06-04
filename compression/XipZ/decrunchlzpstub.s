@@ -97,7 +97,9 @@ replay:
 	;; A=length.
 	sta	LENGTH
 replayloop:
-	jsr	predict
+predict:			; Predict the next value.
+	ldx	HASH
+	lda	model,x
 	jsr	output
 	jsr	advance
 	dec	LENGTH
@@ -130,10 +132,6 @@ advance:
 	clc
 	adc	HASH
 	sta	HASH
-	rts
-predict:
-	ldx	HASH
-	lda	model,x
 	rts
 output:
 	sta	64738
