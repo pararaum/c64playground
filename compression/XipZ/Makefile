@@ -8,7 +8,7 @@ else
   HD = hd
 endif
 
-VERSION = 0.6.0
+VERSION = 0.6.1
 #
 OBJS = cmdline.o qadz.o xipz.o lzp.o
 #
