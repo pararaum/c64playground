@@ -2,6 +2,12 @@
 
 CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra -std=c++23
 
+ifeq ($(OS),Windows_NT)
+  HD = xxd
+else
+  HD = hd
+endif
+
 VERSION = 0.6.0
 #
 OBJS = cmdline.o qadz.o xipz.o lzp.o
@@ -51,7 +57,7 @@ decrunchxipzstub:	decrunchxipzstub.s
 
 %.inc:	%
 	xxd -i $< > $@
-	hd $<
+	$(HD) $<
 
 decrunchqadzstub:	decrunchqadzstub.s
 	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+

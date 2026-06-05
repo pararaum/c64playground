@@ -54,12 +54,14 @@ literal:
 	tax			; Keep number of bytes safe.
 	tay			; Put number of bytes into index register.
 	inc	SRCPTR		; increment src
-	bne	litcop
+	bne	@litpre		; skip high-byte increment if no carry
 	inc	SRCPTR+1
+@litpre:
+	dey			; start at count-1 so loop covers positions [count-1..0]
 litcop:	lda	(SRCPTR),y
 	sta	(DSTPTR),y
 	dey
-	bpl	litcop
+	bpl	litcop		; exit when Y wraps to $FF (after position 0)
 	jsr	incsrc
 	jsr	incdst
 	jmp	decrunch
@@ -85,7 +87,7 @@ bckcop:	lda	(AUXPTR),y
 	sta	(DSTPTR),y
 	iny			; Now go to next byte.
 	dex			; Decrement the counter.
-	bpl	bckcop
+	bne	bckcop
 	lda	#0		; Placeholder for run length.
 	sm_runlen = *-1
 	jsr	incdstA		; Adjust destination.
