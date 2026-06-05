@@ -479,7 +479,7 @@ int main_qadz(const std::string &inputname, const std::string &outputname, bool 
   Data data(read_data(inputname, exloadaddr));
   std::vector<uint8_t> compressed(crunch_qadz(data));
   std::cout << "Compressed size: " << compressed.size() << std::endl;
-  std::ofstream out(outputname);
+  std::ofstream out(outputname, std::ios::binary);
   if(!raw) {
     if(jump >= 0) {
       jumpaddr = jump;
@@ -510,7 +510,7 @@ int main_lzp(const std::string &inputname, const std::string &outputname, bool r
   Data data(read_data(inputname, exloadaddr));
   std::vector<uint8_t> compressed(crunch_lzp(data));
   std::cout << "Compressed size: " << compressed.size() << std::endl;
-  std::ofstream out(outputname);
+  std::ofstream out(outputname, std::ios::binary);
   if(!raw) {
     if(jump >= 0) {
       jumpaddr = jump;
