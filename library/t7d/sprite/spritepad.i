@@ -12,8 +12,8 @@
 .macro copySPadData sprdataptr, num, destination
         .local  @loop
         ldx     #63-1
-@loop:  lda     sprdataptr+SPRITEPADDATAOFFSET+64*num,x
-        sta     destination,x
+@loop:  lda     0+(sprdataptr+SPRITEPADDATAOFFSET+64*num),x
+        sta     0+(destination),x
         dex
         bpl     @loop
 .endmacro

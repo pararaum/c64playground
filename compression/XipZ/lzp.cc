@@ -2,10 +2,14 @@
 #include "lzp.hh"
 #include <iostream>
 #include <array>
+#include <map>
 #include <ranges>
 #include <list>
 #include <algorithm>
+#include <format>
 #include "decrunchlzpstub.inc"
+#include "decrunchlzp2stub.inc"
+#include "compression.hh"
 
 /*
  * When testing a little it seemed (but only a single testfile, needs
@@ -25,6 +29,10 @@
 
 template<unsigned int MODELSIZE>
 class LZPModel {
+protected:
+  std::array<uint8_t, 1 << MODELSIZE> model_;
+  unsigned long hash_;
+
 public:
   LZPModel() : hash_(0) { model_.fill(0); }
 
@@ -40,7 +48,7 @@ public:
 
   // Advance the hash only, without updating the model.
   // Call this for bytes that were part of a confirmed run.
-  void advance(uint8_t byte) {
+  virtual void advance(uint8_t byte) {
     //best?
     //hash_ = ((hash_ << 3) ^ byte) % (1 << MODELSIZE);
     //sometimes better, sometimes worse:
@@ -53,10 +61,20 @@ public:
 
   // Current hash value, useful for debugging.
   unsigned long hash() const { return hash_; }
+};
 
-private:
-  std::array<uint8_t, 1 << MODELSIZE> model_;
-  unsigned long hash_;
+
+template<unsigned int MODELSIZE>
+class LZP2Model : public LZPModel<MODELSIZE> {
+protected:
+  // In templates, names from a dependent base class aren't found by
+  // unqualified lookup, there use `using`.
+  using LZPModel<MODELSIZE>::hash_;
+public:
+  virtual void advance(uint8_t byte) override {
+    // Seems to work fine, moving four bits to the left worked nearly as good.
+    hash_ = ((hash_ << 5) ^ byte) % (1 << MODELSIZE);
+  }
 };
 
 
@@ -150,8 +168,10 @@ std::vector<uint8_t> decrunch_lzp(const std::vector<uint8_t>& compressed) {
   return output;
 }
 
-std::vector<uint8_t> crunch_lzp(const Data &data) {
+std::vector<uint8_t> crunch_lzp(const Data &data, bool verbose) {
   LZPModel<LZPMODELSIZE> model;
+  // This map contains just the run-lengths and how often they do occur.
+  std::map<int, unsigned int> runlength_counts;
   std::list<uint8_t> output; // A list of output elements, a list is needed for the following trick to work: see mask.
   unsigned int maskidx = 0;
   // Pushing the zero and getting a pointer to the value is a nice
@@ -191,6 +211,7 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
       output.push_back(runlength);
       nextmask(1);
       pos += runlength;
+      runlength_counts[runlength] += 1;
     } else if(pos < data.size()) {
       output.push_back(data[pos]);
       nextmask(0);
@@ -207,8 +228,14 @@ std::vector<uint8_t> crunch_lzp(const Data &data) {
   auto decompressed = decrunch_lzp(outputvec);
   if(decompressed != data.get_dataref()) {
     hexdump_side_by_side(data.get_dataref(), decompressed);
-    std::cerr << "Compressed data was " << output.size() << " bytes long.\n";
+    std::cout << "Compressed data was " << output.size() << " bytes long.\n";
     throw std::logic_error("wrong data after decompression");
+  }
+  if(verbose) {
+    std::cout << std::format("{:>10} {:>9}", "run length", "count") << std::endl;
+    for( auto [rlen, rlc] : runlength_counts ) {
+      std::cout << std::format("{:10} {:9}", rlen, rlc) << std::endl;
+    }
   }
   return outputvec;
 }
@@ -223,7 +250,7 @@ std::ostream &write_lzp_stub(std::ostream &out, uint16_t size, uint16_t loadaddr
   const long minuslen = -static_cast<long>(size);
 
   // Create a local copy.
-  std::vector<uint8_t> stub(decrunchlzpstub, decrunchlzpstub + decrunchlzpstub_len);
+  std::vector<uint8_t> stub(decrunchlzpstub_prg, decrunchlzpstub_prg + decrunchlzpstub_prg_len);
 
   stub.at(POS_OF_JUMP_TO) = jmp & 0xFF;
   stub.at(POS_OF_JUMP_TO + 1) = (jmp >> 8) & 0xFF;
@@ -240,3 +267,84 @@ std::ostream &write_lzp_stub(std::ostream &out, uint16_t size, uint16_t loadaddr
   std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
   return out;
 }
+
+
+std::vector<uint8_t> Lzp2Compressor::compress() {
+  LZP2Model<LZPMODELSIZE> model;
+  std::list<uint8_t> output; // A list of output elements, a list is needed for the following trick to work: see mask.
+  unsigned int maskidx = 0;
+  // Pushing the zero and getting a pointer to the value is a nice
+  // trick as we can modify the mask when elements are later on added
+  // without having to worry about splicing this values. But we have
+  // to use a list as a vector invalidates references and therefore
+  // pointers when the capacity is exhausted.
+  output.push_back(0); // Add a mask, preinitialised with zeroes.
+  uint8_t *mask = &output.back(); // And get a reference to our mask.
+  auto nextmask = [&mask, &maskidx, &output](bool set1) {
+    if(set1) {
+      *mask |= 1 << maskidx;
+    }
+    if(++maskidx >= 8) {
+      output.push_back(0);
+      mask = &output.back();
+      maskidx = 0;
+    }
+  };
+
+  for(unsigned long pos = 0; pos < data.size(); ++pos) {
+    uint8_t byte = data[pos];
+    if(byte == model.predict()) { // Does the model predict correctly?
+      nextmask(1);
+      model.advance(byte);
+    } else { // No, new byte.
+      output.push_back(byte);
+      nextmask(0);
+      model.update(byte);
+    }
+  }
+  /* TODO:
+   * 
+   * Mark for EOF? Probably we will have to pass the number of output
+   * bytes...
+   */
+  // Use C++23 feature to return a vector instead of the list.
+  // Not supported by my compiler version: return output | std::ranges::to<std::vector>();
+  // Use range constructor instead:
+  auto outputvec = std::vector<uint8_t>(output.begin(), output.end());
+  /* TODO: decompression and check needed... */
+  // auto decompressed = decrunch_lzp(outputvec);
+  // if(decompressed != data.get_dataref()) {
+  //   hexdump_side_by_side(data.get_dataref(), decompressed);
+  //   std::cout << "Compressed data was " << output.size() << " bytes long.\n";
+  //   throw std::logic_error("wrong data after decompression");
+  // }
+  return outputvec;
+}
+
+void Lzp2Compressor::write_stub(std::ofstream& out, const std::vector<uint8_t>& c,
+				uint16_t load, uint16_t jmp) {
+  const int POS_OF_JUMP_TO = 0x85 + 2;
+  const int POS_OF_MINUSLENLO = 0x1B + 2;
+  const int POS_OF_MINUSLENHI = 0x1F + 2;
+  const int POS_OF_DSTDATAPTR = 0x9D + 2;
+  const int POS_OF_UPCOPYSTC = 0x39 + 2;
+  const long minuslen = -static_cast<long>(c.size());
+
+  // Create a local copy.
+  std::vector<uint8_t> stub(decrunchlzp2stub_prg, decrunchlzp2stub_prg + decrunchlzp2stub_prg_len);
+  
+  stub.at(POS_OF_JUMP_TO) = jmp & 0xFF;
+  stub.at(POS_OF_JUMP_TO + 1) = (jmp >> 8) & 0xFF;
+  stub.at(POS_OF_MINUSLENLO) = minuslen & 0xFF;
+  stub.at(POS_OF_MINUSLENHI) = (minuslen >> 8) & 0xFF;
+  stub.at(POS_OF_DSTDATAPTR) = load & 0xFF;
+  stub.at(POS_OF_DSTDATAPTR + 1) = (load >> 8) & 0xFF;
+  long upcopystc = stub.at(POS_OF_UPCOPYSTC) | (stub.at(POS_OF_UPCOPYSTC + 1) << 8);
+  upcopystc += c.size(); // Add size of data.
+  stub.at(POS_OF_UPCOPYSTC) = upcopystc & 0xFF;
+  stub.at(POS_OF_UPCOPYSTC + 1) = (upcopystc >> 8) & 0xFF;
+  
+  // Now copy the modified stub.
+  std::copy(stub.begin(), stub.end(), std::ostream_iterator<unsigned char>(out));
+}
+

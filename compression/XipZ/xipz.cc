@@ -1,14 +1,12 @@
 #include <inttypes.h>
-#include <iostream>
-#include <fstream>
 #include <vector>
 #include <iterator>
 #include <algorithm>
 #include <numeric>
 #include <sstream>
 #include <boost/format.hpp>
-#include "cmdline.h"
-#include "data.hh"
+#include <format>
+#include "compression.hh"
 #include "qadz.hh"
 #include "lzp.hh"
 
@@ -120,43 +118,6 @@ typedef std::vector<HistEntry> HistorgramArray;
 typedef std::array<Bits, 256> CompressionBits;
 
 
-/*! \brief Read data from a file
- *
- * Input is read and an exception is thrown if the file can not be
- * opened.
- *
- * \param fname file name
- * \param exloadaddr extract load address from data?
- * \return Data object with loaded binary data
- */
-Data read_data(const std::string &fname, bool exloadaddr) {
-  std::vector<uint8_t> rawdata;
-  std::ifstream inp(fname, std::ios::binary);
-  uint8_t tmp;
-
-  if(!inp) {
-    std::ostringstream out;
-    out << "can not open file '" << fname << '\'';
-    throw std::runtime_error(out.str());
-  };
-  //So such iterator? std::copy(std::istreambuf_iterator<uint8_t>(inp), std::istreambuf_iterator<uint8_t>(), std::back_inserter(rawdata));
-  do {
-    tmp = inp.get();
-    if(!inp.eof()) {
-      rawdata.push_back(tmp);
-    }
-  } while(inp);
-  Data data(rawdata, exloadaddr);
-  if(exloadaddr) {
-    std::cout << "Bytes read (without load address): " << data.size() << std::endl;
-    std::cout << "Load address: " << data.get_loadaddr() << std::endl;
-  } else {
-    std::cout << "Bytes read: " << data.size() << std::endl;
-  }
-  return data;
-}
-
-
 /*! \brief calculate the histogram
  *
  * For each byte in the input data the frequency is calculated.
@@ -168,7 +129,7 @@ Data read_data(const std::string &fname, bool exloadaddr) {
  * \param data binary data
  * \return vector of histogram entries, sorted
  */
-HistorgramArray calc_histo(const Data &data) {
+static HistorgramArray calc_histo(const Data &data) {
   std::array<unsigned long, 256> histo;
   HistorgramArray shisto;
 
@@ -235,7 +196,7 @@ float calc_comp(int n, const Data &data, const HistorgramArray &histarr) {
  * \param n how many bits to use
  * \return Table of 256 entries containing the bits for each byte, type is \ref CompressionBits
  */
-CompressionBits create_compression_bits(const HistorgramArray &compressable, int n) {
+static CompressionBits create_compression_bits(const HistorgramArray &compressable, int n) {
   CompressionBits bits;
   int i;
 
@@ -266,7 +227,7 @@ CompressionBits create_compression_bits(const HistorgramArray &compressable, int
  */
 std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loadaddr, uint16_t jmp, uint8_t pagehi) {
   // Create a local copy.
-  std::vector<uint8_t> stub(decrunchxipzstub, decrunchxipzstub + decrunchxipzstub_len);
+  std::vector<uint8_t> stub(decrunchxipzstub_prg, decrunchxipzstub_prg + decrunchxipzstub_prg_len);
   unsigned endptr = stub.at(POS_OF_END_OF_CDATA) | (stub.at(POS_OF_END_OF_CDATA + 1) << 8);
   unsigned beginptr = stub.at(POS_OF_BEGIN_OF_CDATA) | (stub.at(POS_OF_BEGIN_OF_CDATA + 1) << 8);
   
@@ -312,20 +273,6 @@ std::ostream &write_compression_table(std::ostream &out, int n, const Historgram
     const HistEntry &curr = histe.at(i);
     out << curr.byte;
   }
-  return out;
-}
-
-
-/*! \brief write the compressed data
- *
- * Write the binary compressed data into the output stream.
- *
- * \param out output stream to write to
- * \param data binary data to write
- * \return output stream
- */
-std::ostream &write_compressed_data(std::ostream &out, const std::vector<uint8_t> &data) {
-  std::copy(data.begin(), data.end(), std::ostream_iterator<unsigned char>(out));
   return out;
 }
 
@@ -387,7 +334,7 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
  *
  * \param shisto sorted histogram array
  */
-void output_64_common(const HistorgramArray &shisto) {
+static void output_64_common(const HistorgramArray &shisto) {
   int count = 0;
 
   std::cout << "64 most common bytes:\n\t";
@@ -412,7 +359,7 @@ void output_64_common(const HistorgramArray &shisto) {
  * \param shisto sortet histogram aka frequencies
  * \return optimal number of bits
  */
-int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
+static int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
   int n = 0;
   float minsize = data.size();
   float f;
@@ -428,101 +375,70 @@ int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
 }
 
 
-/*!\brief main function using xip
+/*! LZP compressor class
  *
- * Main function for compression using the xip algorithm.
- *
- * \param inputname input filename
- * \param outputname outout filename
- * \param raw should the compressed data be written raw (without decompression stub)
- * \param jump jump address, -1 = equal to load address
- * \param pagehi maximum page to use +1
- * \param exloadaddr extract load address from data?
  */
-int main_xipz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi, bool exloadaddr) {
-  Data data(read_data(inputname, exloadaddr));
-  HistorgramArray shisto(calc_histo(data));
-  output_64_common(shisto);
-  int n = choose_optimal_n(data, shisto);
-  std::cout << "Optimal number of bits: N=" << n << std::endl;
-  CompressionBits compbits(create_compression_bits(shisto, n));
-  uint16_t jumpaddr = jump < 0 ? data.get_loadaddr() : jump;
-  std::ofstream out(outputname, std::ios::binary);
-  std::vector<uint8_t> cdata(create_compressed_data(data, compbits));
-  if(raw) {
-    std::cout << "Skipping writing the decrunching stub!\n";
-  } else {
-    std::cout << "Writing decrunching stub...\n";
-    write_stub(out, n, cdata.size(), data.get_loadaddr(), jumpaddr, pagehi);
-  }
-  std::cout << boost::format("Writing table, %d bytes...\n") % (1 << n);
-  write_compression_table(out, n, shisto);
-  std::cout << boost::format("Writing %u bytes compressed data...\n") % cdata.size();
-  write_compressed_data(out, cdata);
-  return 0;
-}
+class LzpCompressor : public Compressor {
+public:
+  using Compressor::Compressor;
 
-/*!\brief main function using qadz
- *
- * Main function for compression using the qadz (LZ77-like) algorithm.
- *
- * \param inputname input filename
- * \param outputname outout filename
- * \param raw should the compressed data be written raw (without decompression stub)
- * \param jump jump address, -1 = equal to load address
- * \param pagehi maximum page to use +1
- * \param exloadaddr extract load address from data?
- */
-int main_qadz(const std::string &inputname, const std::string &outputname, bool raw, int jump, uint8_t pagehi, bool exloadaddr) {
-  uint16_t jumpaddr;
-
-  Data data(read_data(inputname, exloadaddr));
-  std::vector<uint8_t> compressed(crunch_qadz(data));
-  std::cout << "Compressed size: " << compressed.size() << std::endl;
-  std::ofstream out(outputname, std::ios::binary);
-  if(!raw) {
-    if(jump >= 0) {
-      jumpaddr = jump;
-    } else {
-      jumpaddr = data.get_loadaddr();
+protected:
+    std::vector<uint8_t> compress() override {
+        return crunch_lzp(data, cliargs.verbose_flag);
     }
-    std::cout << "Writing decrunching stub...\n";
-    write_qadz_stub(out, compressed.size(), data.get_loadaddr(), jumpaddr, pagehi);
-  }
-  write_compressed_data(out, compressed);
-  return 0;
-}
-
-
-/*!\brief main function using lzp
- *
- * Main function for compression using the lzp (LZ77-like) algorithm.
- *
- * \param inputname input filename
- * \param outputname outout filename
- * \param raw should the compressed data be written raw (without decompression stub)
- * \param jump jump address, -1 = equal to load address
- * \param exloadaddr extract load address from data?
- */
-int main_lzp(const std::string &inputname, const std::string &outputname, bool raw, int jump, bool exloadaddr) {
-  uint16_t jumpaddr;
-
-  Data data(read_data(inputname, exloadaddr));
-  std::vector<uint8_t> compressed(crunch_lzp(data));
-  std::cout << "Compressed size: " << compressed.size() << std::endl;
-  std::ofstream out(outputname, std::ios::binary);
-  if(!raw) {
-    if(jump >= 0) {
-      jumpaddr = jump;
-    } else {
-      jumpaddr = data.get_loadaddr();
+    void write_stub(std::ofstream& out, const std::vector<uint8_t>& c,
+                    uint16_t load, uint16_t jmp) override {
+        write_lzp_stub(out, c.size(), load, jmp);
     }
-    std::cout << "Writing decrunching stub...\n";
-    write_lzp_stub(out, compressed.size(), data.get_loadaddr(), jumpaddr);
+};
+
+
+/*! QADZ compressor class
+ *
+ */
+class QadzCompressor : public Compressor {
+public:
+  using Compressor::Compressor;
+protected:
+    std::vector<uint8_t> compress() override {
+        return crunch_qadz(data);
+    }
+    void write_stub(std::ofstream& out, const std::vector<uint8_t>& c,
+                    uint16_t load, uint16_t jmp) override {
+	write_qadz_stub(out, c.size(), load, jmp, cliargs.page_arg);
+	
+    }
+};
+
+
+/*! XipZ compressor class
+ *
+ */
+class XipzCompressor : public Compressor {
+public:
+  using Compressor::Compressor;
+
+protected:
+  void pre_compress() override {
+    shisto = calc_histo(data);
+    output_64_common(shisto);
+    optimal_bits = choose_optimal_n(data, shisto);
+    std::cout << "Optimal number of bits: N=" << optimal_bits << std::endl;
+    compbits = create_compression_bits(shisto, optimal_bits);
   }
-  write_compressed_data(out, compressed);
-  return 0;
-}
+  std::vector<uint8_t> compress() override {
+    return create_compressed_data(data, compbits);
+  }
+  void write_stub(std::ofstream& out, const std::vector<uint8_t>& c,
+		  uint16_t load, uint16_t jmp) override {
+    ::write_stub(out, optimal_bits, c.size(), load, jmp, cliargs.page_arg);
+    std::cout << boost::format("Writing table, %d bytes...\n") % (1 << optimal_bits);
+    write_compression_table(out, optimal_bits, shisto);
+  }
+  HistorgramArray shisto;
+  CompressionBits compbits;
+  int optimal_bits;
+};
 
 
 /*!\brief main function using xip
@@ -531,6 +447,7 @@ int main_lzp(const std::string &inputname, const std::string &outputname, bool r
  */
 int main(int argc, char **argv) {
   gengetopt_args_info args;
+  std::unique_ptr<Compressor> compmain;
   int ret = RETURN_UNKNOWN_EXCEPTION; // See below!
 
   if(cmdline_parser(argc, argv, &args) != 0) {
@@ -558,22 +475,44 @@ int main(int argc, char **argv) {
       }
       switch(args.algorithm_arg) {
       case algorithm_arg_xipz:
-	ret = main_xipz(inpnam, outnam, args.raw_flag, args.jump_arg, args.page_arg, !args.data_flag);
+	if(args.raw_given) {
+	  throw std::invalid_argument("no raw for XipZ");
+	  /* TODO: Fix class to not only output a stub but also the table. Append in compress()? */
+	}
+	compmain = std::make_unique<XipzCompressor>(inpnam, outnam, args);
 	break;
       case algorithm_arg_qadz:
-	ret = main_qadz(inpnam, outnam, args.raw_flag, args.jump_arg, args.page_arg, !args.data_flag);
+	compmain = std::make_unique<QadzCompressor>(inpnam, outnam, args);
 	break;
-      case algorithm__NULL:
-	throw std::logic_error("algorithm vanished");
       case algorithm_arg_lzp:
 	if(args.page_given) {
 	  std::cerr << "Warning! Page is ignored by LZP.\n";
 	}
-	ret = main_lzp(inpnam, outnam, args.raw_flag, args.jump_arg, !args.data_flag);
+	compmain = std::make_unique<LzpCompressor>(inpnam, outnam, args);
 	break;
+      case algorithm_arg_lzp2:
+	if(args.page_given) {
+	  std::cerr << "Warning! Page is ignored by LZP2.\n";
+	}
+	compmain = std::make_unique<Lzp2Compressor>(inpnam, outnam, args);
+	break;
+      case algorithm_arg_rle:
+	if(!args.raw_given) {
+	  std::cerr << "Currently no stub for RLE, sorry.\n";
+	  return 1;
+	}  else {
+	  compmain = std::make_unique<RleCompressor>(inpnam, outnam, args);
+	}
+	break;
+      case algorithm__NULL:
+	throw std::logic_error("algorithm vanished");
       default:
 	throw std::logic_error("mismatch between command line and code");
       }
+      if(!compmain) {
+	throw std::logic_error("compression main has been lost");
+      }
+      ret = compmain->run();
     }
     catch(const std::exception &e) {
       std::cerr << "Exception: " << e.what() << std::endl;

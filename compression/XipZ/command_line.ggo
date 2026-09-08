@@ -2,7 +2,8 @@ package "XipZ"
 version "0.6.1"
 args	"--unnamed-opts"
 option	"raw"	r "output raw crunched data without header" flag off
-option	"algorithm"	a "crunching algorithm to use" values="xipz","qadz","lzp" enum default="xipz" optional
+option	"algorithm"	a "crunching algorithm to use" values="xipz","qadz","lzp","lzp2","rle" enum default="xipz" optional
 option	"jump"		j "address to jump to (-1 = load address)" int default="-1" optional
 option	"page"		p "maximum page to use +1" int default="0xA0" optional
 option	"data"		d "input is raw data without a load address" flag off
+option	"verbose"	v "more verbose output, if available" flag off

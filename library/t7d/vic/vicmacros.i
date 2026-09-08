@@ -6,7 +6,7 @@
 ;;;	chrgaddr = address of chargen RAM
 ;;; Modifies: A
 .macro	SwitchScreenAndChargenAddress scrnaddr, chrgaddr
-	.if ((scrnaddr & $e000) <> (chrgaddr & $e000))
+	.if ((scrnaddr & $C000) <> (chrgaddr & $C000))
 	.error "Screen and Chargen not in same VIC bank!"
 	.endif
 	SwitchVICBank (scrnaddr >> 14)
@@ -162,7 +162,7 @@
 .macro	EnableIRQatRasterline rasterline
 	lda	#<(rasterline)	; Set the rasterline
 	sta	$d012
-	.if rasterline>255
+	.if (rasterline)>255
 	lda	$d011
 	ora	#$80
 	sta	$d011

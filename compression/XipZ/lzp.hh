@@ -9,9 +9,10 @@
 /*! Compress data using the LZ77/LZP-alike compression.
  *
  * \param data binary data to compress
+ * \param verbose be more verbose
  * \return compressed data
  */
-std::vector<uint8_t> crunch_lzp(const Data &data);
+std::vector<uint8_t> crunch_lzp(const Data &data, bool verbose);
 
 /*! \brief write the decrunch stub
  *

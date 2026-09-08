@@ -71,7 +71,7 @@ int decrunch_main(int argc, char **argv) {
 
 std::ostream &write_qadz_stub(std::ostream &out, uint16_t size, uint16_t loadaddr, uint16_t jmp, uint8_t pagehi) {
   // Create a local copy.
-  std::vector<uint8_t> stub(decrunchqadzstub, decrunchqadzstub + decrunchqadzstub_len);
+  std::vector<uint8_t> stub(decrunchqadzstub_prg, decrunchqadzstub_prg + decrunchqadzstub_prg_len);
 // 00000000  01 08 0a 08 02 03 9e 32  30 36 31 00 00 00 a2 08  |.......2061.....|
 // 00000010  bd 31 08 95 58 ca 10 f8  20 bf a3 78 b9 3a 08 99  |.1..X... ..x.:..|
 // 00000020  f7 00 c8 d0 f7 e6 59 a9  3c 85 26 a9 03 85 27 4c  |......Y.<.&...'L|

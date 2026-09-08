@@ -1,0 +1,8 @@
+globals.*
+*.prg
+*.map
+*.label
+*.raw
+*.pu
+*.tmp
+temporary.*

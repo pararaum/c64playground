@@ -1,5 +1,7 @@
 #ifndef __DATA_HH_2W020__
 #define __DATA_HH_2W020__
+#include <string>
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 #include <inttypes.h>
@@ -76,5 +78,27 @@ public:
   std::vector<uint8_t>::const_iterator end() const { return data.end(); }
 };
 
+
+/*! \brief Read data from a file
+ *
+ * Input is read and an exception is thrown if the file can not be
+ * opened.
+ *
+ * \param fname file name
+ * \param exloadaddr extract load address from data?
+ * \return Data object with loaded binary data
+ */
+Data read_data(const std::string &fname, bool exloadaddr);
+
+
+/*! \brief write the compressed data
+ *
+ * Write the binary compressed data into the output stream.
+ *
+ * \param out output stream to write to
+ * \param data binary data to write
+ * \return output stream
+ */
+std::ostream &write_compressed_data(std::ostream &out, const std::vector<uint8_t> &data);
 
 #endif

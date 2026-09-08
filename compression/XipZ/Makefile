@@ -10,7 +10,7 @@ endif
 
 VERSION = 0.6.1
 #
-OBJS = cmdline.o qadz.o xipz.o lzp.o
+OBJS = cmdline.o xipz.o compression.o qadz.o lzp.o rle.o read_data.o write_compressed_data.o
 #
 PACKAGENAME=xipz
 prefix = $(DESTDIR)/usr/local
@@ -23,9 +23,11 @@ bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
 
+STUBINCS = decrunchlzpstub.inc decrunchlzp2stub.inc decrunchqadzstub.inc decrunchxipzstub.inc
+
 .PHONY:	all bin clean install pkg
 
-all:	decrunchlzpstub.inc decrunchxipzstub.inc xipz
+all:	$(STUBINCS) xipz
 
 bin:	xipz
 
@@ -49,23 +51,17 @@ doc:
 cmdline.c: command_line.ggo
 	gengetopt -i $+
 
-decrunchlzpstub:	decrunchlzpstub.s
-	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+%.prg:	%.s
+	cl65 -o $@ --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
-decrunchxipzstub:	decrunchxipzstub.s
-	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
-
-%.inc:	%
+%.inc:	%.prg
 	xxd -i $< > $@
 	$(HD) $<
-
-decrunchqadzstub:	decrunchqadzstub.s
-	cl65 --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
 
 clean:
 	rm -f *.lst *.map *.label *.o *.inc
 	rm -f cmdline.?
-	rm -f decrunch*stub
+	rm -f decrunch*stub.*
 	rm -f xipz
 	rm -rf html
 
