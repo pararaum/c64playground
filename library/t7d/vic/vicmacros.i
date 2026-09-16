@@ -129,7 +129,7 @@
     ;;
 	lda	$d018
 	and	#%00001111
-	ora	#(<((address&$3fff)/$0400))<<4
+	ora	#(<(((address)&$3fff)/$0400))<<4
 	sta	$d018
 .endmacro
 
