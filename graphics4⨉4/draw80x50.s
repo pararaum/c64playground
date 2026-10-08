@@ -30,9 +30,9 @@ screenh		equ	ptr1+1
 ;;; This is a standalone routine without BASIC ROM hooks, parsing, or keyboard input.
 	.proc	plot80x50
 	cpx	#80
-	bcs	.illegal
+	bcs	illegal
 	cpy	#50
-	bcs	.illegal
+	bcs	illegal
 
 	sta	color
 	stx	xcoord
@@ -44,9 +44,9 @@ screenh		equ	ptr1+1
 	lda	xcoord
 	lsr
 	sta	xcoord
-	bcc	.x_right
+	bcc	x_right
 	ldx	#4
-.x_right
+x_right:
 	stx	bitvalue
 
 	; Process y coordinate.
@@ -54,9 +54,9 @@ screenh		equ	ptr1+1
 	lda	ycoord
 	lsr
 	sta	ycoord
-	bcc	.y_lower
+	bcc	y_lower
 	asl	bitvalue
-.y_lower
+y_lower:
 	ldx	#0
 	stx	screenh
 
@@ -65,11 +65,11 @@ screenh		equ	ptr1+1
 	asl
 	adc	ycoord
 	ldx	#3
-.shift_addr
+shift_addr:
 	asl
 	rol	screenh
 	dex
-	bne	.shift_addr
+	bne	shift_addr
 	sta	screen
 
 	lda	screenh
@@ -79,20 +79,20 @@ screenh		equ	ptr1+1
 	; Find the current block pattern at this screen location.
 	ldy	xcoord
 	ldx	#$10
-.find_block
+find_block:
 	lda	_plot80x50_blocks,x
 	cmp	(screen),y
-	beq	.found_block
+	beq	found_block
 	dex
-	bne	.find_block
-.found_block
+	bne	find_block
+found_block:
 	lda	color
-	bmi	.unplot
+	bmi	unplot
 
 	; Plot: combine existing pattern with the current bit.
 	txa
 	ora	bitvalue
-.write_block
+write_block:
 	tax
 	lda	_plot80x50_blocks,x
 	sta	(screen),y
@@ -102,19 +102,19 @@ screenh		equ	ptr1+1
 	eor	#$dc
 	sta	screenh
 	lda	color
-	bpl	.set_color
+	bpl	set_color
 	rts
-.set_color
+set_color:
 	sta	(screen),y
 	rts
 
-.unplot
+unplot:
 	; Unplot: clear the bit from the existing pattern.
 	stx	ycoord
 	eor	bitvalue
 	and	ycoord
-	bpl	.write_block
+	bpl	write_block
 
-.illegal
+illegal:
 	rts
 	.endproc
