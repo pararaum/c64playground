@@ -10,6 +10,23 @@
 	.data
 ;;; Block character lookup table.
 ;;; Patterns for all 16 combinations of 4 bits (2x2 block quadrants).
+;;; C64 screen codes mapped to block-drawing glyphs:
+;;;   $20 →   (space)
+;;;   $7e → ▔ (upper half)
+;;;   $7b → ▁ (lower half)
+;;;   $61 → ▌ (left half)
+;;;   $7c → ▎ (right half)
+;;;   $e2 → ▖ (quadrant lower-left)
+;;;   $ff → █ (full block)
+;;;   $ec → ▗ (quadrant lower-right)
+;;;   $6c → ▝ (quadrant upper-right)
+;;;   $7f → ▘ (quadrant upper-left)
+;;;   $62 → ▚ (upper-left + lower-right)
+;;;   $fc → ▞ (upper-right + lower-left)
+;;;   $e1 → ▙ (upper-left + upper-right + lower-left)
+;;;   $fb → ▟ (upper-left + upper-right + lower-right)
+;;;   $fe → ▛ (upper-left + lower-left + lower-right)
+;;;   $a0 → ▜ (upper-left + upper-right + lower-right)
 _plot80x50_blocks:
 	dc.b	$20,$7e,$7b,$61,$7c,$e2,$ff,$ec,$6c,$7f,$62,$fc,$e1,$fb,$fe,$a0
 
