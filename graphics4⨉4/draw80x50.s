@@ -1,67 +1,73 @@
 ;;; Standalone 80x50 block-drawing routine for C64
 ;;; Original code by Aleksi Eeben, https://csdb.dk/release/?id=213334
 ;;; Extracted from BASIC extension for use as standalone library component
+
+	.include "zeropage.inc"
 	processor 6502
 
-bitvalue	equ	$02
-color		equ	$03
-xcoord		equ	$fb
-ycoord		equ	$fc
-screen		equ	$fd
-screenh		equ	$fe
+bitvalue	equ	tmp1
+color		equ	tmp2
+xcoord		equ	tmp3
+ycoord		equ	tmp4
+screen		equ	ptr1
+screenh		equ	ptr1+1
 
-;;; Draw a pixel at (x, y) with given color using block characters
-;;; Input:
-;;;   A = x-coordinate (0-79)
-;;;   X = y-coordinate (0-49)
-;;;   bitvalue = color (0-15) or $ff to unplot
+;;; Draw a pixel at (x, y) with given color using block characters.
+;;; Calling convention:
+;;;   X = x-coordinate (0-79)
+;;;   Y = y-coordinate (0-49)
+;;;   A = color (0-15) or $ff to unplot
 ;;;
-;;; Uses zero-page locations: $02, $03, $fb, $fc, $fd, $fe
+;;; This is a standalone routine without BASIC ROM hooks, parsing, or keyboard input.
 Draw
-	cmp	#80
+	cpx	#80
 	bcs	.illegal
-	cpx	#50
+	cpy	#50
 	bcs	.illegal
 
-	; Process x coordinate
-	; Divide by 2 to get screen column, save lower bit for block side
-	ldx	#1		; left side of block
+	sta	color
+	stx	xcoord
+	sty	ycoord
+
+	; Process x coordinate.
+	; Divide by two to the screen column and keep the lower bit for block side.
+	ldx	#1
+	lda	xcoord
 	lsr
-	sta	xcoord		; screen x
+	sta	xcoord
 	bcc	.x_right
-	ldx	#4		; right side of block
+	ldx	#4
 .x_right
 	stx	bitvalue
 
-	; Process y coordinate (in X register from input)
-	; Divide by 2 to get screen row, save lower bit for block half
-	txa
+	; Process y coordinate.
+	; Divide by two to the screen row and keep the lower bit for block half.
+	lda	ycoord
 	lsr
-	sta	ycoord		; screen y
+	sta	ycoord
 	bcc	.y_lower
-	asl	bitvalue	; lower half of block if bit 0 in y was 1
+	asl	bitvalue
 .y_lower
 	ldx	#0
 	stx	screenh
 
-	; Calculate screen address = y * 40 * 8
-	asl			; multiply by 2
-	asl			; multiply by 4
-	adc	ycoord		; multiply by 5
+	; Calculate screen address.
+	asl
+	asl
+	adc	ycoord
 	ldx	#3
 .shift_addr
 	asl
 	rol	screenh
 	dex
 	bne	.shift_addr
-	sta	screen		; multiply by 8
+	sta	screen
 
-	; Screen base at $0400
 	lda	screenh
 	ora	#$04
 	sta	screenh
 
-	; Get current block character at this location
+	; Find the current block pattern at this screen location.
 	ldy	xcoord
 	ldx	#$10
 .find_block
@@ -69,12 +75,12 @@ Draw
 	cmp	(screen),y
 	beq	.found_block
 	dex
-	bne	.find_block	; or zero if no block graphics here
+	bne	.find_block
 .found_block
 	lda	color
 	bmi	.unplot
 
-	; Plot: combine existing pattern with new bit
+	; Plot: combine existing pattern with the current bit.
 	txa
 	ora	bitvalue
 .write_block
@@ -82,27 +88,28 @@ Draw
 	lda	Blocks,x
 	sta	(screen),y
 
-	; Set block color in color RAM
+	; Update color RAM.
 	lda	screenh
-	eor	#$dc		; color RAM base is $d800
+	eor	#$dc
 	sta	screenh
 	lda	color
-	bmi	.no_color	; unplot shouldn't touch color memory
+	bpl	.set_color
+	rts
+.set_color
 	sta	(screen),y
-.no_color
 	rts
 
 .unplot
-	; Unplot: clear the bit from existing pattern
-	stx	ycoord		; save current pattern index
-	eor	bitvalue	; a = $ff
+	; Unplot: clear the bit from the existing pattern.
+	stx	ycoord
+	eor	bitvalue
 	and	ycoord
-	bpl	.write_block	; always branch
+	bpl	.write_block
 
 .illegal
 	rts
 
-;;; Block character lookup table
-;;; Patterns for all 16 combinations of 4 bits (2x2 block quadrants)
+;;; Block character lookup table.
+;;; Patterns for all 16 combinations of 4 bits (2x2 block quadrants).
 Blocks
 	dc.b	$20,$7e,$7b,$61,$7c,$e2,$ff,$ec,$6c,$7f,$62,$fc,$e1,$fb,$fe,$a0
