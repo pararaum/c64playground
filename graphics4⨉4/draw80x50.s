@@ -11,6 +11,11 @@
 ;;; Block character lookup table.
 ;;; Patterns for all 16 combinations of 4 bits (2x2 block quadrants).
 ;;; C64 screen codes mapped to block-drawing glyphs:
+;;;
+;;;          ↓ upper left
+;;;         ↓ lower left
+;;;        ↓ upper right
+;;;       ↓ lower right
 ;;;   $20 0000 space
 ;;;   $7e 0001 upper left quadrant
 ;;;   $7b 0010 lower left quadrant
