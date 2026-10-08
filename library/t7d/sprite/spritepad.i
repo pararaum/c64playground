@@ -57,6 +57,7 @@
 ;;; Initialise spritepad handling routine pointers, only one pointer at a time.
 ;;;
 ;;; Input: AX=pointer to the spritepad data
+;;;	On Stack: HL of sprite buffers
 ;;; Output: A=number of sprites - 1
 ;;; Modifies: A,X,Y,ptr1
 	.global	spritepad_initialise_spritepad
