@@ -3,7 +3,15 @@
 ;;; Extracted from BASIC extension for use as standalone library component
 
 	.include "zeropage.inc"
-	processor 6502
+
+	.export	plot80x50
+	.export	_plot80x50_blocks
+
+	.data
+;;; Block character lookup table.
+;;; Patterns for all 16 combinations of 4 bits (2x2 block quadrants).
+_plot80x50_blocks:
+	dc.b	$20,$7e,$7b,$61,$7c,$e2,$ff,$ec,$6c,$7f,$62,$fc,$e1,$fb,$fe,$a0
 
 bitvalue	equ	tmp1
 color		equ	tmp2
@@ -12,6 +20,7 @@ ycoord		equ	tmp4
 screen		equ	ptr1
 screenh		equ	ptr1+1
 
+	.code
 ;;; Draw a pixel at (x, y) with given color using block characters.
 ;;; Calling convention:
 ;;;   X = x-coordinate (0-79)
@@ -19,7 +28,7 @@ screenh		equ	ptr1+1
 ;;;   A = color (0-15) or $ff to unplot
 ;;;
 ;;; This is a standalone routine without BASIC ROM hooks, parsing, or keyboard input.
-Draw
+	.proc	plot80x50
 	cpx	#80
 	bcs	.illegal
 	cpy	#50
@@ -71,7 +80,7 @@ Draw
 	ldy	xcoord
 	ldx	#$10
 .find_block
-	lda	Blocks,x
+	lda	_plot80x50_blocks,x
 	cmp	(screen),y
 	beq	.found_block
 	dex
@@ -85,7 +94,7 @@ Draw
 	ora	bitvalue
 .write_block
 	tax
-	lda	Blocks,x
+	lda	_plot80x50_blocks,x
 	sta	(screen),y
 
 	; Update color RAM.
@@ -108,8 +117,4 @@ Draw
 
 .illegal
 	rts
-
-;;; Block character lookup table.
-;;; Patterns for all 16 combinations of 4 bits (2x2 block quadrants).
-Blocks
-	dc.b	$20,$7e,$7b,$61,$7c,$e2,$ff,$ec,$6c,$7f,$62,$fc,$e1,$fb,$fe,$a0
+	.endproc
