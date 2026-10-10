@@ -1,6 +1,9 @@
 #! /usr/bin/make -f
 
-CXXFLAGS = -DNDEBUG -Wall -O2 -Wextra -std=c++23
+SRC = src
+BUILD = build
+
+CXXFLAGS = -I$(BUILD) -DNDEBUG -Wall -O2 -Wextra -std=c++23
 
 ifeq ($(OS),Windows_NT)
   HD = xxd
@@ -8,9 +11,9 @@ else
   HD = hd
 endif
 
-VERSION = 0.6.1
+VERSION = 1.0.0
 #
-OBJS = cmdline.o xipz.o compression.o qadz.o lzp.o rle.o read_data.o write_compressed_data.o
+OBJS = $(addprefix $(BUILD)/,cmdline.o xipz.o compression.o qadz.o ratz.o lzp.o rle.o bpe.o squz.o lzw.o lzrc.o lzh16.o timecrunch.o tc.o read_data.o write_compressed_data.o)
 #
 PACKAGENAME=xipz
 prefix = $(DESTDIR)/usr/local
@@ -23,11 +26,16 @@ bindir = $(exec_prefix)/bin
 docdir = $(datadir)/doc/$(PACKAGENAME)
 mandir = $(datarootdir)/man
 
-STUBINCS = decrunchlzpstub.inc decrunchlzp2stub.inc decrunchqadzstub.inc decrunchxipzstub.inc
+STUBINCS = $(addprefix $(BUILD)/,decrunchlzpstub.inc decrunchlzp2stub.inc decrunchlzp3stub.inc decrunchlzp4stub.inc decrunchlzp5stub.inc decrunchtcstub.inc decrunchqadzstub.inc decrunchratzstub.inc decrunchrlestub.inc decrunchbpestub.inc decrunchsquzstub.inc decrunchlzwstub.inc decrunchlzrcstub.inc decrunchlzh16stub.inc decrunchxipzstub.inc)
 
 .PHONY:	all bin clean install pkg
 
 all:	$(STUBINCS) xipz
+
+# The compressors embed their stubs.
+$(BUILD)/lzp.o:	$(addprefix $(BUILD)/,decrunchlzpstub.inc decrunchlzp2stub.inc decrunchlzp3stub.inc decrunchlzp4stub.inc decrunchlzp5stub.inc)
+
+$(BUILD)/tc.o:	$(BUILD)/decrunchtcstub.inc
 
 bin:	xipz
 
@@ -38,7 +46,7 @@ install:	bin doc
 	cp -r README.md html $(docdir)
 
 pkg:	bin doc
-	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' command_line.ggo
+	@sed -i 's/version "\(.*\)"/version "$(VERSION)"/' $(SRC)/command_line.ggo
 	$(eval PKGTMP := $(shell mktemp -d /tmp/xipz-🖬-XXXXXXX))
 	mkdir $(PKGTMP)/xipz-$(VERSION)
 	$(INSTALL) -p -s xipz $(PKGTMP)/xipz-$(VERSION)
@@ -48,27 +56,34 @@ pkg:	bin doc
 doc:
 	doxygen
 
-cmdline.c: command_line.ggo
-	gengetopt -i $+
+$(BUILD):
+	mkdir -p $@
 
-%.prg:	%.s
-	cl65 -o $@ --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $+
+$(BUILD)/cmdline.c $(BUILD)/cmdline.h: $(SRC)/command_line.ggo | $(BUILD)
+	gengetopt -i $< --output-dir=$(BUILD)
 
-%.inc:	%.prg
-	xxd -i $< > $@
+$(BUILD)/%.prg:	$(SRC)/%.s | $(BUILD)
+	cl65 -o $@ --asm-include-dir ../../library -C c64-asm.cfg  -Ln $@.label -m $@.map --listing $@.lst $<
+
+# xxd names the array after the input path, so run it from inside $(BUILD).
+$(BUILD)/%.inc:	$(BUILD)/%.prg
+	cd $(BUILD) && xxd -i $(notdir $<) > $(notdir $@)
 	$(HD) $<
 
+$(BUILD)/%.o:	$(SRC)/%.cc | $(BUILD)/cmdline.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILD)/cmdline.o:	$(BUILD)/cmdline.c
+	$(CC) -c -o $@ $<
+
 clean:
-	rm -f *.lst *.map *.label *.o *.inc
-	rm -f cmdline.?
-	rm -f decrunch*stub.*
+	rm -rf $(BUILD)
 	rm -f xipz
 	rm -rf html
 
 distclean:
 	$(MAKE) clean
 	rm -f xipz.tbz
-	rm -f cmdline.*
 
-xipz:	decrunchxipzstub.inc decrunchqadzstub.inc $(OBJS)
+xipz:	$(STUBINCS) $(OBJS)
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS)

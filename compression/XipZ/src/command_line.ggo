@@ -1,0 +1,11 @@
+package "XipZ"
+version "1.0.0"
+args	"--unnamed-opts"
+usage "xipz [OPTION]... INPUT [OUTPUT]"
+purpose "Crunch a C64 program. If OUTPUT is omitted, INPUT.prg (INPUT.raw with -r) is written."
+option	"raw"	r "output raw crunched data without header" flag off
+option	"algorithm"	a "crunching algorithm to use" values="xipz","qadz","ratz","lzp","lzp2","lzp3","lzp4","lzp5","tc","rle","bpe","squz","lzw","lzrc","lzh16" enum default="xipz" optional
+option	"jump"		j "address to jump to (-1 = load address)" int default="-1" optional
+option	"page"		p "maximum page to use +1" int default="0xA0" optional
+option	"data"		d "input is raw data without a load address" flag off
+option	"verbose"	v "more verbose output, if available" flag offoption	"debug-json"	- "debug: crunch the raw data (see -d, no stub) with the comma separated list of algorithms or \"all\" and print a JSON object of algorithm and base64 data" string typestr="LIST" optional

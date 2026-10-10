@@ -22,6 +22,8 @@
 #define LOOK_BACK 255
 #define MAX_LEN 128
 #define MAX_PLAIN_LEN 127
+//! Shortest match to use, the stub also copes with matches of two bytes.
+#define MIN_MATCH_LEN 2
 
 using namespace std;
 using boost::format;
@@ -157,50 +159,61 @@ std::vector<uint8_t> crunch_qadz(const Data &data) {
     }
   } outclass;
 
-  /* This is not the fastest nor the smartest way to perform the
-     search. Improve in future! */
+  /* Optimal parse. A match always costs two bytes whatever its offset
+     and a literal run of k bytes costs 1+k bytes, so a shortest path
+     over the positions gives the smallest possible stream. */
+
+  // Longest match (length and offset) starting at each position.
+  vector<int> matchlen(datasize, 0), matchoff(datasize, 0);
   for(long pos = 0; pos < datasize; ++pos) {
-    long posi = LONG_MIN;
-    int cmpi = INT_MIN;
-    int cmpj;
-    int max_look_back;
-    int match = INT_MIN;
-    // Move backwards from the current position.
-    if(pos >= LOOK_BACK) {
-      // There is enough space to do a full look back.
-      max_look_back = LOOK_BACK;
-    } else {
-      // Only go back to the beginning.
-      max_look_back = pos;
-    }
-#ifdef DEBUG
-    std::cout << "pos: " << pos << " max_look_back: " << max_look_back << std::endl;
-#endif
-    for(cmpj = max_look_back; cmpj > 0; --cmpj) {
-      // Inner loop for comparison.
-      for(cmpi = 0; cmpi < MAX_LEN; ++cmpi) {
-	if(pos + cmpi >= datasize) {
-	  // End of data reached.
-	  break;
-	}
-	if(data[pos - cmpj + cmpi] != data[pos + cmpi]) {
-	  break;
-	}
-	//std::cout << format("pos=%lu '%c' cmpi=%d cmpj=%d\n") % pos % data[pos] % cmpi % cmpj;
+    for(int off = 1; off <= LOOK_BACK && off <= pos; ++off) {
+      int len = 0;
+      while(len < MAX_LEN && pos + len < datasize && data[pos + len] == data[pos + len - off]) {
+	++len;
       }
-      //std::cout << format("cmpi=%d match=%lu → ") % cmpi % match;
-      if(cmpi > match) {
-	posi = cmpj;
-	match = cmpi;
+      if(len > matchlen[pos]) {
+	matchlen[pos] = len;
+	matchoff[pos] = off;
       }
-      //std::cout << format("cmpi=%d match=%lu\n") % cmpi % match;
     }
-    if(match < 3) {
-      outclass.putc(data[pos]);
+  }
+
+  // cost[i] = bytes needed for the first i bytes, step[i] = last token
+  // (k > 0: literal run of k bytes, -l: match of length l).
+  vector<long> cost(datasize + 1, LONG_MAX);
+  vector<int> step(datasize + 1, 0);
+  cost[0] = 0;
+  for(long pos = 0; pos < datasize; ++pos) {
+    for(int k = 1; k <= MAX_PLAIN_LEN && pos + k <= datasize; ++k) {
+      if(cost[pos] + 1 + k < cost[pos + k]) {
+	cost[pos + k] = cost[pos] + 1 + k;
+	step[pos + k] = k;
+      }
+    }
+    // Every prefix of the longest match is a match, too.
+    for(int len = MIN_MATCH_LEN; len <= matchlen[pos]; ++len) {
+      if(cost[pos] + 2 < cost[pos + len]) {
+	cost[pos + len] = cost[pos] + 2;
+	step[pos + len] = -len;
+      }
+    }
+  }
+
+  // Walk back from the end to collect the tokens, then emit them.
+  vector<long> ends;
+  for(long end = datasize; end > 0; end -= abs(step[end])) {
+    ends.push_back(end);
+  }
+  for(auto it = ends.rbegin(); it != ends.rend(); ++it) {
+    long end = *it;
+    long begin = end - abs(step[end]);
+    if(step[end] > 0) {
+      for(long i = begin; i < end; ++i) {
+	outclass.putc(data[i]);
+      }
+      outclass.flush();
     } else {
-      outclass.puttoken(posi, match);
-      //std::cout << format("[pos=%ld, posi=%ld, match=%ld]") % pos % posi % match;
-      pos += match - 1;
+      outclass.puttoken(matchoff[begin], -step[end]);
     }
   }
   return outclass.finalize();

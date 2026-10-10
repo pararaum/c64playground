@@ -1,3 +1,4 @@
+#include <cmath>
 #include <inttypes.h>
 #include <vector>
 #include <iterator>
@@ -8,7 +9,13 @@
 #include <format>
 #include "compression.hh"
 #include "qadz.hh"
+#include "ratz.hh"
 #include "lzp.hh"
+#include "bpe.hh"
+#include "squz.hh"
+#include "lzw.hh"
+#include "lzrc.hh"
+#include "lzh16.hh"
 
 /*! \file xipz.cc
  *
@@ -55,6 +62,7 @@ enum Program_Return_Values
   {
    RETURN_NO_FILENAME = 1,
    RETURN_DATA_BELOW_ROM,
+   RETURN_NO_ALGORITHM,
    RETURN_UNKNOWN_EXCEPTION = -1
 };
 
@@ -240,7 +248,8 @@ std::ostream &write_stub(std::ostream &out, int n, uint16_t size, uint16_t loada
   // Assign new end of compressed data.
   endptr += 1 << n; // Add the current table size.
   endptr += size; // Add number of bytes of compressed data.
-  endptr += 1; // End pointer must point to the byte *after* the data.
+  // The end pointer must not point beyond the data: the stub stops when it reads past the
+  // last byte, an extra byte would be decoded and written after the program.
   stub.at(POS_OF_END_OF_CDATA) = endptr & 0xFF;
   stub.at(POS_OF_END_OF_CDATA + 1) = (endptr >> 8) & 0xFF;
   // Assign the new jmp position.
@@ -318,8 +327,10 @@ std::vector<uint8_t> create_compressed_data(const Data &data, const CompressionB
   }
   // Write remaining bits...
   if(bit > 0) {
-    int fillbits = (bit % 8);
-    bitstore <<= fillbits;
+    int fillbits = 8 - bit;
+    // Pad with ones: a one is a literal flag needing eight more bits, which
+    // can never be read, so the stub stops without decoding a spurious token.
+    bitstore = (bitstore << fillbits) | ((1UL << fillbits) - 1);
     bit += fillbits;
   }
   while(bit >= 8) {
@@ -360,13 +371,14 @@ static void output_64_common(const HistorgramArray &shisto) {
  * \return optimal number of bits
  */
 static int choose_optimal_n(const Data &data, const HistorgramArray &shisto) {
-  int n = 0;
-  float minsize = data.size();
-  float f;
+  // n=0 is not decodable by the stub, so n is always in 1..6. The 2^n
+  // byte table stored with the bitstream is part of the size.
+  int n = 1;
+  float minsize = 0;
 
   for(int i = 1; i <= 6; ++i) {
-    f = calc_comp(i, data, shisto);
-    if(f < minsize) {
+    float f = std::ceil(calc_comp(i, data, shisto)) + (1 << i);
+    if(i == 1 || f < minsize) {
       n = i;
       minsize = f;
     }
@@ -411,6 +423,23 @@ protected:
 };
 
 
+/*! RATZ compressor class
+ *
+ */
+class RatzCompressor : public Compressor {
+public:
+  using Compressor::Compressor;
+protected:
+  std::vector<uint8_t> compress() override {
+    return crunch_ratz(data);
+  }
+  void write_stub(std::ofstream& out, const std::vector<uint8_t>& c,
+		  uint16_t load, uint16_t jmp) override {
+    write_ratz_stub(out, c.size(), load, jmp, cliargs.page_arg);
+  }
+};
+
+
 /*! XipZ compressor class
  *
  */
@@ -426,8 +455,20 @@ protected:
     std::cout << "Optimal number of bits: N=" << optimal_bits << std::endl;
     compbits = create_compression_bits(shisto, optimal_bits);
   }
+  /* In raw mode there is no stub that knows n and carries the table, so
+     * the stream starts with n (one byte) and the 2^n byte table. */
   std::vector<uint8_t> compress() override {
-    return create_compressed_data(data, compbits);
+    std::vector<uint8_t> bits = create_compressed_data(data, compbits);
+    if(!cliargs.raw_flag) {
+      return bits;
+    }
+    std::vector<uint8_t> raw;
+    raw.push_back(static_cast<uint8_t>(optimal_bits));
+    for(int i = 0; i < (1 << optimal_bits); ++i) {
+      raw.push_back(shisto.at(i).byte);
+    }
+    raw.insert(raw.end(), bits.begin(), bits.end());
+    return raw;
   }
   void write_stub(std::ofstream& out, const std::vector<uint8_t>& c,
 		  uint16_t load, uint16_t jmp) override {
@@ -440,6 +481,160 @@ protected:
   int optimal_bits;
 };
 
+
+/*! \brief Create the compressor for an algorithm
+ *
+ * \param algorithm the algorithm to use
+ * \param inpnam input file name
+ * \param outnam output file name
+ * \param args command line arguments
+ * \return the compressor
+ */
+static std::unique_ptr<Compressor> make_compressor(enum enum_algorithm algorithm,
+						  const std::string &inpnam,
+						  const std::string &outnam,
+						  const gengetopt_args_info &args) {
+  auto warn_page = [&args](const char *name) {
+    if(args.page_given) {
+      std::cerr << "Warning! Page is ignored by " << name << ".\n";
+    }
+  };
+  switch(algorithm) {
+  case algorithm_arg_xipz:
+    return std::make_unique<XipzCompressor>(inpnam, outnam, args);
+  case algorithm_arg_qadz:
+    return std::make_unique<QadzCompressor>(inpnam, outnam, args);
+  case algorithm_arg_ratz:
+    return std::make_unique<RatzCompressor>(inpnam, outnam, args);
+  case algorithm_arg_lzp:
+    warn_page("LZP");
+    return std::make_unique<LzpCompressor>(inpnam, outnam, args);
+  case algorithm_arg_lzp2:
+    warn_page("LZP2");
+    return std::make_unique<Lzp2Compressor>(inpnam, outnam, args);
+  case algorithm_arg_lzp3:
+    warn_page("LZP3");
+    return std::make_unique<Lzp3Compressor>(inpnam, outnam, args);
+  case algorithm_arg_lzp4:
+    warn_page("LZP4");
+    return std::make_unique<Lzp4Compressor>(inpnam, outnam, args);
+  case algorithm_arg_lzp5:
+    warn_page("LZP5");
+    return std::make_unique<Lzp5Compressor>(inpnam, outnam, args);
+  case algorithm_arg_tc:
+    warn_page("TC");
+    return std::make_unique<TcCompressor>(inpnam, outnam, args);
+  case algorithm_arg_rle:
+    return std::make_unique<RleCompressor>(inpnam, outnam, args);
+  case algorithm_arg_bpe:
+    return std::make_unique<BpeCompressor>(inpnam, outnam, args);
+  case algorithm_arg_squz:
+    return std::make_unique<SquzCompressor>(inpnam, outnam, args);
+  case algorithm_arg_lzw:
+    return std::make_unique<LzwCompressor>(inpnam, outnam, args);
+  case algorithm_arg_lzrc:
+    return std::make_unique<LzrcCompressor>(inpnam, outnam, args);
+  case algorithm_arg_lzh16:
+    return std::make_unique<Lzh16Compressor>(inpnam, outnam, args);
+  case algorithm__NULL:
+    throw std::logic_error("algorithm vanished");
+  }
+  throw std::logic_error("mismatch between command line and code");
+}
+
+/*! \brief Encode data as base64 (RFC 4648, with padding)
+ */
+static std::string base64_encode(const std::vector<uint8_t> &data) {
+  static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  std::string out;
+  out.reserve((data.size() + 2) / 3 * 4);
+  for(size_t i = 0; i < data.size(); i += 3) {
+    uint32_t v = data[i] << 16;
+    if(i + 1 < data.size()) v |= data[i + 1] << 8;
+    if(i + 2 < data.size()) v |= data[i + 2];
+    out += alphabet[(v >> 18) & 0x3F];
+    out += alphabet[(v >> 12) & 0x3F];
+    out += i + 1 < data.size() ? alphabet[(v >> 6) & 0x3F] : '=';
+    out += i + 2 < data.size() ? alphabet[v & 0x3F] : '=';
+  }
+  return out;
+}
+
+/*! \brief Debug output: crunch the input with several algorithms
+ *
+ * The input is crunched with every algorithm of a comma separated
+ * list (or "all") and a JSON object is printed, which maps the name of
+ * the algorithm to the base64 encoded crunched data. No decrunching
+ * stub is written, the data is the same as with the option -r. This
+ * is mostly useful for raw data (option -d). An algorithm that fails
+ * is reported on stderr and has the value null.
+ *
+ * \param list comma separated algorithm names or "all"
+ * \param inpnam input file name
+ * \param args command line arguments
+ * \return return value for the CLI
+ */
+static int debug_json(const std::string &list, const std::string &inpnam,
+		      const gengetopt_args_info &args) {
+  std::vector<std::string> names;
+  std::istringstream iss(list);
+  for(std::string name; std::getline(iss, name, ','); ) {
+    if(name == "all") {
+      for(int i = 0; cmdline_parser_algorithm_values[i]; ++i) {
+	names.push_back(cmdline_parser_algorithm_values[i]);
+      }
+    } else if(!name.empty()) {
+      names.push_back(name);
+    }
+  }
+  // Remove duplicates, a JSON object should not have the same key twice.
+  std::vector<std::string> unique;
+  for(const auto &name : names) {
+    if(std::find(unique.begin(), unique.end(), name) == unique.end()) {
+      unique.push_back(name);
+    }
+  }
+  if(unique.empty()) {
+    std::cerr << "Error! No algorithm given for --debug-json.\n";
+    return RETURN_NO_ALGORITHM;
+  }
+  // Only the crunched data is wanted, as with -r.
+  gengetopt_args_info rawargs = args;
+  rawargs.raw_flag = 1;
+  // The algorithms are chatty, keep stdout clean for the JSON.
+  std::streambuf *coutbuf = std::cout.rdbuf(std::cerr.rdbuf());
+  std::ostringstream json;
+  json << "{";
+  int ret = 0;
+  bool first = true;
+  for(const auto &name : unique) {
+    json << (first ? "\n  \"" : ",\n  \"") << name << "\": ";
+    first = false;
+    int idx = -1;
+    for(int i = 0; cmdline_parser_algorithm_values[i]; ++i) {
+      if(name == cmdline_parser_algorithm_values[i]) {
+	idx = i;
+      }
+    }
+    try {
+      if(idx < 0) {
+	throw std::runtime_error("unknown algorithm");
+      }
+      auto compressor = make_compressor(static_cast<enum enum_algorithm>(idx), inpnam, "", rawargs);
+      const std::string encoded = base64_encode(compressor->crunch());
+      json << "\"" << encoded << "\"";
+    }
+    catch(const std::exception &e) {
+      std::cerr << "Exception (" << name << "): " << e.what() << std::endl;
+      json << "null";
+      ret = RETURN_UNKNOWN_EXCEPTION;
+    }
+  }
+  json << "\n}\n";
+  std::cout.rdbuf(coutbuf);
+  std::cout << json.str();
+  return ret;
+}
 
 /*!\brief main function using xip
  *
@@ -457,6 +652,15 @@ int main(int argc, char **argv) {
       std::cerr << "At least one filename must be provided!\n";
       return RETURN_NO_FILENAME;
     }
+    if(args.debug_json_given) {
+      try {
+	return debug_json(args.debug_json_arg, args.inputs[0], args);
+      }
+      catch(const std::exception &e) {
+	std::cerr << "Exception: " << e.what() << std::endl;
+	return RETURN_UNKNOWN_EXCEPTION;
+      }
+    }
     std::cout << "XipZ Version " << CMDLINE_PARSER_VERSION << std::endl;
     if(args.page_arg > 0xa0) {
       // In this case part of the data will end up under the ROM. As
@@ -473,42 +677,7 @@ int main(int argc, char **argv) {
       } else {
 	outnam = args.inputs[1];
       }
-      switch(args.algorithm_arg) {
-      case algorithm_arg_xipz:
-	if(args.raw_given) {
-	  throw std::invalid_argument("no raw for XipZ");
-	  /* TODO: Fix class to not only output a stub but also the table. Append in compress()? */
-	}
-	compmain = std::make_unique<XipzCompressor>(inpnam, outnam, args);
-	break;
-      case algorithm_arg_qadz:
-	compmain = std::make_unique<QadzCompressor>(inpnam, outnam, args);
-	break;
-      case algorithm_arg_lzp:
-	if(args.page_given) {
-	  std::cerr << "Warning! Page is ignored by LZP.\n";
-	}
-	compmain = std::make_unique<LzpCompressor>(inpnam, outnam, args);
-	break;
-      case algorithm_arg_lzp2:
-	if(args.page_given) {
-	  std::cerr << "Warning! Page is ignored by LZP2.\n";
-	}
-	compmain = std::make_unique<Lzp2Compressor>(inpnam, outnam, args);
-	break;
-      case algorithm_arg_rle:
-	if(!args.raw_given) {
-	  std::cerr << "Currently no stub for RLE, sorry.\n";
-	  return 1;
-	}  else {
-	  compmain = std::make_unique<RleCompressor>(inpnam, outnam, args);
-	}
-	break;
-      case algorithm__NULL:
-	throw std::logic_error("algorithm vanished");
-      default:
-	throw std::logic_error("mismatch between command line and code");
-      }
+      compmain = make_compressor(args.algorithm_arg, inpnam, outnam, args);
       if(!compmain) {
 	throw std::logic_error("compression main has been lost");
       }

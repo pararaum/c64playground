@@ -107,13 +107,13 @@ next_byte:
 	iny
 	bne	nb_out
 	inc	SRCDATAPTR+1
-	bne	nb_out		; If HI rolls over to $00 we have reached the end.
+nb_out:	rts
+	;; Entered from output when the end address has been reached.
 finished:
 	lda	#$37
 	sta	1
 	jmp	*
 	jump_to=*-2
-nb_out:	rts
 update:				; Modifies: A, X
 	ldx	HASH
 	sta	model,x
@@ -126,12 +126,20 @@ advance:			; Modifies: A
 	eor	HASH
 	sta	HASH
 	rts
-output:				; Modifies: -
+output:				; Modifies: X
 	sta	64738
 DSTDATAPTR = *-2
 	inc	DSTDATAPTR
-	bne	op_out
+	bne	op_chk
 	inc	DSTDATAPTR+1
+op_chk:	ldx	DSTDATAPTR	; Reached the end address? Only X is free here.
+	cpx	#0
+ENDLO = *-1
+	bne	op_out
+	ldx	DSTDATAPTR+1
+	cpx	#0
+ENDHI = *-1
+	beq	finished
 op_out:	rts
 
 model:	.res	0
@@ -142,4 +150,6 @@ stubcodelen = *-realstubcode
 
 	.export	jump_to_offset=jump_to-realstubcode+stubcode-START
 	.export	dstdataptr_offset=DSTDATAPTR-realstubcode+stubcode-START
+	.export endlo_offset=ENDLO-realstubcode+stubcode-START
+	.export endhi_offset=ENDHI-realstubcode+stubcode-START
 	.export upcopystc_offset=UPCPYSRC-realstubcode+stubcode-START
